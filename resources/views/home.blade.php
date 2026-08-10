@@ -355,21 +355,22 @@
 </head>
 <body>
 
-    <!-- Navbar -->
+<!-- Navbar Dinamis -->
     <header class="navbar">
         <div class="navbar-container">
             <div class="nav-logo">B</div>
             <a href="/" class="nav-brand">BrailleKita</a>
-            
             <div class="nav-spacer"></div>
             
-            <a href="/" class="nav-link active">Katalog</a>
-            <a href="#" class="nav-link outline">Pesanan Saya</a>
-            <a href="#" class="nav-link outline">🛒 Keranjang</a>
-            <span class="nav-user">Halo, {{ auth()->user()->nama ?? 'Pengguna' }}</span>
+            <!-- Link Navigasi -->
+            <a href="/" class="nav-link {{ request()->is('/') ? 'active' : 'outline' }}">Katalog</a>
+            <a href="/pesanan-saya" class="nav-link {{ request()->is('pesanan-saya') ? 'active' : 'outline' }}">Pesanan Saya</a>
+            <a href="/keranjang" class="nav-link {{ request()->is('keranjang') ? 'active' : 'outline' }}">Keranjang</a>
+            
+            <span style="margin: 0 8px; font-size: 15px;">Halo, {{ auth()->user()->nama ?? 'Pengguna' }}</span>
             <form action="/logout" method="POST" style="display:inline;">
                 @csrf
-                <button type="submit" class="nav-link outline" style="background:transparent; cursor:pointer;">Keluar</button>
+                <button type="submit" class="nav-link outline" style="background:transparent; cursor:pointer; font-family: inherit; color: white;">Keluar</button>
             </form>
         </div>
     </header>

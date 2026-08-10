@@ -314,15 +314,18 @@
 </head>
 <body>
 
-    <!-- Navbar -->
+<!-- Navbar Dinamis -->
     <header class="navbar">
         <div class="navbar-container">
             <div class="nav-logo">B</div>
             <a href="/" class="nav-brand">BrailleKita</a>
             <div class="nav-spacer"></div>
-            <a href="/" class="nav-link outline">Katalog</a>
-            <a href="#" class="nav-link outline">Pesanan Saya</a>
-            <a href="#" class="nav-link outline">🛒 Keranjang</a>
+            
+            <!-- Link Navigasi -->
+            <a href="/" class="nav-link {{ request()->is('/') ? 'active' : 'outline' }}">Katalog</a>
+            <a href="/pesanan-saya" class="nav-link {{ request()->is('pesanan-saya') ? 'active' : 'outline' }}">Pesanan Saya</a>
+            <a href="/keranjang" class="nav-link {{ request()->is('keranjang') ? 'active' : 'outline' }}">Keranjang</a>
+            
             <span style="margin: 0 8px; font-size: 15px;">Halo, {{ auth()->user()->nama ?? 'Pengguna' }}</span>
             <form action="/logout" method="POST" style="display:inline;">
                 @csrf
@@ -393,7 +396,12 @@
                         <div class="price-label">Harga per eksemplar</div>
                         <div class="price-value">Gratis <span class="price-strike">Rp0</span></div>
                     </div>
-                    <button class="btn-add-cart">+ Tambah ke Keranjang</button>
+                    
+                    <!-- Form Tambah ke Keranjang -->
+                    <form action="/keranjang/tambah/{{ $buku->id }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn-add-cart">+ Tambah ke Keranjang</button>
+                    </form>
                 </div>
 
                 <div class="warning-text">
