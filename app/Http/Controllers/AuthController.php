@@ -18,14 +18,20 @@ class AuthController extends Controller
     // Memproses Pendaftaran Akun
     public function register(Request $request)
     {
-        // 1. Validasi Input
+        // 1. Validasi Input + Pesan Custom
         $request->validate([
-            'nama' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email',
+            'nama'          => 'required|string|max:255',
+            'email'         => 'required|string|email|max:255|unique:users,email',
             'nomor_telepon' => 'required|string|max:20',
-            'alamat' => 'nullable|string',
-            'kata_sandi' => 'required|string|min:8|confirmed',
-            'foto_ktp' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'alamat'        => 'nullable|string',
+            'kata_sandi'    => 'required|string|min:8|confirmed',
+            'foto_ktp'      => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ], [
+            'kata_sandi.min'       => 'Kata sandi harus terdiri dari minimal 8 karakter.',
+            'kata_sandi.required'  => 'Kata sandi wajib diisi.',
+            'kata_sandi.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
+            'foto_ktp.required'    => 'Foto KTP wajib diunggah.',
+            'foto_ktp.max'         => 'Ukuran foto KTP maksimal 2MB.',
         ]);
 
         // 2. Upload Foto KTP
