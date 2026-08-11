@@ -39,10 +39,10 @@
         
         .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
         .page-title { font-size: 28px; font-weight: 700; }
-        .btn-outline-primary { border: 2px solid var(--primary); color: var(--primary); padding: 8px 16px; border-radius: 6px; font-weight: 700; }
+        .btn-outline-primary { border: 2px solid var(--primary); color: var(--primary); padding: 8px 16px; border-radius: 6px; font-weight: 700; background: white; cursor: pointer; font-family: inherit; font-size: 14px; }
         .btn-outline-primary:hover { background: var(--primary); color: white; }
 
-        /* Styling Empty State (Sesuai Inspect) */
+        /* Empty State */
         .empty-state {
             text-align: center;
             padding: 80px 20px;
@@ -54,9 +54,9 @@
         .empty-state p { color: var(--muted-foreground); margin-bottom: 24px; max-width: 500px; margin-left: auto; margin-right: auto; }
         .btn-primary { background: var(--primary); color: white; padding: 12px 24px; border-radius: 6px; font-weight: 700; display: inline-block; border: none; cursor: pointer; }
 
-        /* Styling Tabs & Order Card (Sesuai Inspect) */
-        .filter-tabs { display: flex; gap: 12px; margin-bottom: 24px; }
-        .tab-btn { padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 14px; border: 1px solid var(--border); background: white; cursor: pointer; }
+        /* Filter Tabs */
+        .filter-tabs { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+        .tab-btn { padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 13px; border: 1px solid var(--border); background: white; cursor: pointer; font-family: inherit; white-space: nowrap; }
         .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
         .order-list { display: flex; flex-direction: column; gap: 16px; }
@@ -71,34 +71,86 @@
             gap: 14px;
         }
 
-        .order-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .order-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; }
         .order-id { font-weight: 700; font-size: 16px; margin-right: 12px; }
         
-        .badge-warning { background: #fff3e0; color: #e65100; border: 1px solid #ffb74d; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700; margin-right: 8px; }
-        .badge-gray { background: #f5f5f5; color: #616161; border: 1px solid #e0e0e0; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700; }
-        
+        .badge { padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700; margin-right: 8px; border: 1px solid; display: inline-block; }
+        .badge-gray { background: #f5f5f5; color: #616161; border-color: #e0e0e0; }
+
+        /* Warna badge per status */
+        .status-menunggu-diproses { background: #fff3e0; color: #e65100; border-color: #ffb74d; }
+        .status-diproses         { background: #e3f2fd; color: #1565c0; border-color: #64b5f6; }
+        .status-sedang-dikirim   { background: #ede7f6; color: #5e35b1; border-color: #9575cd; }
+        .status-dikirim          { background: #e0f2f1; color: #00695c; border-color: #4db6ac; }
+        .status-diantar-ke-alamat{ background: #fce4ec; color: #ad1457; border-color: #f06292; }
+        .status-pesanan-sampai   { background: #e8f5e9; color: #2e7d32; border-color: #81c784; }
+        .status-dibatalkan       { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+
         .order-date { font-size: 14px; color: var(--muted-foreground); margin-top: -6px; }
         
         .total-box { text-align: right; }
         .total-label { font-size: 13px; color: var(--muted-foreground); }
         .total-value { font-size: 18px; font-weight: 700; color: var(--success); }
-        
+
+        /* Timeline / Progress Tracker ala Marketplace */
+        .status-tracker { padding: 20px 8px 8px 8px; overflow-x: auto; }
+        .tracker-row { display: flex; align-items: flex-start; min-width: 560px; }
+        .tracker-step { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; text-align: center; }
+        .tracker-dot {
+            width: 26px; height: 26px; border-radius: 50%;
+            background: var(--muted); border: 2px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; font-weight: 700; color: var(--muted-foreground);
+            z-index: 2; flex-shrink: 0;
+        }
+        .tracker-step.done .tracker-dot { background: var(--success); border-color: var(--success); color: white; }
+        .tracker-step.active .tracker-dot { background: var(--primary); border-color: var(--primary); color: white; }
+        .tracker-step.cancelled .tracker-dot { background: #c62828; border-color: #c62828; color: white; }
+
+        .tracker-line { position: absolute; top: 13px; left: -50%; width: 100%; height: 3px; background: var(--border); z-index: 1; }
+        .tracker-step:first-child .tracker-line { display: none; }
+        .tracker-step.done .tracker-line, .tracker-step.active .tracker-line { background: var(--success); }
+
+        .tracker-label { font-size: 11px; font-weight: 700; margin-top: 8px; color: var(--muted-foreground); max-width: 90px; line-height: 1.3; }
+        .tracker-step.done .tracker-label, .tracker-step.active .tracker-label { color: var(--foreground); }
+
+        .cancelled-note { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; border-radius: 6px; padding: 10px 14px; font-size: 14px; font-weight: 700; }
+
         .order-items { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 16px 0; }
         
         .order-actions { display: flex; gap: 12px; }
-        .btn-outline-gray { border: 1px solid var(--border); background: white; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; }
+        .btn-outline-gray { border: 1px solid var(--border); background: white; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-family: inherit; font-size: 14px; }
+
+        @media (max-width: 640px) {
+            .tracker-label { display: none; }
+        }
     </style>
 </head>
 <body>
 
-<!-- Navbar Dinamis -->
+    @php
+        // Daftar tahapan status ala marketplace, berurutan
+        $tahapanStatus = [
+            'Menunggu Diproses',
+            'Diproses',
+            'Sedang Dikirim',
+            'Dikirim',
+            'Diantar ke Alamat',
+            'Pesanan Sampai',
+        ];
+
+        // Helper: ubah "Menunggu Diproses" jadi "status-menunggu-diproses" untuk class CSS
+        $slugStatus = function ($status) {
+            return 'status-' . \Illuminate\Support\Str::slug($status);
+        };
+    @endphp
+
     <header class="navbar">
         <div class="navbar-container">
             <div class="nav-logo">B</div>
             <a href="/" class="nav-brand">BrailleKita</a>
             <div class="nav-spacer"></div>
             
-            <!-- Link Navigasi -->
             <a href="/" class="nav-link {{ request()->is('/') ? 'active' : 'outline' }}">Katalog</a>
             <a href="/pesanan-saya" class="nav-link {{ request()->is('pesanan-saya') ? 'active' : 'outline' }}">Pesanan Saya</a>
             <a href="/keranjang" class="nav-link {{ request()->is('keranjang') ? 'active' : 'outline' }}">Keranjang</a>
@@ -121,7 +173,6 @@
         </div>
 
         @if($daftarPesanan->isEmpty())
-            <!-- Tampilan Jika Pesanan Kosong -->
             <div class="empty-state">
                 <div style="font-size: 64px;">📦</div>
                 <h3>Belum Ada Pesanan</h3>
@@ -129,20 +180,32 @@
                 <a href="/" class="btn-primary">Lihat Katalog Buku</a>
             </div>
         @else
-            <!-- Tampilan Jika Ada Pesanan -->
+            <!-- Filter Tabs -->
             <div class="filter-tabs">
-                <button class="tab-btn active">Semua ({{ $daftarPesanan->count() }})</button>
-                <button class="tab-btn">Menunggu Diproses ({{ $daftarPesanan->where('status', 'Menunggu Diproses')->count() }})</button>
+                <button class="tab-btn active" data-filter="semua">Semua ({{ $daftarPesanan->count() }})</button>
+                @foreach($tahapanStatus as $status)
+                    <button class="tab-btn" data-filter="{{ $slugStatus($status) }}">
+                        {{ $status }} ({{ $daftarPesanan->where('status', $status)->count() }})
+                    </button>
+                @endforeach
+                <button class="tab-btn" data-filter="status-dibatalkan">
+                    Dibatalkan ({{ $daftarPesanan->where('status', 'Dibatalkan')->count() }})
+                </button>
             </div>
 
             <div class="order-list">
                 @foreach($daftarPesanan as $pesanan)
-                    <div class="order-card">
+                    @php
+                        $isDibatalkan = $pesanan->status === 'Dibatalkan';
+                        $indexSaatIni = array_search($pesanan->status, $tahapanStatus);
+                    @endphp
+
+                    <div class="order-card" data-status="{{ $isDibatalkan ? 'status-dibatalkan' : $slugStatus($pesanan->status) }}">
                         <div class="order-header">
                             <div>
                                 <span class="order-id">{{ $pesanan->nomor_pesanan }}</span>
-                                <span class="badge-warning">{{ $pesanan->status }}</span>
-                                <span class="badge-gray">{{ $pesanan->jenis_pesanan }}</span>
+                                <span class="badge {{ $isDibatalkan ? 'status-dibatalkan' : $slugStatus($pesanan->status) }}">{{ $pesanan->status }}</span>
+                                <span class="badge badge-gray">{{ $pesanan->jenis_pesanan }}</span>
                             </div>
                             <div class="total-box">
                                 <div class="total-label">Total Biaya</div>
@@ -151,6 +214,26 @@
                         </div>
                         
                         <div class="order-date">Tanggal Pemesanan: {{ $pesanan->tanggal_pemesanan }}</div>
+
+                        @if($isDibatalkan)
+                            <div class="cancelled-note">✕ Pesanan ini telah dibatalkan.</div>
+                        @else
+                            <!-- Timeline Status ala Marketplace -->
+                            <div class="status-tracker">
+                                <div class="tracker-row">
+                                    @foreach($tahapanStatus as $i => $tahap)
+                                        @php
+                                            $state = $i < $indexSaatIni ? 'done' : ($i === $indexSaatIni ? 'active' : '');
+                                        @endphp
+                                        <div class="tracker-step {{ $state }}">
+                                            <div class="tracker-line"></div>
+                                            <div class="tracker-dot">{{ $i < $indexSaatIni ? '✓' : $i + 1 }}</div>
+                                            <div class="tracker-label">{{ $tahap }}</div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                         
                         <div class="order-items">
                             @foreach($pesanan->details as $detail)
@@ -160,7 +243,9 @@
                         
                         <div class="order-actions">
                             <button class="btn-outline-primary">Lihat Detail</button>
-                            <button class="btn-outline-gray">Batalkan Pesanan</button>
+                            @if(!$isDibatalkan && $pesanan->status === 'Menunggu Diproses')
+                                <button class="btn-outline-gray">Batalkan Pesanan</button>
+                            @endif
                         </div>
                     </div>
                 @endforeach
@@ -168,6 +253,29 @@
         @endif
 
     </main>
+
+    <script>
+        // Filter tab sederhana (client-side, tanpa reload halaman)
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const orderCards = document.querySelectorAll('.order-card');
+
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                const filter = btn.dataset.filter;
+
+                orderCards.forEach(card => {
+                    if (filter === 'semua' || card.dataset.status === filter) {
+                        card.style.display = 'flex';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
 
 </body>
 </html>
