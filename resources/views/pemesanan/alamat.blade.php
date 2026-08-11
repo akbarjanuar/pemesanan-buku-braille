@@ -51,13 +51,18 @@
         .form-group label { font-weight: 700; font-size: 15px; margin-bottom: 6px; display: block; }
         .form-group .required { color: var(--primary); }
         .form-group input,
+        .form-group select,
         .form-group textarea {
             width: 100%; border: 1px solid var(--border); border-radius: 6px;
             padding: 12px 14px; font-size: 15px; font-family: inherit; color: var(--foreground);
+            background: white;
         }
-        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); }
+        .form-group select:disabled { background: var(--muted); color: var(--muted-foreground); cursor: not-allowed; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
         .error-text { color: var(--primary); font-size: 13px; margin-top: 4px; }
+        .loading-text { color: var(--muted-foreground); font-size: 13px; margin-top: 4px; display: none; }
 
         .form-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
         .btn-back { background: white; color: var(--foreground); border: 1px solid var(--border); padding: 12px 20px; border-radius: 6px; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; }
@@ -76,7 +81,7 @@
 
         @media (max-width: 768px) {
             .order-layout { grid-template-columns: 1fr; }
-            .form-row { grid-template-columns: 1fr; }
+            .form-row, .form-row-3 { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -104,7 +109,7 @@
             <span class="step-label">Alamat Pengiriman</span>
         </div>
 
-        <form action="/pemesanan/simpan" method="POST">
+        <form action="/pemesanan/simpan" method="POST" id="formAlamat">
             @csrf
             <div class="order-layout">
                 <div class="form-card">
@@ -123,22 +128,41 @@
                         @error('telepon') <div class="error-text">{{ $message }}</div> @enderror
                     </div>
 
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>Provinsi <span class="required">*</span></label>
+                            <select name="provinsi" id="provinsi" required>
+                                <option value="">Memuat...</option>
+                            </select>
+                            @error('provinsi') <div class="error-text">{{ $message }}</div> @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label>Kota/Kabupaten <span class="required">*</span></label>
+                            <select name="kota" id="kota" required disabled>
+                                <option value="">Pilih provinsi dulu</option>
+                            </select>
+                            @error('kota') <div class="error-text">{{ $message }}</div> @enderror
+                        </div>
+
+                        <div class="form-group">
+                            <label>Kecamatan <span class="required">*</span></label>
+                            <select name="kecamatan" id="kecamatan" required disabled>
+                                <option value="">Pilih kota dulu</option>
+                            </select>
+                            @error('kecamatan') <div class="error-text">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
+
                     <div class="form-group">
                         <label>Alamat Lengkap <span class="required">*</span></label>
-                        <textarea name="alamat_lengkap" rows="3" placeholder="Nama jalan, nomor rumah, RT/RW, kecamatan" required>{{ old('alamat_lengkap') }}</textarea>
+                        <textarea name="alamat_lengkap" rows="3" placeholder="Nama jalan, nomor rumah, RT/RW" required>{{ old('alamat_lengkap') }}</textarea>
                         @error('alamat_lengkap') <div class="error-text">{{ $message }}</div> @enderror
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Kota <span class="required">*</span></label>
-                            <input type="text" name="kota" value="{{ old('kota') }}" placeholder="Kota / Kabupaten" required>
-                            @error('kota') <div class="error-text">{{ $message }}</div> @enderror
-                        </div>
-                        <div class="form-group">
-                            <label>Kode Pos</label>
-                            <input type="text" name="kode_pos" value="{{ old('kode_pos') }}" placeholder="Opsional">
-                        </div>
+                    <div class="form-group">
+                        <label>Kode Pos</label>
+                        <input type="text" name="kode_pos" value="{{ old('kode_pos') }}" placeholder="Opsional">
                     </div>
 
                     <div class="form-group">
@@ -175,5 +199,87 @@
         </form>
     </main>
 
+    <script>
+        // Data wilayah Indonesia dari API publik gratis (emsifa)
+        const API_BASE = 'https://www.emsifa.com/api-wilayah-indonesia/api';
+
+        const provinsiSelect = document.getElementById('provinsi');
+        const kotaSelect = document.getElementById('kota');
+        const kecamatanSelect = document.getElementById('kecamatan');
+
+        // 1. Ambil daftar provinsi saat halaman dimuat
+        fetch(`${API_BASE}/provinces.json`)
+            .then(res => res.json())
+            .then(data => {
+                provinsiSelect.innerHTML = '<option value="">Pilih Provinsi</option>';
+                data.forEach(prov => {
+                    const opt = document.createElement('option');
+                    opt.value = prov.name;
+                    opt.dataset.id = prov.id;
+                    opt.textContent = prov.name;
+                    provinsiSelect.appendChild(opt);
+                });
+            })
+            .catch(() => {
+                provinsiSelect.innerHTML = '<option value="">Gagal memuat data, isi manual tidak tersedia</option>';
+            });
+
+        // 2. Saat provinsi dipilih, ambil daftar kota/kabupaten
+        provinsiSelect.addEventListener('change', function () {
+            const selectedOption = this.options[this.selectedIndex];
+            const provinceId = selectedOption.dataset.id;
+
+            kotaSelect.innerHTML = '<option value="">Memuat...</option>';
+            kotaSelect.disabled = true;
+            kecamatanSelect.innerHTML = '<option value="">Pilih kota dulu</option>';
+            kecamatanSelect.disabled = true;
+
+            if (!provinceId) {
+                kotaSelect.innerHTML = '<option value="">Pilih provinsi dulu</option>';
+                return;
+            }
+
+            fetch(`${API_BASE}/regencies/${provinceId}.json`)
+                .then(res => res.json())
+                .then(data => {
+                    kotaSelect.innerHTML = '<option value="">Pilih Kota/Kabupaten</option>';
+                    data.forEach(kota => {
+                        const opt = document.createElement('option');
+                        opt.value = kota.name;
+                        opt.dataset.id = kota.id;
+                        opt.textContent = kota.name;
+                        kotaSelect.appendChild(opt);
+                    });
+                    kotaSelect.disabled = false;
+                });
+        });
+
+        // 3. Saat kota dipilih, ambil daftar kecamatan
+        kotaSelect.addEventListener('change', function () {
+            const selectedOption = this.options[this.selectedIndex];
+            const regencyId = selectedOption.dataset.id;
+
+            kecamatanSelect.innerHTML = '<option value="">Memuat...</option>';
+            kecamatanSelect.disabled = true;
+
+            if (!regencyId) {
+                kecamatanSelect.innerHTML = '<option value="">Pilih kota dulu</option>';
+                return;
+            }
+
+            fetch(`${API_BASE}/districts/${regencyId}.json`)
+                .then(res => res.json())
+                .then(data => {
+                    kecamatanSelect.innerHTML = '<option value="">Pilih Kecamatan</option>';
+                    data.forEach(kec => {
+                        const opt = document.createElement('option');
+                        opt.value = kec.name;
+                        opt.textContent = kec.name;
+                        kecamatanSelect.appendChild(opt);
+                    });
+                    kecamatanSelect.disabled = false;
+                });
+        });
+    </script>
 </body>
 </html>
