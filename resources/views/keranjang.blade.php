@@ -217,10 +217,7 @@
                         <strong>Rp0</strong>
                     </div>
 
-                    <form action="/checkout" method="POST">
-                        @csrf
-                        <button type="submit" class="btn-checkout">Lanjutkan ke Pemesanan</button>
-                    </form>
+                    <a href="/pemesanan" class="btn-checkout" style="display:block; text-align:center;">Lanjutkan ke Pemesanan</a>
                     <a href="/" class="btn-continue">Lanjut Pilih Buku</a>
                 </div>
             @endif

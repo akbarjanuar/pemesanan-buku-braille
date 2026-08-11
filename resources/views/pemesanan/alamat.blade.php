@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alamat Pengiriman - BrailleKita</title>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --background: #f8f8f8;
+            --foreground: #111111;
+            --primary: #c62828;
+            --primary-hover: #b71c1c;
+            --muted: #eeeeee;
+            --muted-foreground: #5a5a5a;
+            --border: #d4d4d4;
+            --success: #2e7d32;
+        }
+
+        *, ::after, ::before { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: var(--background); color: var(--foreground); font-family: 'Atkinson Hyperlegible', sans-serif; line-height: 1.6; }
+        a { text-decoration: none; color: inherit; }
+
+        .navbar { background: var(--primary); color: white; position: sticky; top: 0; z-index: 100; }
+        .navbar-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 12px; min-height: 64px; }
+        .nav-logo { background: white; color: var(--primary); font-weight: 700; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 18px; }
+        .nav-brand { font-size: 20px; font-weight: 700; }
+        .nav-spacer { flex-grow: 1; }
+        .nav-link { padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 15px; border: 1px solid transparent; }
+        .nav-link.active { background-color: white; color: var(--primary); }
+        .nav-link.outline { border-color: rgba(255, 255, 255, 0.4); }
+
+        .main-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px 60px 20px; }
+        .page-title { font-size: 26px; font-weight: 700; margin-bottom: 24px; }
+
+        .stepper { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+        .step-circle { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+        .step-circle.active { background: var(--primary); color: white; }
+        .step-circle.done { background: var(--success); color: white; }
+        .step-label { font-weight: 700; font-size: 15px; }
+        .step-line { flex-grow: 1; height: 2px; background: var(--border); max-width: 200px; }
+
+        .order-layout { display: grid; grid-template-columns: 1fr 320px; gap: 28px; align-items: start; }
+
+        .form-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 28px; }
+        .form-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+        .form-card p.desc { color: var(--muted-foreground); font-size: 14px; margin-bottom: 20px; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label { font-weight: 700; font-size: 15px; margin-bottom: 6px; display: block; }
+        .form-group .required { color: var(--primary); }
+        .form-group input,
+        .form-group textarea {
+            width: 100%; border: 1px solid var(--border); border-radius: 6px;
+            padding: 12px 14px; font-size: 15px; font-family: inherit; color: var(--foreground);
+        }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .error-text { color: var(--primary); font-size: 13px; margin-top: 4px; }
+
+        .form-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
+        .btn-back { background: white; color: var(--foreground); border: 1px solid var(--border); padding: 12px 20px; border-radius: 6px; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; }
+        .btn-back:hover { background: var(--muted); }
+        .btn-next { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; }
+        .btn-next:hover { background: var(--primary-hover); }
+
+        .summary-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 24px; position: sticky; top: 88px; }
+        .summary-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+        .summary-item { display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 12px; color: var(--muted-foreground); }
+        .summary-item strong { color: var(--success); font-weight: 700; }
+        .summary-divider { border-bottom: 1px solid var(--border); margin: 16px 0; }
+        .summary-total { display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 8px; }
+        .summary-total strong { color: var(--success); }
+        .summary-note { background: var(--muted); border-radius: 6px; padding: 12px; font-size: 14px; font-weight: 700; margin-top: 8px; }
+
+        @media (max-width: 768px) {
+            .order-layout { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="navbar-container">
+            <div class="nav-logo">B</div>
+            <a href="/" class="nav-brand">BrailleKita</a>
+            <div class="nav-spacer"></div>
+            <a href="/" class="nav-link outline">Katalog</a>
+            <a href="/pesanan-saya" class="nav-link outline">Pesanan Saya</a>
+            <a href="/keranjang" class="nav-link active">Keranjang</a>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <h1 class="page-title">Pemesanan Buku</h1>
+
+        <div class="stepper">
+            <div class="step-circle done">✓</div>
+            <span class="step-label">Jenis Pemesanan</span>
+            <div class="step-line"></div>
+            <div class="step-circle active">2</div>
+            <span class="step-label">Alamat Pengiriman</span>
+        </div>
+
+        <form action="/pemesanan/simpan" method="POST">
+            @csrf
+            <div class="order-layout">
+                <div class="form-card">
+                    <h3>Alamat Pengiriman</h3>
+                    <p class="desc">Isi data penerima untuk pengiriman buku pesanan Anda.</p>
+
+                    <div class="form-group">
+                        <label>Nama Penerima <span class="required">*</span></label>
+                        <input type="text" name="nama_penerima" value="{{ old('nama_penerima') }}" placeholder="Nama lengkap penerima" required>
+                        @error('nama_penerima') <div class="error-text">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nomor Telepon <span class="required">*</span></label>
+                        <input type="text" name="telepon" value="{{ old('telepon') }}" placeholder="08xxxxxxxxxx" required>
+                        @error('telepon') <div class="error-text">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="form-group">
+                        <label>Alamat Lengkap <span class="required">*</span></label>
+                        <textarea name="alamat_lengkap" rows="3" placeholder="Nama jalan, nomor rumah, RT/RW, kecamatan" required>{{ old('alamat_lengkap') }}</textarea>
+                        @error('alamat_lengkap') <div class="error-text">{{ $message }}</div> @enderror
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Kota <span class="required">*</span></label>
+                            <input type="text" name="kota" value="{{ old('kota') }}" placeholder="Kota / Kabupaten" required>
+                            @error('kota') <div class="error-text">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="form-group">
+                            <label>Kode Pos</label>
+                            <input type="text" name="kode_pos" value="{{ old('kode_pos') }}" placeholder="Opsional">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Catatan Tambahan</label>
+                        <textarea name="catatan" rows="2" placeholder="Opsional, misal patokan lokasi">{{ old('catatan') }}</textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="/pemesanan" class="btn-back">&larr; Kembali</a>
+                        <button type="submit" class="btn-next">Selesaikan Pesanan</button>
+                    </div>
+                </div>
+
+                <div class="summary-card">
+                    <h3 class="summary-title">Ringkasan Pesanan</h3>
+                    @foreach($daftarKeranjang as $item)
+                        <div class="summary-item">
+                            <span>{{ $item->buku->judul }}</span>
+                            <strong>Gratis</strong>
+                        </div>
+                    @endforeach
+                    <div class="summary-divider"></div>
+                    <div class="summary-total">
+                        <span>Total Buku</span>
+                        <span>{{ $daftarKeranjang->sum('jumlah') }} eksemplar</span>
+                    </div>
+                    <div class="summary-total">
+                        <span>Total Biaya</span>
+                        <strong>Rp0</strong>
+                    </div>
+                    <div class="summary-note">Jenis: {{ $jenisPesanan }}</div>
+                </div>
+            </div>
+        </form>
+    </main>
+
+</body>
+</html>

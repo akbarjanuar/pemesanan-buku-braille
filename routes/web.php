@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PemesananController;
 use App\Models\Buku;
 use App\Models\Pesanan;
 use App\Models\PesananDetail;
@@ -85,42 +86,13 @@ Route::post('/keranjang/hapus/{id}', function ($id) {
 })->middleware('auth');
 
 // Route Checkout (HANYA JIKA sudah login)
-Route::post('/checkout', function (Request $request) {
-    $user_id = Auth::id();
-    $keranjang = Keranjang::where('user_id', $user_id)->get();
+// STEP 1: Pilih Jenis Pemesanan
+Route::get('/pemesanan', [PemesananController::class, 'jenis'])->middleware('auth');
+Route::post('/pemesanan/jenis', [PemesananController::class, 'simpanJenis'])->middleware('auth');
 
-    if ($keranjang->isEmpty()) {
-        return redirect('/keranjang');
-    }
-
-    $nomor_pesanan = 'ORD-' . date('Ymd') . '-' . rand(1000, 9999); 
-    
-    $pesanan = Pesanan::create([
-        'user_id' => $user_id,
-        'nomor_pesanan' => $nomor_pesanan,
-        'status' => 'Menunggu Diproses',
-        'jenis_pesanan' => 'Pribadi',
-        'tanggal_pemesanan' => date('Y-m-d'),
-    ]);
-
-    foreach ($keranjang as $item) {
-        PesananDetail::create([
-            'pesanan_id' => $pesanan->id,
-            'buku_id' => $item->buku_id,
-            'jumlah' => $item->jumlah
-        ]);
-        
-        $buku = Buku::find($item->buku_id);
-        if ($buku) {
-            $buku->stok = max(0, $buku->stok - $item->jumlah);
-            $buku->save();
-        }
-    }
-
-    Keranjang::where('user_id', $user_id)->delete();
-
-    return redirect('/pesanan-saya');
-})->middleware('auth');
+// STEP 2: Alamat Pengiriman
+Route::get('/pemesanan/alamat', [PemesananController::class, 'alamat'])->middleware('auth');
+Route::post('/pemesanan/simpan', [PemesananController::class, 'simpan'])->middleware('auth');
 
 // Route Pesanan Saya (HANYA JIKA sudah login)
 Route::get('/pesanan-saya', function () {
