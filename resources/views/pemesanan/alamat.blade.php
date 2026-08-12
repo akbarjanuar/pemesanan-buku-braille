@@ -118,13 +118,13 @@
 
                     <div class="form-group">
                         <label>Nama Penerima <span class="required">*</span></label>
-                        <input type="text" name="nama_penerima" value="{{ old('nama_penerima') }}" placeholder="Nama lengkap penerima" required>
+                        <input type="text" name="nama_penerima" value="{{ old('nama_penerima', auth()->user()->nama) }}" placeholder="Nama lengkap penerima" required>
                         @error('nama_penerima') <div class="error-text">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="form-group">
                         <label>Nomor Telepon <span class="required">*</span></label>
-                        <input type="text" name="telepon" value="{{ old('telepon') }}" placeholder="08xxxxxxxxxx" required>
+                        <input type="text" name="telepon" value="{{ old('telepon', auth()->user()->nomor_telepon) }}" placeholder="08xxxxxxxxxx" required>
                         @error('telepon') <div class="error-text">{{ $message }}</div> @enderror
                     </div>
 
@@ -162,7 +162,8 @@
 
                     <div class="form-group">
                         <label>Kode Pos</label>
-                        <input type="text" name="kode_pos" value="{{ old('kode_pos') }}" placeholder="Opsional">
+                        <!-- Menambahkan id="kode_pos" agar bisa diisi otomatis oleh JS -->
+                        <input type="text" id="kode_pos" name="kode_pos" value="{{ old('kode_pos') }}" placeholder="jika tidak sesuai, isi manual" readonly>
                     </div>
 
                     <div class="form-group">
@@ -178,7 +179,7 @@
 
                 <div class="summary-card">
                     <h3 class="summary-title">Ringkasan Pesanan</h3>
-                    @foreach($daftarKeranjang as $item)
+                    @foreach($daftarKeranjang ?? [] as $item)
                         <div class="summary-item">
                             <span>{{ $item->buku->judul }}</span>
                             <strong>Gratis</strong>
@@ -187,13 +188,13 @@
                     <div class="summary-divider"></div>
                     <div class="summary-total">
                         <span>Total Buku</span>
-                        <span>{{ $daftarKeranjang->sum('jumlah') }} eksemplar</span>
+                        <span>{{ collect($daftarKeranjang ?? [])->sum('jumlah') }} eksemplar</span>
                     </div>
                     <div class="summary-total">
                         <span>Total Biaya</span>
                         <strong>Rp0</strong>
                     </div>
-                    <div class="summary-note">Jenis: {{ $jenisPesanan }}</div>
+                    <div class="summary-note">Jenis: {{ $jenisPesanan ?? 'Pribadi' }}</div>
                 </div>
             </div>
         </form>
@@ -206,6 +207,7 @@
         const provinsiSelect = document.getElementById('provinsi');
         const kotaSelect = document.getElementById('kota');
         const kecamatanSelect = document.getElementById('kecamatan');
+        const kodePosInput = document.getElementById('kode_pos'); // Definisi input kode pos
 
         // 1. Ambil daftar provinsi saat halaman dimuat
         fetch(`${API_BASE}/provinces.json`)
@@ -233,6 +235,7 @@
             kotaSelect.disabled = true;
             kecamatanSelect.innerHTML = '<option value="">Pilih kota dulu</option>';
             kecamatanSelect.disabled = true;
+            kodePosInput.value = ''; // Reset kode pos
 
             if (!provinceId) {
                 kotaSelect.innerHTML = '<option value="">Pilih provinsi dulu</option>';
@@ -261,6 +264,7 @@
 
             kecamatanSelect.innerHTML = '<option value="">Memuat...</option>';
             kecamatanSelect.disabled = true;
+            kodePosInput.value = ''; // Reset kode pos
 
             if (!regencyId) {
                 kecamatanSelect.innerHTML = '<option value="">Pilih kota dulu</option>';
@@ -278,6 +282,35 @@
                         kecamatanSelect.appendChild(opt);
                     });
                     kecamatanSelect.disabled = false;
+                });
+        });
+
+    // 4. Saat kecamatan dipilih, cari kode pos otomatis
+        kecamatanSelect.addEventListener('change', function () {
+            const kecamatanName = this.value;
+            
+            if (!kecamatanName) {
+                kodePosInput.value = '';
+                return;
+            }
+            
+            kodePosInput.value = 'Mencari...';
+
+            // Hit ke API pencarian kode pos berdasarkan kecamatan
+            fetch(`https://kodepos.vercel.app/search?q=${encodeURIComponent(kecamatanName)}`)
+                .then(res => res.json())
+                .then(res => {
+                    if (res && res.data && res.data.length > 0) {
+                        // Cek field code atau postalcode yang tersedia dari response
+                        const item = res.data[0];
+                        kodePosInput.value = item.code || item.postalcode || item.postcode || '';
+                    } else {
+                        kodePosInput.value = '';
+                    }
+                })
+                .catch(() => {
+                    // Jika API gagal/offline, biarkan kosong agar pengguna bisa isi manual
+                    kodePosInput.value = '';
                 });
         });
     </script>
