@@ -86,7 +86,7 @@
         /* Area Action (Tombol Bawah) */
         .card-action { padding: 0 20px 20px 20px; }
         .btn-cart { width: 100%; background-color: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 700; font-size: 15px; font-family: inherit; cursor: pointer; transition: background-color 0.2s; }
-        .btn-cart:hover { background-color: var(--primary-hover); }
+        .btn-cart:hover { background-color: #e57373; }
         
         /* Tombol saat sudah di keranjang */
         .btn-cart.added { background-color: #e57373; cursor: default; }

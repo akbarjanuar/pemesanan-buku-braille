@@ -77,14 +77,11 @@
         .badge { padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700; margin-right: 8px; border: 1px solid; display: inline-block; }
         .badge-gray { background: #f5f5f5; color: #616161; border-color: #e0e0e0; }
 
-        /* Warna badge per status */
-        .status-menunggu-diproses { background: #fff3e0; color: #e65100; border-color: #ffb74d; }
-        .status-diproses         { background: #e3f2fd; color: #1565c0; border-color: #64b5f6; }
-        .status-sedang-dikirim   { background: #ede7f6; color: #5e35b1; border-color: #9575cd; }
-        .status-dikirim          { background: #e0f2f1; color: #00695c; border-color: #4db6ac; }
-        .status-diantar-ke-alamat{ background: #fce4ec; color: #ad1457; border-color: #f06292; }
-        .status-pesanan-sampai   { background: #e8f5e9; color: #2e7d32; border-color: #81c784; }
-        .status-dibatalkan       { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+        /* Warna badge per status (3 tahap) */
+        .status-diproses        { background: #fff3e0; color: #e65100; border-color: #ffb74d; }
+        .status-dikirim         { background: #e3f2fd; color: #1565c0; border-color: #64b5f6; }
+        .status-pesanan-sampai  { background: #e8f5e9; color: #2e7d32; border-color: #81c784; }
+        .status-dibatalkan      { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
 
         .order-date { font-size: 14px; color: var(--muted-foreground); margin-top: -6px; }
         
@@ -92,26 +89,25 @@
         .total-label { font-size: 13px; color: var(--muted-foreground); }
         .total-value { font-size: 18px; font-weight: 700; color: var(--success); }
 
-        /* Timeline / Progress Tracker ala Marketplace */
+        /* Timeline / Progress Tracker ala Marketplace (3 tahap) */
         .status-tracker { padding: 20px 8px 8px 8px; overflow-x: auto; }
-        .tracker-row { display: flex; align-items: flex-start; min-width: 560px; }
+        .tracker-row { display: flex; align-items: flex-start; min-width: 320px; max-width: 420px; }
         .tracker-step { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; text-align: center; }
         .tracker-dot {
-            width: 26px; height: 26px; border-radius: 50%;
+            width: 30px; height: 30px; border-radius: 50%;
             background: var(--muted); border: 2px solid var(--border);
             display: flex; align-items: center; justify-content: center;
-            font-size: 13px; font-weight: 700; color: var(--muted-foreground);
+            font-size: 14px; font-weight: 700; color: var(--muted-foreground);
             z-index: 2; flex-shrink: 0;
         }
         .tracker-step.done .tracker-dot { background: var(--success); border-color: var(--success); color: white; }
         .tracker-step.active .tracker-dot { background: var(--primary); border-color: var(--primary); color: white; }
-        .tracker-step.cancelled .tracker-dot { background: #c62828; border-color: #c62828; color: white; }
 
-        .tracker-line { position: absolute; top: 13px; left: -50%; width: 100%; height: 3px; background: var(--border); z-index: 1; }
+        .tracker-line { position: absolute; top: 15px; left: -50%; width: 100%; height: 3px; background: var(--border); z-index: 1; }
         .tracker-step:first-child .tracker-line { display: none; }
         .tracker-step.done .tracker-line, .tracker-step.active .tracker-line { background: var(--success); }
 
-        .tracker-label { font-size: 11px; font-weight: 700; margin-top: 8px; color: var(--muted-foreground); max-width: 90px; line-height: 1.3; }
+        .tracker-label { font-size: 12px; font-weight: 700; margin-top: 8px; color: var(--muted-foreground); max-width: 100px; line-height: 1.3; }
         .tracker-step.done .tracker-label, .tracker-step.active .tracker-label { color: var(--foreground); }
 
         .cancelled-note { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; border-radius: 6px; padding: 10px 14px; font-size: 14px; font-weight: 700; }
@@ -120,26 +116,18 @@
         
         .order-actions { display: flex; gap: 12px; }
         .btn-outline-gray { border: 1px solid var(--border); background: white; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-family: inherit; font-size: 14px; }
-
-        @media (max-width: 640px) {
-            .tracker-label { display: none; }
-        }
     </style>
 </head>
 <body>
 
     @php
-        // Daftar tahapan status ala marketplace, berurutan
+        // 3 tahapan status pengiriman
         $tahapanStatus = [
-            'Menunggu Diproses',
             'Diproses',
-            'Sedang Dikirim',
             'Dikirim',
-            'Diantar ke Alamat',
             'Pesanan Sampai',
         ];
 
-        // Helper: ubah "Menunggu Diproses" jadi "status-menunggu-diproses" untuk class CSS
         $slugStatus = function ($status) {
             return 'status-' . \Illuminate\Support\Str::slug($status);
         };
@@ -218,7 +206,7 @@
                         @if($isDibatalkan)
                             <div class="cancelled-note">✕ Pesanan ini telah dibatalkan.</div>
                         @else
-                            <!-- Timeline Status ala Marketplace -->
+                            <!-- Timeline Status ala Marketplace (3 tahap) -->
                             <div class="status-tracker">
                                 <div class="tracker-row">
                                     @foreach($tahapanStatus as $i => $tahap)
@@ -243,8 +231,8 @@
                         
                         <div class="order-actions">
                             <button class="btn-outline-primary">Lihat Detail</button>
-                            @if(!$isDibatalkan && $pesanan->status === 'Menunggu Diproses')
-                                <button class="btn-outline-gray">Batalkan Pesanan</button>
+                            @if(!$isDibatalkan && $pesanan->status === 'Diproses')
+                                <a href="/pesanan/{{ $pesanan->id }}/batalkan" class="btn-outline-gray" style="display:flex; align-items:center; text-decoration:none;">Batalkan Pesanan</a>
                             @endif
                         </div>
                     </div>
@@ -255,7 +243,6 @@
     </main>
 
     <script>
-        // Filter tab sederhana (client-side, tanpa reload halaman)
         const tabButtons = document.querySelectorAll('.tab-btn');
         const orderCards = document.querySelectorAll('.order-card');
 
