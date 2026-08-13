@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pesanan Saya - BrailleKita</title>
-    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,700;1,400;1,700&display=swap" rel="stylesheet">
     
     <style>
         :root {
@@ -23,7 +23,6 @@
         body { background-color: var(--background); color: var(--foreground); font-family: 'Atkinson Hyperlegible', sans-serif; line-height: 1.6; }
         a { text-decoration: none; color: inherit; }
 
-        /* Navbar */
         .navbar { background: var(--primary); color: white; position: sticky; top: 0; z-index: 100; }
         .navbar-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 12px; min-height: 64px; }
         .nav-logo { background: white; color: var(--primary); font-weight: 700; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 18px; }
@@ -34,7 +33,6 @@
         .nav-link.outline { border-color: rgba(255, 255, 255, 0.4); }
         .nav-link.outline:hover { background-color: rgba(255, 255, 255, 0.1); }
 
-        /* Container */
         .main-container { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px 20px; }
         
         .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
@@ -42,7 +40,6 @@
         .btn-outline-primary { border: 2px solid var(--primary); color: var(--primary); padding: 8px 16px; border-radius: 6px; font-weight: 700; background: white; cursor: pointer; font-family: inherit; font-size: 14px; }
         .btn-outline-primary:hover { background: var(--primary); color: white; }
 
-        /* Empty State */
         .empty-state {
             text-align: center;
             padding: 80px 20px;
@@ -54,7 +51,6 @@
         .empty-state p { color: var(--muted-foreground); margin-bottom: 24px; max-width: 500px; margin-left: auto; margin-right: auto; }
         .btn-primary { background: var(--primary); color: white; padding: 12px 24px; border-radius: 6px; font-weight: 700; display: inline-block; border: none; cursor: pointer; }
 
-        /* Filter Tabs */
         .filter-tabs { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
         .tab-btn { padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 13px; border: 1px solid var(--border); background: white; cursor: pointer; font-family: inherit; white-space: nowrap; }
         .tab-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
@@ -77,8 +73,8 @@
         .badge { padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700; margin-right: 8px; border: 1px solid; display: inline-block; }
         .badge-gray { background: #f5f5f5; color: #616161; border-color: #e0e0e0; }
 
-        /* Warna badge per status (3 tahap) */
         .status-diproses        { background: #fff3e0; color: #e65100; border-color: #ffb74d; }
+        .status-menunggu-diproses { background: #fff3e0; color: #e65100; border-color: #ffb74d; }
         .status-dikirim         { background: #e3f2fd; color: #1565c0; border-color: #64b5f6; }
         .status-pesanan-sampai  { background: #e8f5e9; color: #2e7d32; border-color: #81c784; }
         .status-dibatalkan      { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
@@ -89,7 +85,6 @@
         .total-label { font-size: 13px; color: var(--muted-foreground); }
         .total-value { font-size: 18px; font-weight: 700; color: var(--success); }
 
-        /* Timeline / Progress Tracker ala Marketplace (3 tahap) */
         .status-tracker { padding: 20px 8px 8px 8px; overflow-x: auto; }
         .tracker-row { display: flex; align-items: flex-start; min-width: 320px; max-width: 420px; }
         .tracker-step { flex: 1; display: flex; flex-direction: column; align-items: center; position: relative; text-align: center; }
@@ -121,7 +116,6 @@
 <body>
 
     @php
-        // 3 tahapan status pengiriman
         $tahapanStatus = [
             'Diproses',
             'Dikirim',
@@ -168,7 +162,6 @@
                 <a href="/" class="btn-primary">Lihat Katalog Buku</a>
             </div>
         @else
-            <!-- Filter Tabs -->
             <div class="filter-tabs">
                 <button class="tab-btn active" data-filter="semua">Semua ({{ $daftarPesanan->count() }})</button>
                 @foreach($tahapanStatus as $status)
@@ -186,6 +179,7 @@
                     @php
                         $isDibatalkan = $pesanan->status === 'Dibatalkan';
                         $indexSaatIni = array_search($pesanan->status, $tahapanStatus);
+                        if ($indexSaatIni === false) { $indexSaatIni = 0; }
                     @endphp
 
                     <div class="order-card" data-status="{{ $isDibatalkan ? 'status-dibatalkan' : $slugStatus($pesanan->status) }}">
@@ -204,9 +198,13 @@
                         <div class="order-date">Tanggal Pemesanan: {{ $pesanan->tanggal_pemesanan }}</div>
 
                         @if($isDibatalkan)
-                            <div class="cancelled-note">✕ Pesanan ini telah dibatalkan.</div>
+                            <div class="cancelled-note">
+                                ✕ Pesanan ini telah dibatalkan.
+                                @if($pesanan->alasan_pembatalan)
+                                    <br>Alasan: {{ $pesanan->alasan_pembatalan }}
+                                @endif
+                            </div>
                         @else
-                            <!-- Timeline Status ala Marketplace (3 tahap) -->
                             <div class="status-tracker">
                                 <div class="tracker-row">
                                     @foreach($tahapanStatus as $i => $tahap)
@@ -231,7 +229,7 @@
                         
                         <div class="order-actions">
                             <button class="btn-outline-primary">Lihat Detail</button>
-                            @if(!$isDibatalkan && $pesanan->status === 'Diproses')
+                            @if(!$isDibatalkan && in_array($pesanan->status, ['Diproses', 'Menunggu Diproses']))
                                 <a href="/pesanan/{{ $pesanan->id }}/batalkan" class="btn-outline-gray" style="display:flex; align-items:center; text-decoration:none;">Batalkan Pesanan</a>
                             @endif
                         </div>

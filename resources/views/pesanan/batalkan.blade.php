@@ -156,8 +156,6 @@
         }
 
         radios.forEach(radio => radio.addEventListener('change', updateUI));
-
-        // Jalankan sekali saat load (untuk kasus old() validation error)
         updateUI();
     </script>
 

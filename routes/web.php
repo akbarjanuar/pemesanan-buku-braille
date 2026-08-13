@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PemesananController;
+use App\Http\Controllers\PembatalanController; 
 use App\Models\Buku;
 use App\Models\Pesanan;
 use App\Models\PesananDetail;
@@ -103,6 +104,10 @@ Route::get('/pesanan-saya', function () {
 
     return view('pesanan', compact('daftarPesanan'));
 })->middleware('auth');
+
+// Route Batalkan Pesanan
+Route::get('/pesanan/{id}/batalkan', [PembatalanController::class, 'konfirmasi'])->middleware('auth');
+Route::post('/pesanan/{id}/batalkan', [PembatalanController::class, 'proses'])->middleware('auth');
 
 // Route Logout
 Route::post('/logout', function (Request $request) {
