@@ -162,8 +162,8 @@
 
                     <div class="form-group">
                         <label>Kode Pos</label>
-                        <!-- Menambahkan id="kode_pos" agar bisa diisi otomatis oleh JS -->
-                        <input type="text" id="kode_pos" name="kode_pos" value="{{ old('kode_pos') }}" placeholder="jika tidak sesuai, isi manual" readonly>
+                        <!-- Atribut readonly telah dihapus agar bisa diedit manual -->
+                        <input type="text" id="kode_pos" name="kode_pos" value="{{ old('kode_pos') }}" placeholder="Terisi otomatis, atau isi manual jika tidak sesuai">
                     </div>
 
                     <div class="form-group">
@@ -207,7 +207,7 @@
         const provinsiSelect = document.getElementById('provinsi');
         const kotaSelect = document.getElementById('kota');
         const kecamatanSelect = document.getElementById('kecamatan');
-        const kodePosInput = document.getElementById('kode_pos'); // Definisi input kode pos
+        const kodePosInput = document.getElementById('kode_pos');
 
         // 1. Ambil daftar provinsi saat halaman dimuat
         fetch(`${API_BASE}/provinces.json`)
@@ -235,7 +235,7 @@
             kotaSelect.disabled = true;
             kecamatanSelect.innerHTML = '<option value="">Pilih kota dulu</option>';
             kecamatanSelect.disabled = true;
-            kodePosInput.value = ''; // Reset kode pos
+            kodePosInput.value = '';
 
             if (!provinceId) {
                 kotaSelect.innerHTML = '<option value="">Pilih provinsi dulu</option>';
@@ -264,7 +264,7 @@
 
             kecamatanSelect.innerHTML = '<option value="">Memuat...</option>';
             kecamatanSelect.disabled = true;
-            kodePosInput.value = ''; // Reset kode pos
+            kodePosInput.value = '';
 
             if (!regencyId) {
                 kecamatanSelect.innerHTML = '<option value="">Pilih kota dulu</option>';
@@ -285,7 +285,7 @@
                 });
         });
 
-    // 4. Saat kecamatan dipilih, cari kode pos otomatis
+        // 4. Saat kecamatan dipilih, cari kode pos otomatis
         kecamatanSelect.addEventListener('change', function () {
             const kecamatanName = this.value;
             
@@ -296,12 +296,10 @@
             
             kodePosInput.value = 'Mencari...';
 
-            // Hit ke API pencarian kode pos berdasarkan kecamatan
             fetch(`https://kodepos.vercel.app/search?q=${encodeURIComponent(kecamatanName)}`)
                 .then(res => res.json())
                 .then(res => {
                     if (res && res.data && res.data.length > 0) {
-                        // Cek field code atau postalcode yang tersedia dari response
                         const item = res.data[0];
                         kodePosInput.value = item.code || item.postalcode || item.postcode || '';
                     } else {
@@ -309,7 +307,6 @@
                     }
                 })
                 .catch(() => {
-                    // Jika API gagal/offline, biarkan kosong agar pengguna bisa isi manual
                     kodePosInput.value = '';
                 });
         });
