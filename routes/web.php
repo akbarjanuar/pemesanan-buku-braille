@@ -105,6 +105,16 @@ Route::get('/pesanan-saya', function () {
     return view('pesanan', compact('daftarPesanan'));
 })->middleware('auth');
 
+// Route Detail Pesanan
+Route::get('/pesanan/{id}', function ($id) {
+    $pesanan = Pesanan::with('details.buku')
+        ->where('id', $id)
+        ->where('user_id', Auth::id())
+        ->firstOrFail();
+
+    return view('pesanan.detail-pesanan', compact('pesanan'));
+})->middleware('auth');
+
 // Route Batalkan Pesanan
 Route::get('/pesanan/{id}/batalkan', [PembatalanController::class, 'konfirmasi'])->middleware('auth');
 Route::post('/pesanan/{id}/batalkan', [PembatalanController::class, 'proses'])->middleware('auth');

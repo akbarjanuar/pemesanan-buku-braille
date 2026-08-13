@@ -228,7 +228,7 @@
                         </div>
                         
                         <div class="order-actions">
-                            <button class="btn-outline-primary">Lihat Detail</button>
+                            <a href="/pesanan/{{ $pesanan->id }}" class="btn-outline-primary" style="display:inline-flex; align-items:center;">Lihat Detail</a>
                             @if(!$isDibatalkan && in_array($pesanan->status, ['Diproses', 'Menunggu Diproses']))
                                 <a href="/pesanan/{{ $pesanan->id }}/batalkan" class="btn-outline-gray" style="display:flex; align-items:center; text-decoration:none;">Batalkan Pesanan</a>
                             @endif
