@@ -86,6 +86,28 @@ Route::post('/keranjang/hapus/{id}', function ($id) {
     return redirect('/keranjang');
 })->middleware('auth');
 
+// Route Tambah/Kurang Kuantitas Keranjang
+Route::post('/keranjang/update/{id}/{aksi}', function ($id, $aksi) {
+    $item = Keranjang::where('id', $id)->where('user_id', Auth::id())->first();
+    
+    if ($item) {
+        if ($aksi === 'tambah') {
+            $item->jumlah += 1;
+            $item->save();
+        } elseif ($aksi === 'kurang') {
+            if ($item->jumlah > 1) {
+                $item->jumlah -= 1;
+                $item->save();
+            } else {
+                // Jika jumlah = 1 lalu dikurangi, otomatis hapus item
+                $item->delete();
+            }
+        }
+    }
+    
+    return redirect('/keranjang');
+})->middleware('auth');
+
 // Route Checkout (HANYA JIKA sudah login)
 // STEP 1: Pilih Jenis Pemesanan
 Route::get('/pemesanan', [PemesananController::class, 'jenis'])->middleware('auth');

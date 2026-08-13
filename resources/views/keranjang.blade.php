@@ -33,7 +33,7 @@
         .nav-link.outline { border-color: rgba(255, 255, 255, 0.4); }
         .nav-link.outline:hover { background-color: rgba(255, 255, 255, 0.1); }
 
-        /* Container & Grid Layout Sesuai Inspect */
+        /* Container & Grid Layout */
         .main-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px 60px 20px; }
         .cart-layout { 
             display: grid;
@@ -100,14 +100,6 @@
         .summary-total { display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; margin-bottom: 16px; }
         .summary-total strong { color: var(--success); }
         
-        .promo-box { 
-            background: #e8f5e9; border: 1px solid #c8e6c9; 
-            padding: 12px; border-radius: 6px; 
-            display: flex; gap: 8px; align-items: flex-start;
-            color: #1b5e20; font-size: 13px; font-weight: 700; 
-            margin-bottom: 24px; line-height: 1.4; 
-        }
-        
         .btn-checkout { 
             background: var(--primary); color: white; border: none; 
             padding: 16px; border-radius: 6px; font-size: 16px; font-weight: 700; 
@@ -133,7 +125,7 @@
 <body>
 
     @php
-        // Mengambil jumlah item unik di keranjang untuk notifikasi navbar
+        // Mengambil jumlah item di keranjang untuk notifikasi navbar
         $cartCount = \App\Models\Keranjang::where('user_id', auth()->id())->sum('jumlah');
     @endphp
 
@@ -175,7 +167,7 @@
                 <div class="cart-items">
                     @foreach($daftarKeranjang as $item)
                         <div class="cart-item">
-                            <div class="cart-cover" style="background-color: {{ $item->buku->warna_cover }};">
+                            <div class="cart-cover" style="background-color: {{ $item->buku->warna_cover ?? '#c62828' }};">
                                 <div class="dots-small">
                                     <span></span><span></span><span></span><span></span><span></span><span></span>
                                 </div>
@@ -186,11 +178,22 @@
                                 <div class="badge-green">Gratis</div>
                             </div>
                             <div class="cart-actions">
-                                <!-- Tombol Kontrol Kuantitas (Menggunakan form agar aman) -->
-                                <button type="button" class="btn-icon">−</button>
+                                <!-- Tombol Kurang (-) -->
+                                <form action="/keranjang/update/{{ $item->id }}/kurang" method="POST" style="display:inline;">
+                                    @csrf
+                                    <button type="submit" class="btn-icon">−</button>
+                                </form>
+
                                 <span class="qty-number">{{ $item->jumlah }}</span>
-                                <button type="button" class="btn-icon">+</button>
-                                <form action="/keranjang/hapus/{{ $item->id }}" method="POST" style="margin-left: 8px;">
+
+                                <!-- Tombol Tambah (+) -->
+                                <form action="/keranjang/update/{{ $item->id }}/tambah" method="POST" style="display:inline;">
+                                    @csrf
+                                    <button type="submit" class="btn-icon">+</button>
+                                </form>
+
+                                <!-- Tombol Hapus (X) -->
+                                <form action="/keranjang/hapus/{{ $item->id }}" method="POST" style="display:inline; margin-left: 8px;">
                                     @csrf
                                     <button type="submit" class="btn-icon delete">✕</button>
                                 </form>
