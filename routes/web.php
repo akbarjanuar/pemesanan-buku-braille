@@ -47,6 +47,8 @@ Route::get('/', function (Request $request) {
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register')->middleware('guest');
 Route::post('/register', [AuthController::class, 'register'])->middleware('guest');
 
+Route::get('/masuk', function () {return view('pemilihan-akun');})->middleware('guest');
+
 // Route Login (Hanya untuk tamu / belum login)
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
