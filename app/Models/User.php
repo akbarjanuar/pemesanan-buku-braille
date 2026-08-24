@@ -20,6 +20,7 @@ class User extends Authenticatable
         'alamat',
         'kata_sandi',
         'foto_ktp',
+        'role',
     ];
 
     /**
