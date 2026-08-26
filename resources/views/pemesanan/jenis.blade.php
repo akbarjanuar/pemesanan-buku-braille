@@ -22,16 +22,6 @@
         body { background-color: var(--background); color: var(--foreground); font-family: 'Atkinson Hyperlegible', sans-serif; line-height: 1.6; }
         a { text-decoration: none; color: inherit; }
 
-        .navbar { background: var(--primary); color: white; position: sticky; top: 0; z-index: 100; }
-        .navbar-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 12px; min-height: 64px; }
-        .nav-logo { background: white; color: var(--primary); font-weight: 700; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 18px; }
-        .nav-brand { font-size: 20px; font-weight: 700; }
-        .nav-spacer { flex-grow: 1; }
-        .nav-link { padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 15px; border: 1px solid transparent; display: flex; align-items: center; gap: 6px; }
-        .nav-link.active { background-color: white; color: var(--primary); }
-        .nav-link.outline { border-color: rgba(255, 255, 255, 0.4); }
-        .nav-link.outline:hover { background-color: rgba(255, 255, 255, 0.1); }
-
         .main-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px 60px 20px; }
         .page-title { font-size: 26px; font-weight: 700; margin-bottom: 24px; }
 
@@ -60,10 +50,10 @@
         .option-title { font-weight: 700; font-size: 16px; margin-bottom: 2px; }
         .option-desc { color: var(--muted-foreground); font-size: 14px; }
 
-        .form-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
-        .btn-back { background: white; color: var(--foreground); border: 1px solid var(--border); padding: 12px 20px; border-radius: 6px; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; }
+        .form-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; gap: 12px; }
+        .btn-back { background: white; color: var(--foreground); border: 1px solid var(--border); padding: 12px 20px; border-radius: 6px; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; text-align: center; }
         .btn-back:hover { background: var(--muted); }
-        .btn-next { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; }
+        .btn-next { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; text-align: center; }
         .btn-next:hover { background: var(--primary-hover); }
 
         .summary-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 24px; position: sticky; top: 88px; }
@@ -75,23 +65,22 @@
         .summary-total strong { color: var(--success); }
         .summary-note { background: var(--muted); border-radius: 6px; padding: 12px; font-size: 14px; font-weight: 700; margin-top: 8px; }
 
+        /* Responsive Mobile Update */
         @media (max-width: 768px) {
-            .order-layout { grid-template-columns: 1fr; }
+            .main-container { padding: 20px 16px 40px 16px; }
+            .order-layout { grid-template-columns: 1fr; gap: 20px; }
+            .form-card { padding: 20px; }
+            .stepper { gap: 8px; }
+            .step-label { font-size: 13px; }
+            .form-actions { flex-direction: column-reverse; align-items: stretch; }
+            .btn-back, .btn-next { width: 100%; padding: 14px; font-size: 16px; }
         }
     </style>
 </head>
 <body>
 
-    <header class="navbar">
-        <div class="navbar-container">
-            <div class="nav-logo">B</div>
-            <a href="/" class="nav-brand">BrailleKita</a>
-            <div class="nav-spacer"></div>
-            <a href="/" class="nav-link outline">Katalog</a>
-            <a href="/pesanan-saya" class="nav-link outline">Pesanan Saya</a>
-            <a href="/keranjang" class="nav-link active">Keranjang</a>
-        </div>
-    </header>
+    {{-- Memanggil Partial Navbar Universal --}}
+    @include('partials.navbar')
 
     <main class="main-container">
         <h1 class="page-title">Pemesanan Buku</h1>

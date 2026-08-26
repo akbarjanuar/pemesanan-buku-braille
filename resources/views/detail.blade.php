@@ -37,62 +37,6 @@
 
         a { text-decoration: none; color: inherit; }
 
-        /* Navbar Sesuai Home */
-        .navbar {
-            background: var(--primary);
-            color: white;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .navbar-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-height: 64px;
-        }
-
-        .nav-logo {
-            background: white;
-            color: var(--primary);
-            font-weight: 700;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            font-size: 18px;
-        }
-
-        .nav-brand {
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        .nav-spacer { flex-grow: 1; }
-
-        .nav-link {
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 15px;
-            transition: 0.2s;
-            border: 1px solid transparent;
-        }
-
-        .nav-link.outline {
-            border-color: rgba(255, 255, 255, 0.4);
-        }
-
-        .nav-link.outline:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
         /* Layout Detail */
         .detail-wrapper {
             max-width: 1200px;
@@ -289,50 +233,43 @@
             font-weight: 700;
         }
 
-        /* Responsive */
+        /* Responsive Mobile Update */
         @media (max-width: 768px) {
             .detail-layout {
                 grid-template-columns: 1fr;
+                gap: 24px;
             }
             .cover-large {
                 position: relative;
                 top: 0;
-                height: 400px;
+                height: 320px;
+                padding: 20px;
+            }
+            .title-large {
+                font-size: 24px;
             }
             .specs-card {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
             }
             .action-area {
                 flex-direction: column;
-                align-items: flex-start;
+                align-items: stretch;
+                gap: 16px;
+            }
+            .action-area form {
+                width: 100%;
             }
             .btn-add-cart {
                 width: 100%;
+                text-align: center;
             }
         }
     </style>
 </head>
 <body>
 
-<!-- Navbar Dinamis -->
-    <header class="navbar">
-        <div class="navbar-container">
-            <div class="nav-logo">B</div>
-            <a href="/" class="nav-brand">BrailleKita</a>
-            <div class="nav-spacer"></div>
-            
-            <!-- Link Navigasi -->
-            <a href="/" class="nav-link {{ request()->is('/') ? 'active' : 'outline' }}">Katalog</a>
-            <a href="/pesanan-saya" class="nav-link {{ request()->is('pesanan-saya') ? 'active' : 'outline' }}">Pesanan Saya</a>
-            <a href="/keranjang" class="nav-link {{ request()->is('keranjang') ? 'active' : 'outline' }}">Keranjang</a>
-            
-            <span style="margin: 0 8px; font-size: 15px;">Halo, {{ auth()->user()->nama ?? 'Pengguna' }}</span>
-            <form action="/logout" method="POST" style="display:inline;">
-                @csrf
-                <button type="submit" class="nav-link outline" style="background:transparent; cursor:pointer; font-family: inherit; color: white;">Keluar</button>
-            </form>
-        </div>
-    </header>
+    {{-- Memanggil komponen Navbar dinamis yang ramah disabilitas --}}
+    @include('partials.navbar')
 
     <main class="detail-wrapper">
         <!-- Breadcrumb -->
@@ -341,7 +278,7 @@
         </div>
 
         <div class="detail-layout">
-            <!-- Kolom Kiri: Cover Buku (Dinamis dari Database) -->
+            <!-- Kolom Kiri: Cover Buku -->
             <div class="cover-large" style="background-color: {{ $buku->warna_cover }};">
                 <div class="dots-large">
                     <span></span><span></span><span></span><span></span><span></span><span></span>
@@ -356,7 +293,6 @@
                 <h1 class="title-large">{{ $buku->judul }}</h1>
                 <p class="author-text">oleh {{ $buku->pengarang }}</p>
 
-                <!-- Teks Deskripsi Statis (Placeholder) -->
                 <p class="desc-text">Buku lengkap dalam huruf Braille Grade 2 dengan format yang mudah diakses dan disesuaikan untuk kenyamanan membaca sentuh yang optimal bagi disabilitas netra.</p>
 
                 <div class="specs-card">
@@ -370,7 +306,6 @@
                     </div>
                     <div class="spec-item">
                         <label>Penerbit</label>
-                        <!-- Menggunakan nama pengarang sebagai fallback penerbit statis -->
                         <span>{{ $buku->pengarang }}</span>
                     </div>
                     <div class="spec-item">

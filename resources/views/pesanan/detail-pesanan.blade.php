@@ -28,27 +28,6 @@
         }
         a { text-decoration: none; color: inherit; }
 
-        /* Navbar */
-        .navbar { background: var(--primary); color: white; position: sticky; top: 0; z-index: 100; }
-        .navbar-container {
-            max-width: 1200px; margin: 0 auto; padding: 0 20px;
-            display: flex; align-items: center; gap: 12px; min-height: 64px;
-        }
-        .nav-logo {
-            background: white; color: var(--primary); font-weight: 700;
-            width: 32px; height: 32px; display: flex; align-items: center;
-            justify-content: center; border-radius: 6px; font-size: 18px;
-        }
-        .nav-brand { font-size: 20px; font-weight: 700; }
-        .nav-spacer { flex-grow: 1; }
-        .nav-link {
-            padding: 8px 16px; border-radius: 6px; font-weight: 700;
-            font-size: 15px; transition: 0.2s; border: 1px solid transparent;
-        }
-        .nav-link.active { background-color: white; color: var(--primary); }
-        .nav-link.outline { border-color: rgba(255, 255, 255, 0.4); }
-        .nav-link.outline:hover { background-color: rgba(255, 255, 255, 0.1); }
-
         .main-container {
             max-width: 1100px; margin: 0 auto; padding: 28px 20px 60px;
         }
@@ -80,12 +59,13 @@
         .status-tracker {
             background: white; border: 1px solid var(--border);
             border-radius: 12px; padding: 28px 24px; margin-bottom: 24px;
+            overflow-x: auto;
         }
         .tracker-title {
             font-size: 16px; font-weight: 700; margin-bottom: 20px;
         }
         .tracker-row {
-            display: flex; align-items: flex-start; max-width: 480px;
+            display: flex; align-items: flex-start; min-width: 300px; max-width: 480px;
         }
         .tracker-step {
             flex: 1; display: flex; flex-direction: column;
@@ -123,9 +103,6 @@
             display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
             margin-bottom: 24px;
         }
-        @media (max-width: 700px) {
-            .info-grid { grid-template-columns: 1fr; }
-        }
 
         .info-card {
             background: white; border: 1px solid var(--border);
@@ -137,21 +114,22 @@
         }
         .info-row {
             display: flex; justify-content: space-between;
-            padding: 8px 0; font-size: 15px;
+            padding: 8px 0; font-size: 15px; gap: 12px;
         }
-        .info-label { color: var(--muted-foreground); }
-        .info-value { font-weight: 700; text-align: right; max-width: 60%; }
+        .info-label { color: var(--muted-foreground); flex-shrink: 0; }
+        .info-value { font-weight: 700; text-align: right; word-break: break-word; }
 
         /* Daftar Buku */
         .books-card {
             background: white; border: 1px solid var(--border);
             border-radius: 12px; padding: 24px; margin-bottom: 24px;
+            overflow-x: auto;
         }
         .books-card h3 {
             font-size: 17px; font-weight: 700; margin-bottom: 16px;
             padding-bottom: 12px; border-bottom: 1px solid var(--border);
         }
-        .books-table { width: 100%; border-collapse: collapse; }
+        .books-table { width: 100%; border-collapse: collapse; min-width: 450px; }
         .books-table th {
             text-align: left; font-size: 13px; color: var(--muted-foreground);
             font-weight: 700; padding: 10px 12px; background: #f5f5f5;
@@ -174,6 +152,14 @@
             font-size: 14px; cursor: pointer; font-family: inherit;
         }
         .btn-back:hover { background: var(--muted); }
+
+        /* Responsive HP */
+        @media (max-width: 700px) {
+            .info-grid { grid-template-columns: 1fr; }
+            .info-row { flex-direction: column; gap: 2px; }
+            .info-value { text-align: left; }
+            .page-title { font-size: 22px; }
+        }
     </style>
 </head>
 <body>
@@ -182,29 +168,13 @@
         $isDibatalkan = $pesanan->status === 'Dibatalkan';
         $indexSaatIni = array_search($pesanan->status, $tahapanStatus);
         if ($indexSaatIni === false) {
-            // Untuk status "Menunggu Diproses" dianggap masih di tahap awal
             $indexSaatIni = 0;
         }
         $slugStatus = 'status-' . \Illuminate\Support\Str::slug($pesanan->status);
     @endphp
 
-    <header class="navbar">
-        <div class="navbar-container">
-            <div class="nav-logo">B</div>
-            <a href="/" class="nav-brand">BrailleKita</a>
-            <div class="nav-spacer"></div>
-           
-            <a href="/" class="nav-link outline">Katalog</a>
-            <a href="/pesanan-saya" class="nav-link active">Pesanan Saya</a>
-            <a href="/keranjang" class="nav-link outline">Keranjang</a>
-           
-            <span style="margin: 0 8px; font-size: 15px;">Halo, {{ auth()->user()->nama ?? 'Pengguna' }}</span>
-            <form action="/logout" method="POST" style="display:inline;">
-                @csrf
-                <button type="submit" class="nav-link outline" style="background:transparent; cursor:pointer; font-family: inherit; color: white;">Keluar</button>
-            </form>
-        </div>
-    </header>
+    {{-- Memanggil Partial Navbar Universal --}}
+    @include('partials.navbar')
 
     <main class="main-container">
         <div class="page-header">

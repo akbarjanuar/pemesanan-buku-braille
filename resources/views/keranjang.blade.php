@@ -22,17 +22,6 @@
         body { background-color: var(--background); color: var(--foreground); font-family: 'Atkinson Hyperlegible', sans-serif; line-height: 1.6; }
         a { text-decoration: none; color: inherit; }
 
-        /* Navbar */
-        .navbar { background: var(--primary); color: white; position: sticky; top: 0; z-index: 100; }
-        .navbar-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 12px; min-height: 64px; }
-        .nav-logo { background: white; color: var(--primary); font-weight: 700; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 18px; }
-        .nav-brand { font-size: 20px; font-weight: 700; }
-        .nav-spacer { flex-grow: 1; }
-        .nav-link { padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 15px; border: 1px solid transparent; display: flex; align-items: center; gap: 6px; }
-        .nav-link.active { background-color: white; color: var(--primary); }
-        .nav-link.outline { border-color: rgba(255, 255, 255, 0.4); }
-        .nav-link.outline:hover { background-color: rgba(255, 255, 255, 0.1); }
-
         /* Container & Grid Layout */
         .main-container { max-width: 1200px; margin: 0 auto; padding: 40px 20px 60px 20px; }
         .cart-layout { 
@@ -117,40 +106,31 @@
         .empty-state { text-align: center; padding: 80px 20px; border: 2px dashed var(--border); border-radius: 12px; background: white; grid-column: 1 / -1; }
         .btn-primary { background: var(--primary); color: white; padding: 12px 24px; border-radius: 6px; font-weight: 700; display: inline-block; margin-top: 16px; border: none; cursor: pointer;}
 
+        /* Penyesuaian Responsif Mobile */
         @media (max-width: 768px) {
-            .cart-layout { grid-template-columns: 1fr; }
+            .main-container { padding: 20px 16px 40px 16px; }
+            .cart-layout { grid-template-columns: 1fr; gap: 20px; }
+            
+            .cart-item { 
+                flex-wrap: wrap; 
+                padding: 16px; 
+                gap: 12px; 
+            }
+            .cart-details { 
+                flex-basis: calc(100% - 80px); 
+            }
+            .cart-actions { 
+                width: 100%; 
+                justify-content: flex-end; 
+                padding-top: 12px; 
+                border-top: 1px solid var(--border); 
+            }
         }
     </style>
 </head>
 <body>
 
-    @php
-        // Mengambil jumlah item di keranjang untuk notifikasi navbar
-        $cartCount = \App\Models\Keranjang::where('user_id', auth()->id())->sum('jumlah');
-    @endphp
-
-    <header class="navbar">
-        <div class="navbar-container">
-            <div class="nav-logo">B</div>
-            <a href="/" class="nav-brand">BrailleKita</a>
-            <div class="nav-spacer"></div>
-            
-            <a href="/" class="nav-link {{ request()->is('/') ? 'active' : 'outline' }}">Katalog</a>
-            <a href="/pesanan-saya" class="nav-link {{ request()->is('pesanan-saya') ? 'active' : 'outline' }}">Pesanan Saya</a>
-            <a href="/keranjang" class="nav-link {{ request()->is('keranjang') ? 'active' : 'outline' }}">
-                Keranjang 
-                @if($cartCount > 0)
-                    <span>{{ $cartCount }}</span>
-                @endif
-            </a>
-            
-            <span style="margin: 0 8px; font-size: 15px;">Halo, {{ auth()->user()->nama ?? 'Pengguna' }}</span>
-            <form action="/logout" method="POST" style="display:inline;">
-                @csrf
-                <button type="submit" class="nav-link outline" style="background:transparent; cursor:pointer; font-family: inherit; color: white;">Keluar</button>
-            </form>
-        </div>
-    </header>
+    @include('partials.navbar')
 
     <main class="main-container">
         
