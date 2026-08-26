@@ -24,21 +24,6 @@
         *, ::after, ::before { box-sizing: border-box; margin: 0; padding: 0; }
         body { background-color: var(--background); color: var(--foreground); font-family: 'Atkinson Hyperlegible', sans-serif; font-size: 16px; line-height: 1.6; }
         a { text-decoration: none; color: inherit; }
-        
-        /* Navbar */
-        .navbar { background: var(--primary); color: white; position: sticky; top: 0; z-index: 100; }
-        .navbar-container { max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 12px; min-height: 64px; }
-        .nav-logo { background: white; color: var(--primary); font-weight: 700; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 18px; }
-        .nav-brand { font-size: 20px; font-weight: 700; color: white; }
-        .nav-spacer { flex-grow: 1; }
-        .nav-link { padding: 8px 16px; border-radius: 6px; font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; border: 1px solid transparent; transition: 0.2s; }
-        .nav-link.active { background-color: white; color: var(--primary); }
-        .nav-link.outline { border-color: rgba(255, 255, 255, 0.4); color: white; }
-        .nav-link.outline:hover { background-color: rgba(255, 255, 255, 0.1); }
-        .nav-user { margin: 0 8px; font-size: 15px; }
-
-        /* Badge Keranjang Navbar */
-        .nav-badge { background-color: white; color: var(--primary); font-weight: 700; border-radius: 20px; padding: 2px 8px; font-size: 13px; margin-left: 4px; }
 
         /* Container & Hero */
         .main-container { max-width: 1200px; margin: 0 auto; padding: 24px 20px 60px 20px; }
@@ -63,7 +48,6 @@
         .book-grid { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
         .book-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
         
-        /* Area Link (Hanya Cover & Info) */
         .card-link { display: flex; flex-direction: column; flex-grow: 1; transition: opacity 0.2s; }
         .card-link:hover { opacity: 0.9; }
         
@@ -83,65 +67,43 @@
         .price-strike { color: #9e9e9e; font-size: 14px; text-decoration: line-through; margin-left: 4px; }
         .stock-text { color: var(--muted-foreground); font-size: 14px; }
 
-        /* Area Action (Tombol Bawah) */
         .card-action { padding: 0 20px 20px 20px; }
         .btn-cart { width: 100%; background-color: var(--primary); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: 700; font-size: 15px; font-family: inherit; cursor: pointer; transition: background-color 0.2s; }
         .btn-cart:hover { background-color: #e57373; }
         
-        /* Tombol saat sudah di keranjang */
         .btn-cart.added { background-color: #e57373; cursor: default; }
         .btn-cart.added:hover { background-color: #e57373; }
         
         .btn-filter-action { width: auto; padding: 12px 24px; }
+
+        @media (max-width: 640px) {
+            .hero-section { padding: 28px 20px; }
+            .hero-title { font-size: 24px; }
+            .hero-subtitle { font-size: 15px; }
+            .filter-section { flex-direction: column; align-items: stretch; }
+            .form-select { min-width: 0; }
+        }
     </style>
 </head>
 <body>
 
     @php
-        // Mengambil jumlah item dan ID buku yang ada di keranjang untuk user yang sedang login
-        $cartCount = 0;
         $cartItemIds = [];
         if(auth()->check()){
-            $cartCount = \App\Models\Keranjang::where('user_id', auth()->id())->sum('jumlah');
             $cartItemIds = \App\Models\Keranjang::where('user_id', auth()->id())->pluck('buku_id')->toArray();
         }
     @endphp
 
-    <!-- Navbar Dinamis -->
-    <header class="navbar">
-        <div class="navbar-container">
-            <div class="nav-logo">B</div>
-            <a href="/" class="nav-brand">BrailleKita</a>
-            
-            <div class="nav-spacer"></div>
-            
-            <a href="/" class="nav-link {{ request()->is('/') ? 'active' : 'outline' }}">Katalog</a>
-            <a href="/pesanan-saya" class="nav-link {{ request()->is('pesanan-saya') ? 'active' : 'outline' }}">Pesanan Saya</a>
-            <a href="/keranjang" class="nav-link {{ request()->is('keranjang') ? 'active' : 'outline' }}">
-                Keranjang
-                @if($cartCount > 0)
-                    <span class="nav-badge">{{ $cartCount }}</span>
-                @endif
-            </a>
-            
-            <span class="nav-user">Halo, {{ auth()->user()->nama ?? 'Pengguna' }}</span>
-            <form action="/logout" method="POST" style="display:inline;">
-                @csrf
-                <button type="submit" class="nav-link outline" style="background:transparent; cursor:pointer;">Keluar</button>
-            </form>
-        </div>
-    </header>
+    @include('partials.navbar')
 
     <main class="main-container">
         
-        <!-- Hero Section -->
         <div class="hero-section">
             <h1 class="hero-title">Katalog Buku Braille</h1>
             <p class="hero-subtitle">Temukan koleksi buku Braille untuk kebutuhan pribadi, lembaga pendidikan, dan organisasi. Semua buku tersedia <strong>gratis</strong>.</p>
             <div class="hero-badge">🎁 Semua buku Braille tersedia secara gratis</div>
         </div>
 
-        <!-- Filter Section -->
         <form method="GET" action="/" class="filter-section">
             <div class="filter-group search">
                 <label class="filter-label">Cari Buku</label>
@@ -167,11 +129,9 @@
 
         <p class="result-count">Menampilkan <strong>{{ $daftarBuku->count() }}</strong> dari {{ \App\Models\Buku::count() }} buku</p>
 
-        <!-- Book Grid -->
         <ul class="book-grid">
             @foreach ($daftarBuku as $buku)
                 <li class="book-card">
-                    <!-- Area Atas: Bisa diklik untuk melihat detail -->
                     <a href="/buku/{{ $buku->id }}" class="card-link">
                         <div class="book-cover" style="background-color: {{ $buku->warna_cover }};">
                             <div class="cover-badge">GRATIS</div>
@@ -193,13 +153,10 @@
                         </div>
                     </a>
                     
-                    <!-- Area Bawah: Tombol Aksi Keranjang -->
                     <div class="card-action">
                         @if(in_array($buku->id, $cartItemIds))
-                            <!-- Jika buku sudah ada di keranjang -->
                             <button class="btn-cart added" disabled>✓ Di Keranjang</button>
                         @else
-                            <!-- Jika buku belum ada di keranjang -->
                             <form action="/keranjang/tambah/{{ $buku->id }}" method="POST">
                                 @csrf
                                 <button type="submit" class="btn-cart">+ Keranjang</button>

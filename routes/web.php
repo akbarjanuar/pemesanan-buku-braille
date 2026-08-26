@@ -5,53 +5,61 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PemesananController;
-use App\Http\Controllers\PembatalanController; 
+use App\Http\Controllers\PembatalanController;
 use App\Models\Buku;
 use App\Models\Pesanan;
 use App\Models\PesananDetail;
 use App\Models\Keranjang;
 
-// Mengarahkan /home ke halaman utama / agar tidak error 404
+// Redirect /home ke /
 Route::get('/home', function () {
     return redirect('/');
 });
 
-// Mengarahkan ke halaman home dengan Fitur Cari & Filter Kategori (HANYA JIKA sudah login)
+// ===== HALAMAN UTAMA =====
+// Belum login → Pemilihan Akun
+// Sudah login → Beranda
 Route::get('/', function (Request $request) {
-    $query = Buku::query();
+    // Jika sudah login, tampilkan beranda
+    if (Auth::check()) {
+        $query = Buku::query();
 
-    // 1. Fitur Cari Judul atau Pengarang (Menggunakan ILIKE khusus PostgreSQL)
-    if ($request->filled('cari')) {
-        $keyword = $request->cari;
-        $query->where(function ($q) use ($keyword) {
-            $q->where('judul', 'ILIKE', "%{$keyword}%")
-              ->orWhere('pengarang', 'ILIKE', "%{$keyword}%");
-        });
+        // Fitur Cari Judul atau Pengarang
+        if ($request->filled('cari')) {
+            $keyword = $request->cari;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('judul', 'ILIKE', "%{$keyword}%")
+                  ->orWhere('pengarang', 'ILIKE', "%{$keyword}%");
+            });
+        }
+
+        // Fitur Filter Kategori
+        if ($request->filled('kategori') && $request->kategori !== 'Semua Kategori') {
+            $query->where('kategori', $request->kategori);
+        }
+
+        $daftarBuku = $query->get();
+        $daftarKategori = Buku::select('kategori')->distinct()->pluck('kategori');
+
+        return view('home', compact('daftarBuku', 'daftarKategori'));
     }
 
-    // 2. Fitur Filter Kategori
-    if ($request->filled('kategori') && $request->kategori !== 'Semua Kategori') {
-        $query->where('kategori', $request->kategori);
-    }
-
-    // Eksekusi query untuk mendapatkan daftar buku yang sudah difilter
-    $daftarBuku = $query->get();
-
-    // Mengambil daftar kategori unik langsung dari database untuk dropdown
-    $daftarKategori = Buku::select('kategori')->distinct()->pluck('kategori');
-
-    return view('home', compact('daftarBuku', 'daftarKategori'));
-})->middleware('auth');
+    // Jika belum login, tampilkan pemilihan akun
+    return view('pemilihan-akun');
+});
 
 // Route Register (Hanya untuk tamu / belum login)
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register')->middleware('guest');
 Route::post('/register', [AuthController::class, 'register'])->middleware('guest');
 
-Route::get('/masuk', function () {return view('pemilihan-akun');})->middleware('guest');
-
-// Route Login (Hanya untuk tamu / belum login)
+// Route Login Pelanggan (Hanya untuk tamu / belum login)
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
+
+// Redirect /masuk ke /
+Route::get('/masuk', function () {
+    return redirect('/');
+});
 
 // Route Detail Buku (HANYA JIKA sudah login)
 Route::get('/buku/{id}', function ($id) {
@@ -59,7 +67,7 @@ Route::get('/buku/{id}', function ($id) {
     return view('detail', compact('buku'));
 })->middleware('auth');
 
-// Route Tambah ke Keranjang (HANYA JIKA sudah login)
+// Route Tambah ke Keranjang
 Route::post('/keranjang/tambah/{buku_id}', function ($buku_id) {
     $cekKeranjang = Keranjang::where('user_id', Auth::id())
                              ->where('buku_id', $buku_id)
@@ -76,7 +84,7 @@ Route::post('/keranjang/tambah/{buku_id}', function ($buku_id) {
     return back();
 })->middleware('auth');
 
-// Route Halaman Keranjang (HANYA JIKA sudah login)
+// Route Halaman Keranjang
 Route::get('/keranjang', function () {
     $daftarKeranjang = Keranjang::with('buku')->where('user_id', Auth::id())->get();
     return view('keranjang', compact('daftarKeranjang'));
@@ -91,7 +99,7 @@ Route::post('/keranjang/hapus/{id}', function ($id) {
 // Route Tambah/Kurang Kuantitas Keranjang
 Route::post('/keranjang/update/{id}/{aksi}', function ($id, $aksi) {
     $item = Keranjang::where('id', $id)->where('user_id', Auth::id())->first();
-    
+
     if ($item) {
         if ($aksi === 'tambah') {
             $item->jumlah += 1;
@@ -101,16 +109,15 @@ Route::post('/keranjang/update/{id}/{aksi}', function ($id, $aksi) {
                 $item->jumlah -= 1;
                 $item->save();
             } else {
-                // Jika jumlah = 1 lalu dikurangi, otomatis hapus item
                 $item->delete();
             }
         }
     }
-    
+
     return redirect('/keranjang');
 })->middleware('auth');
 
-// Route Checkout (HANYA JIKA sudah login)
+// Route Checkout
 // STEP 1: Pilih Jenis Pemesanan
 Route::get('/pemesanan', [PemesananController::class, 'jenis'])->middleware('auth');
 Route::post('/pemesanan/jenis', [PemesananController::class, 'simpanJenis'])->middleware('auth');
@@ -119,7 +126,7 @@ Route::post('/pemesanan/jenis', [PemesananController::class, 'simpanJenis'])->mi
 Route::get('/pemesanan/alamat', [PemesananController::class, 'alamat'])->middleware('auth');
 Route::post('/pemesanan/simpan', [PemesananController::class, 'simpan'])->middleware('auth');
 
-// Route Pesanan Saya (HANYA JIKA sudah login)
+// Route Pesanan Saya
 Route::get('/pesanan-saya', function () {
     $daftarPesanan = Pesanan::with('details.buku')
         ->where('user_id', Auth::id())
@@ -143,10 +150,10 @@ Route::get('/pesanan/{id}', function ($id) {
 Route::get('/pesanan/{id}/batalkan', [PembatalanController::class, 'konfirmasi'])->middleware('auth');
 Route::post('/pesanan/{id}/batalkan', [PembatalanController::class, 'proses'])->middleware('auth');
 
-// Route Logout
+// Route Logout → kembali ke Pemilihan Akun
 Route::post('/logout', function (Request $request) {
     Auth::logout();
     $request->session()->invalidate();
     $request->session()->regenerateToken();
-    return redirect('/login');
+    return redirect('/');
 });
