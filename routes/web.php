@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\PemesananController;
 use App\Http\Controllers\PembatalanController;
+use App\Http\Controllers\AdminController;
+use App\Http\Middleware\AdminMiddleware;
 use App\Models\Buku;
 use App\Models\Pesanan;
 use App\Models\PesananDetail;
@@ -56,11 +58,9 @@ Route::post('/register', [AuthController::class, 'register'])->middleware('guest
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
 
-
-// Route Login Admin (Hanya untuk tamu / belum login) - Sementara tampilan saja
-Route::get('/login-admin', function () {
-    return view('auth.login-admin');
-})->middleware('guest');
+// Route Login Admin (Tampilan & Proses Otentikasi Admin)
+Route::get('/login-admin', [AuthController::class, 'showAdminLogin'])->name('login.admin')->middleware('guest');
+Route::post('/login-admin', [AuthController::class, 'loginAdmin'])->middleware('guest');
 
 // Redirect /masuk ke /
 Route::get('/masuk', function () {
@@ -155,6 +155,12 @@ Route::get('/pesanan/{id}', function ($id) {
 // Route Batalkan Pesanan
 Route::get('/pesanan/{id}/batalkan', [PembatalanController::class, 'konfirmasi'])->middleware('auth');
 Route::post('/pesanan/{id}/batalkan', [PembatalanController::class, 'proses'])->middleware('auth');
+
+// ===== ROUTE KHUSUS ADMIN =====
+Route::middleware(['auth', AdminMiddleware::class])->group(function () {
+    // Halaman Dashboard Admin
+    Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+});
 
 // Route Logout → kembali ke Pemilihan Akun
 Route::post('/logout', function (Request $request) {

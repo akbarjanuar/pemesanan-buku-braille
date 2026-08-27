@@ -28,6 +28,17 @@ class Pesanan extends Model
         'catatan',
     ];
 
+    /**
+     * Relasi ke model User (Pemesan)
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Relasi ke detail barang yang dipesan
+     */
     public function details()
     {
         return $this->hasMany(PesananDetail::class, 'pesanan_id');

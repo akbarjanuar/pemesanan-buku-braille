@@ -65,13 +65,13 @@ class AuthController extends Controller
         return redirect('/')->with('success', 'Pendaftaran berhasil! Selamat datang di BrailleKita.');
     }
 
-    // Menampilkan Tampilan Login
+    // Menampilkan Tampilan Login Pelanggan
     public function showLogin()
     {
         return view('auth.login');
     }
 
-    // Memproses Autentikasi Login
+    // Memproses Autentikasi Login Pelanggan
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -82,6 +82,49 @@ class AuthController extends Controller
         if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['kata_sandi']])) {
             $request->session()->regenerate();
             return redirect()->intended('/')->with('success', 'Berhasil masuk!');
+        }
+
+        return back()->withErrors([
+            'email' => 'Email atau kata sandi yang dimasukkan salah.',
+        ])->onlyInput('email');
+    }
+
+    // ===== FITUR ADMIN =====
+
+    // Menampilkan Tampilan Login Admin
+    public function showAdminLogin()
+    {
+        return view('auth.login-admin');
+    }
+
+    // Memproses Autentikasi Login Admin
+    public function loginAdmin(Request $request)
+    {
+        $credentials = $request->validate([
+            'email'      => 'required|email',
+            'kata_sandi' => 'required',
+        ], [
+            'email.required'      => 'Alamat email wajib diisi.',
+            'email.email'         => 'Format email tidak valid.',
+            'kata_sandi.required' => 'Kata sandi wajib diisi.',
+        ]);
+
+        if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['kata_sandi']])) {
+            
+            // Verifikasi role apakah user bertindak sebagai admin
+            if (auth()->user()->role === 'admin') {
+                $request->session()->regenerate();
+                return redirect()->intended('/admin/dashboard')->with('success', 'Selamat datang kembali, Admin!');
+            }
+
+            // Jika role bukan admin, paksa logout dan tolak akses
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors([
+                'email' => 'Akses ditolak! Akun ini bukan akun Admin.',
+            ])->onlyInput('email');
         }
 
         return back()->withErrors([
