@@ -56,6 +56,12 @@ Route::post('/register', [AuthController::class, 'register'])->middleware('guest
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
 
+
+// Route Login Admin (Hanya untuk tamu / belum login) - Sementara tampilan saja
+Route::get('/login-admin', function () {
+    return view('auth.login-admin');
+})->middleware('guest');
+
 // Redirect /masuk ke /
 Route::get('/masuk', function () {
     return redirect('/');
