@@ -43,12 +43,19 @@
 
         /* ===== SIDEBAR ===== */
         .sidebar {
-            width: var(--sidebar-width);
-            background-color: var(--surface);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
+        width: var(--sidebar-width);
+        background-color: var(--surface);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        transition: width 0.25s ease, transform 0.25s ease;
+        overflow: hidden;
+        }
+
+        .sidebar.collapsed {
+         width: 0;
+         border-right: none;
         }
 
         .sidebar-brand {
@@ -129,6 +136,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            transition: all 0.25s ease;
         }
 
         /* ===== TOPBAR ===== */
@@ -155,6 +163,11 @@
             color: var(--text-muted);
             cursor: pointer;
             font-size: 20px;
+            background: none;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .topbar-right {
@@ -395,6 +408,9 @@
         transition: transform 0.25s ease;
         box-shadow: 4px 0 16px rgba(0,0,0,0.15);
     }
+    .sidebar.collapsed {
+        width: var(--sidebar-width);
+    }
     .sidebar.open {
         transform: translateX(0);
     }
@@ -624,6 +640,14 @@
     const sidebarOverlay = document.getElementById('sidebarOverlay');
 
     menuToggle.addEventListener('click', function () {
+
+        // PC / Laptop
+        if (window.innerWidth > 768) {
+            sidebar.classList.toggle('collapsed');
+            return;
+        }
+
+        // HP / Mobile
         sidebar.classList.toggle('open');
         sidebarOverlay.classList.toggle('open');
     });
