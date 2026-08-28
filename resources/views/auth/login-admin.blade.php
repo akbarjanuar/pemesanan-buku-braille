@@ -243,7 +243,8 @@
             <div class="form-group">
                 <label class="form-label" for="kata_sandi">Kata Sandi <span class="text-danger">*</span></label>
                 <div class="password-wrapper">
-                    <input type="text" id="kata_sandi" name="kata_sandi" class="form-control" placeholder="Masukkan kata sandi" required autocomplete="current-password">
+                    <input type="text" id="kata_sandi" class="form-control" placeholder="Masukkan kata sandi" required autocomplete="current-password">
+                    <input type="hidden" id="kata_sandi_real" name="kata_sandi">
                     <button type="button" class="toggle-password" data-target="kata_sandi" aria-label="Tampilkan kata sandi">
                         <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -260,17 +261,22 @@
         </form>
         <div class="divider"></div>
         <div class="footer-text">
-            Bukan admin? <a href="/masuk">Kembali ke halaman pemilihan akun</a>
+            Bukan admin? <a href="/">Kembali ke halaman pemilihan akun</a>
         </div>
     </div>
 
     <script>
-        function setupPasswordField(inputId) {
-            const input = document.getElementById(inputId);
+        function setupPasswordField(visibleId, hiddenId) {
+            const input = document.getElementById(visibleId);
+            const hiddenInput = document.getElementById(hiddenId);
             let realValue = '';
             let isVisible = false;
             let maskTimeout = null;
             let previousLength = 0;
+
+            function syncHidden() {
+                hiddenInput.value = realValue;
+            }
 
             function updateDisplay(showLastChar = false) {
                 if (isVisible) {
@@ -317,10 +323,13 @@
                 }
 
                 previousLength = currentLength;
+                syncHidden();
             });
 
+            // Selalu sinkronkan nilai asli ke hidden field sebelum form dikirim
+            // (input yang terlihat TETAP dalam bentuk titik-titik, tidak pernah plaintext)
             input.form.addEventListener('submit', function () {
-                input.value = realValue;
+                syncHidden();
             });
 
             const toggleBtn = input.closest('.password-wrapper').querySelector('.toggle-password');
@@ -341,11 +350,9 @@
                     eyeClosed.style.display = 'none';
                 }
             });
-
-            input._getRealValue = () => realValue;
         }
 
-        setupPasswordField('kata_sandi');
+        setupPasswordField('kata_sandi', 'kata_sandi_real');
     </script>
 </body>
 </html>

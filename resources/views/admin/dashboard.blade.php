@@ -374,9 +374,39 @@
         @media (max-width: 480px) {
             .stats-grid { grid-template-columns: 1fr; }
         }
+
+        /* ===== TAMBAHAN: Sidebar Mobile Bisa Dibuka/Tutup ===== */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 199;
+}
+.sidebar-overlay.open { display: block; }
+
+@media (max-width: 768px) {
+    .sidebar {
+        display: flex !important; /* override aturan lama "display: none" */
+        position: fixed;
+        top: 0; left: 0; bottom: 0;
+        z-index: 200;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        box-shadow: 4px 0 16px rgba(0,0,0,0.15);
+    }
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    .menu-toggle {
+        cursor: pointer;
+    }
+}
     </style>
 </head>
 <body>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
@@ -388,7 +418,7 @@
             <a href="/admin/dashboard" class="nav-item active">
                 <i class="fas fa-th-large"></i> Dashboard
             </a>
-            <a href="#" class="nav-item">
+            <a href="/admin/permintaan-buku" class="nav-item">
                 <i class="far fa-file-alt"></i> Permintaan Buku
             </a>
             <a href="#" class="nav-item">
@@ -430,7 +460,7 @@
         <!-- TOPBAR -->
         <header class="topbar">
             <div class="topbar-left">
-                <i class="fas fa-bars menu-toggle"></i>
+                <i class="fas fa-bars menu-toggle" id="menuToggle"></i>
                 <span>Dashboard</span>
             </div>
             
@@ -584,6 +614,25 @@
 
         </main>
     </div>
+
+    </main>
+</div>
+
+<script>
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    menuToggle.addEventListener('click', function () {
+        sidebar.classList.toggle('open');
+        sidebarOverlay.classList.toggle('open');
+    });
+
+    sidebarOverlay.addEventListener('click', function () {
+        sidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('open');
+    });
+</script>
 
 </body>
 </html>

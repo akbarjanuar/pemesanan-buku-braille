@@ -169,3 +169,8 @@ Route::post('/logout', function (Request $request) {
     $request->session()->regenerateToken();
     return redirect('/');
 });
+
+// Route Permintaan Buku (Admin) - Sementara tampilan saja, data masih dummy
+Route::get('/admin/permintaan-buku', function () {
+    return view('admin.permintaan-buku');
+})->middleware('auth');
