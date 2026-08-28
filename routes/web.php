@@ -156,10 +156,17 @@ Route::get('/pesanan/{id}', function ($id) {
 Route::get('/pesanan/{id}/batalkan', [PembatalanController::class, 'konfirmasi'])->middleware('auth');
 Route::post('/pesanan/{id}/batalkan', [PembatalanController::class, 'proses'])->middleware('auth');
 
+
 // ===== ROUTE KHUSUS ADMIN =====
 Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     // Halaman Dashboard Admin
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+
+    // Halaman Permintaan Buku
+    Route::get('/admin/permintaan-buku', [AdminController::class, 'permintaanBuku'])->name('admin.permintaan-buku');
+
+    // Halaman Detail Pesanan (Tambahkan baris ini)
+    Route::get('/admin/pesanan/{id}', [AdminController::class, 'detailPesanan'])->name('admin.detail-pesanan');
 });
 
 // Route Logout → kembali ke Pemilihan Akun
@@ -169,8 +176,3 @@ Route::post('/logout', function (Request $request) {
     $request->session()->regenerateToken();
     return redirect('/');
 });
-
-// Route Permintaan Buku (Admin) - Sementara tampilan saja, data masih dummy
-Route::get('/admin/permintaan-buku', function () {
-    return view('admin.permintaan-buku');
-})->middleware('auth');

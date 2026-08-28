@@ -53,7 +53,6 @@
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
         .error-text { color: var(--primary); font-size: 13px; margin-top: 4px; }
-        .loading-text { color: var(--muted-foreground); font-size: 13px; margin-top: 4px; display: none; }
 
         .form-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; gap: 12px; }
         .btn-back { background: white; color: var(--foreground); border: 1px solid var(--border); padding: 12px 20px; border-radius: 6px; font-weight: 700; font-size: 15px; cursor: pointer; font-family: inherit; text-align: center; }
@@ -70,7 +69,6 @@
         .summary-total strong { color: var(--success); }
         .summary-note { background: var(--muted); border-radius: 6px; padding: 12px; font-size: 14px; font-weight: 700; margin-top: 8px; }
 
-        /* Responsive Mobile Update */
         @media (max-width: 768px) {
             .main-container { padding: 20px 16px 40px 16px; }
             .order-layout { grid-template-columns: 1fr; gap: 20px; }
@@ -190,7 +188,6 @@
     </main>
 
     <script>
-        // Data wilayah Indonesia dari API publik gratis (emsifa)
         const API_BASE = 'https://www.emsifa.com/api-wilayah-indonesia/api';
 
         const provinsiSelect = document.getElementById('provinsi');
@@ -198,7 +195,12 @@
         const kecamatanSelect = document.getElementById('kecamatan');
         const kodePosInput = document.getElementById('kode_pos');
 
-        // 1. Ambil daftar provinsi saat halaman dimuat
+        // Nilai lama jika ada error validasi
+        const oldProvinsi = "{{ old('provinsi') }}";
+        const oldKota = "{{ old('kota') }}";
+        const oldKecamatan = "{{ old('kecamatan') }}";
+
+        // 1. Ambil daftar provinsi
         fetch(`${API_BASE}/provinces.json`)
             .then(res => res.json())
             .then(data => {
@@ -208,23 +210,28 @@
                     opt.value = prov.name;
                     opt.dataset.id = prov.id;
                     opt.textContent = prov.name;
+                    if (prov.name === oldProvinsi) opt.selected = true;
                     provinsiSelect.appendChild(opt);
                 });
+
+                // Jika ada old provinsi, trigger event change untuk memuat kota
+                if (oldProvinsi) {
+                    provinsiSelect.dispatchEvent(new Event('change'));
+                }
             })
             .catch(() => {
-                provinsiSelect.innerHTML = '<option value="">Gagal memuat data, isi manual tidak tersedia</option>';
+                provinsiSelect.innerHTML = '<option value="">Gagal memuat data</option>';
             });
 
-        // 2. Saat provinsi dipilih, ambil daftar kota/kabupaten
+        // 2. Event saat Provinsi dipilih
         provinsiSelect.addEventListener('change', function () {
             const selectedOption = this.options[this.selectedIndex];
-            const provinceId = selectedOption.dataset.id;
+            const provinceId = selectedOption ? selectedOption.dataset.id : null;
 
             kotaSelect.innerHTML = '<option value="">Memuat...</option>';
             kotaSelect.disabled = true;
             kecamatanSelect.innerHTML = '<option value="">Pilih kota dulu</option>';
             kecamatanSelect.disabled = true;
-            kodePosInput.value = '';
 
             if (!provinceId) {
                 kotaSelect.innerHTML = '<option value="">Pilih provinsi dulu</option>';
@@ -240,20 +247,25 @@
                         opt.value = kota.name;
                         opt.dataset.id = kota.id;
                         opt.textContent = kota.name;
+                        if (kota.name === oldKota) opt.selected = true;
                         kotaSelect.appendChild(opt);
                     });
                     kotaSelect.disabled = false;
+
+                    // Jika ada old kota, trigger event change untuk memuat kecamatan
+                    if (oldKota) {
+                        kotaSelect.dispatchEvent(new Event('change'));
+                    }
                 });
         });
 
-        // 3. Saat kota dipilih, ambil daftar kecamatan
+        // 3. Event saat Kota dipilih
         kotaSelect.addEventListener('change', function () {
             const selectedOption = this.options[this.selectedIndex];
-            const regencyId = selectedOption.dataset.id;
+            const regencyId = selectedOption ? selectedOption.dataset.id : null;
 
             kecamatanSelect.innerHTML = '<option value="">Memuat...</option>';
             kecamatanSelect.disabled = true;
-            kodePosInput.value = '';
 
             if (!regencyId) {
                 kecamatanSelect.innerHTML = '<option value="">Pilih kota dulu</option>';
@@ -268,13 +280,14 @@
                         const opt = document.createElement('option');
                         opt.value = kec.name;
                         opt.textContent = kec.name;
+                        if (kec.name === oldKecamatan) opt.selected = true;
                         kecamatanSelect.appendChild(opt);
                     });
                     kecamatanSelect.disabled = false;
                 });
         });
 
-        // 4. Saat kecamatan dipilih, cari kode pos otomatis
+        // 4. Cari kode pos otomatis saat kecamatan dipilih
         kecamatanSelect.addEventListener('change', function () {
             const kecamatanName = this.value;
             
