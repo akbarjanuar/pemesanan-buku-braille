@@ -316,6 +316,9 @@ Route::middleware([
     Route::get('/admin/kelola-buku/tambah', [AdminController::class, 'createBuku'])->name('admin.tambah-buku');
     Route::post('/admin/kelola-buku/tambah', [AdminController::class, 'storeBuku'])->name('admin.store-buku');
 
+    // Halaman Pencetakan Admin
+    Route::get('/admin/pencetakan', [AdminController::class, 'pencetakan'])->name('admin.pencetakan');
+
 });
 
 

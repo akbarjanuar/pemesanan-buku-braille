@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Pesanan;
 use App\Models\Buku;
-
+use App\Models\Pencetakan;
 
 class AdminController extends Controller
 {
@@ -136,33 +136,17 @@ class AdminController extends Controller
 
     public function pencetakan()
     {
-
-        /*
-        |----------------------------------------------------
-        | Mengambil pesanan yang berkaitan dengan pencetakan
-        |----------------------------------------------------
-        |
-        | Untuk sementara kita mengambil data berdasarkan
-        | status yang berkaitan dengan proses pencetakan.
-        |
-        */
-
-        $daftarPesanan = Pesanan::with([
-            'user',
-            'details.buku'
-        ])
-        ->whereIn('status', [
-            'Menunggu Pencetakan',
-            'Sedang Dicetak',
-            'Selesai'
+        // Mengambil data proses pencetakan dari tabel 'pencetakans' beserta relasinya
+        $daftarPencetakan = Pencetakan::with([
+            'pesanan.user',
+            'pesanan.details.buku'
         ])
         ->orderBy('created_at', 'desc')
         ->get();
 
-
         return view(
             'admin.pencetakan',
-            compact('daftarPesanan')
+            compact('daftarPencetakan')
         );
     }
 
