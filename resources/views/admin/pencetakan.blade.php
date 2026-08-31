@@ -445,20 +445,45 @@
                             Semua Status
                         </a>
 
-                        <a
+                        <a 
                             href="#"
                             class="status-filter-item"
-                            data-status="menunggu"
+                            data-status="menunggu dikerjakan"
                         >
-                            Menunggu
+                            Menunggu Dikerjakan
                         </a>
 
                         <a
                             href="#"
                             class="status-filter-item"
-                            data-status="diproses"
+                            data-status="sedang diproses"
                         >
-                            Sedang Dicetak
+                            Sedang Diproses
+                        </a>
+
+
+                        <a
+                            href="#"
+                            class="status-filter-item"
+                            data-status="menunggu bahan"
+                        >
+                            Menunggu Bahan
+                        </a>
+
+                        <a
+                            href="#"
+                            class="status-filter-item"
+                            data-status="menunggu pemeriksaan"
+                        >
+                            Menunggu Pemeriksaan
+                        </a>
+
+                        <a
+                            href="#"
+                            class="status-filter-item"
+                            data-status="revisi"
+                        >
+                            Revisi
                         </a>
 
                         <a
@@ -467,6 +492,14 @@
                             data-status="selesai"
                         >
                             Selesai
+                        </a>
+
+                        <a
+                            href="#"
+                            class="status-filter-item"
+                            data-status="ditunda"
+                        >
+                            Ditunda
                         </a>
 
                     </div>
