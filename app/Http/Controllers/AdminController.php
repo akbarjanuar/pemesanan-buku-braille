@@ -6,52 +6,169 @@ use Illuminate\Http\Request;
 use App\Models\Pesanan;
 use App\Models\Buku;
 
+
 class AdminController extends Controller
 {
-    // ===== Halaman Dashboard =====
+
+    // =====================================================
+    // ===== HALAMAN DASHBOARD =============================
+    // =====================================================
+
     public function dashboard()
     {
-        // 1. Menghitung statistik berdasarkan kolom 'status' di tabel pesanans
+
+        // Menghitung statistik berdasarkan status pesanan
         $stats = [
-            'baru'                => Pesanan::where('status', 'Permintaan Baru')->count(),
-            'diproses'            => Pesanan::where('status', 'Sedang Diproses')->count(),
-            'menunggu_pencetakan' => Pesanan::where('status', 'Menunggu Pencetakan')->count(),
-            'dicetak'             => Pesanan::where('status', 'Sedang Dicetak')->count(),
-            'siap_dikirim'        => Pesanan::where('status', 'Siap Dikirim')->count(),
-            'dikirim'             => Pesanan::where('status', 'Sedang Dikirim')->count(),
-            'selesai'             => Pesanan::where('status', 'Selesai')->count(),
-            'dibatalkan'          => Pesanan::where('status', 'Dibatalkan')->count(),
-            'kendala'             => Pesanan::where('status', 'Kendala')->count(),
-            'bahan_baru'          => Pesanan::where('status', 'Permintaan Bahan Baru')->count(),
+
+            'baru' => Pesanan::where(
+                'status',
+                'Permintaan Baru'
+            )->count(),
+
+            'diproses' => Pesanan::where(
+                'status',
+                'Sedang Diproses'
+            )->count(),
+
+            'menunggu_pencetakan' => Pesanan::where(
+                'status',
+                'Menunggu Pencetakan'
+            )->count(),
+
+            'dicetak' => Pesanan::where(
+                'status',
+                'Sedang Dicetak'
+            )->count(),
+
+            'siap_dikirim' => Pesanan::where(
+                'status',
+                'Siap Dikirim'
+            )->count(),
+
+            'dikirim' => Pesanan::where(
+                'status',
+                'Sedang Dikirim'
+            )->count(),
+
+            'selesai' => Pesanan::where(
+                'status',
+                'Selesai'
+            )->count(),
+
+            'dibatalkan' => Pesanan::where(
+                'status',
+                'Dibatalkan'
+            )->count(),
+
+            'kendala' => Pesanan::where(
+                'status',
+                'Kendala'
+            )->count(),
+
+            'bahan_baru' => Pesanan::where(
+                'status',
+                'Permintaan Bahan Baru'
+            )->count(),
         ];
 
-        // 2. Mengambil 5 pesanan terbaru untuk tabel (butuh relasi ke tabel users untuk nama)
+
+        // Mengambil 5 pesanan terbaru
         $pesananTerbaru = Pesanan::with('user')
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
 
-        return view('admin.dashboard', compact('stats', 'pesananTerbaru'));
+
+        return view(
+            'admin.dashboard',
+            compact(
+                'stats',
+                'pesananTerbaru'
+            )
+        );
     }
 
-    // ===== Halaman Permintaan Buku =====
+
+    // =====================================================
+    // ===== HALAMAN PERMINTAAN BUKU =======================
+    // =====================================================
+
     public function permintaanBuku()
     {
-        // Mengambil seluruh data pesanan beserta data user (pemesan), urutkan dari yang terbaru
+
+        // Mengambil seluruh pesanan beserta data user
         $daftarPesanan = Pesanan::with('user')
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('admin.permintaan-buku', compact('daftarPesanan'));
+
+        return view(
+            'admin.permintaan-buku',
+            compact('daftarPesanan')
+        );
     }
 
-    // ===== Halaman Detail Pesanan =====
+
+    // =====================================================
+    // ===== HALAMAN DETAIL PESANAN ========================
+    // =====================================================
+
     public function detailPesanan($id)
     {
-        // Ambil data pesanan berdasarkan ID, beserta relasi user dan detail bukunya
-        $pesanan = Pesanan::with(['user', 'details.buku'])->findOrFail($id);
 
-        return view('admin.detail-pesanan', compact('pesanan'));
+        // Mengambil pesanan beserta user dan detail buku
+        $pesanan = Pesanan::with([
+            'user',
+            'details.buku'
+        ])->findOrFail($id);
+
+
+        return view(
+            'admin.detail-pesanan',
+            compact('pesanan')
+        );
+    }
+
+
+    // =====================================================
+    // ===== HALAMAN PENCETAKAN ============================
+    // =====================================================
+
+    public function pencetakan()
+    {
+
+        /*
+        |----------------------------------------------------
+        | Mengambil pesanan yang berkaitan dengan pencetakan
+        |----------------------------------------------------
+        |
+        | Untuk sementara kita mengambil data berdasarkan
+        | status yang berkaitan dengan proses pencetakan.
+        |
+        */
+
+        $daftarPesanan = Pesanan::with([
+            'user',
+            'details.buku'
+        ])
+        ->whereIn('status', [
+            'Menunggu Pencetakan',
+            'Sedang Dicetak',
+            'Selesai'
+        ])
+        ->orderBy('created_at', 'desc')
+        ->get();
+
+
+        return view(
+            'admin.pencetakan',
+            compact('daftarPesanan')
+        );
+    }
+
+    public function detailPencetakan()
+    {
+        // Implementasi untuk halaman detail pencetakan
     }
 
     // ===== Halaman Kelola Buku =====
