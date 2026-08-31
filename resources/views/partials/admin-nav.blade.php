@@ -346,7 +346,7 @@
             Pengiriman
         </a>
 
-        <a href="#"
+        <a href="/admin/data-pelanggan"
            class="nav-item {{ $activeMenu === 'data-pelanggan' ? 'active' : '' }}">
             <i class="fas fa-users"></i>
             Data Pelanggan
