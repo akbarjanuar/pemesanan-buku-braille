@@ -43,4 +43,9 @@ class Pesanan extends Model
     {
         return $this->hasMany(PesananDetail::class, 'pesanan_id');
     }
+
+    public function pencetakan()
+    {
+        return $this->hasOne(Pencetakan::class, 'pesanan_id');
+    }
 }
