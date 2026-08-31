@@ -334,7 +334,7 @@
             Kelola Buku
         </a>
 
-        <a href="#"
+        <a href="/admin/pencetakan"
            class="nav-item {{ $activeMenu === 'pencetakan' ? 'active' : '' }}">
             <i class="fas fa-print"></i>
             Pencetakan
