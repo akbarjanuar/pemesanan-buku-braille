@@ -328,7 +328,7 @@
             Permintaan Buku
         </a>
 
-        <a href="#"
+        <a href="/admin/kelola-buku"
            class="nav-item {{ $activeMenu === 'kelola-buku' ? 'active' : '' }}">
             <i class="fas fa-book"></i>
             Kelola Buku

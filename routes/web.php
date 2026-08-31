@@ -167,6 +167,16 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
 
     // Halaman Detail Pesanan (Tambahkan baris ini)
     Route::get('/admin/pesanan/{id}', [AdminController::class, 'detailPesanan'])->name('admin.detail-pesanan');
+
+    // Halaman Kelola Buku
+    Route::get('/admin/kelola-buku', [AdminController::class, 'kelolaBuku'])->name('admin.kelola-buku');
+    Route::get('/admin/kelola-buku/{id}/edit', [AdminController::class, 'editBuku'])->name('admin.edit-buku');
+    Route::put('/admin/kelola-buku/{id}', [AdminController::class, 'updateBuku'])->name('admin.update-buku');
+
+    // Halaman Tambah Buku Baru
+    Route::get('/admin/kelola-buku/tambah', [AdminController::class, 'createBuku'])->name('admin.tambah-buku');
+    Route::post('/admin/kelola-buku/tambah', [AdminController::class, 'storeBuku'])->name('admin.store-buku');
+
 });
 
 // Route Logout → kembali ke Pemilihan Akun
