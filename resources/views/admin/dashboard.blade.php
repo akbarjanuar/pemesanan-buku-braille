@@ -446,7 +446,7 @@
             <a href="#" class="nav-item">
                 <i class="fas fa-truck"></i> Pengiriman
             </a>
-            <a href="#" class="nav-item">
+            <a href="/admin/data-pelanggan" class="nav-item">
                 <i class="fas fa-users"></i> Data Pelanggan
             </a>
             <a href="#" class="nav-item">

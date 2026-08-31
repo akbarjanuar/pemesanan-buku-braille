@@ -296,6 +296,14 @@ Route::middleware([
         [AdminController::class, 'detailPencetakan']
     )->name('admin.detail-pencetakan');
 
+    Route::get('/admin/data-pelanggan', function () {
+        return view('admin.data-pelanggan');
+        })->middleware('auth');
+
+    Route::get('/admin/data-pelanggan/{id}', function ($id) {
+        return view('admin.data-pelanggan-detail');
+        })->middleware('auth');
+
     // Halaman Detail Pesanan (Tambahkan baris ini)
     Route::get('/admin/pesanan/{id}', [AdminController::class, 'detailPesanan'])->name('admin.detail-pesanan');
 
