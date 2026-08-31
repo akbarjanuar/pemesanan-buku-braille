@@ -6,12 +6,13 @@
     <title>Detail Pelanggan - BrailleKita</title>
 
     <style>
-        .back-link { color: var(--primary); font-weight: 700; font-size: 15px; display: inline-block; margin-bottom: 20px; }
+        .back-link { color: var(--primary); font-weight: 700; font-size: 15px; display: inline-block; margin-bottom: 20px; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
 
         .page-header { margin-bottom: 20px; }
         .page-header h2 { font-size: 22px; font-weight: 700; }
 
-        .detail-layout { display: grid; grid-template-columns: 340px 1fr; gap: 24px; align-items: start; }
+        .detail-layout { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 24px; align-items: start; }
 
         .profile-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
 
@@ -27,7 +28,6 @@
         .profile-field .field-label { font-size: 13px; color: var(--text-muted); margin-bottom: 2px; }
         .profile-field .field-value { font-size: 14px; font-weight: 700; color: var(--text-dark); line-height: 1.4; }
         .profile-field .field-value.status-aktif { color: #2e7d32; }
-        .profile-field .field-value.status-nonaktif { color: #c62828; }
 
         .profile-divider { border-top: 1px solid var(--border); margin: 20px 0; }
 
@@ -43,8 +43,6 @@
             display: flex; align-items: center; justify-content: center; margin-right: 10px;
         }
         .ktp-thumbnail i { color: #64b5f6; font-size: 20px; }
-        .ktp-lines { display: flex; flex-direction: column; gap: 4px; }
-        .ktp-lines span { display: block; width: 40px; height: 4px; background: rgba(255,255,255,0.6); border-radius: 2px; }
         .ktp-filename { font-size: 12px; color: var(--text-muted); }
 
         .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
@@ -81,7 +79,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.08); min-width: 180px; z-index: 10; overflow: hidden;
         }
         .status-dropdown-menu.open { display: block; }
-        .status-dropdown-menu a { display: block; padding: 10px 16px; font-size: 13px; font-weight: 700; color: var(--text-dark); }
+        .status-dropdown-menu a { display: block; padding: 10px 16px; font-size: 13px; font-weight: 700; color: var(--text-dark); text-decoration: none; }
         .status-dropdown-menu a:hover { background: #f5f5f5; }
         .status-dropdown-menu a.active { background: var(--primary); color: white; }
 
@@ -122,32 +120,9 @@
 
         <main class="content-area">
 
-            <a href="/admin/data-pelanggan" class="back-link">&larr; Kembali</a>
+            <a href="{{ route('admin.data-pelanggan') }}" class="back-link">&larr; Kembali</a>
 
-            {{-- DATA DUMMY SEMENTARA — nanti diganti data asli dari database berdasarkan {id} --}}
             @php
-                $pelanggan = [
-                    'id' => 'PWG-0001',
-                    'nama' => 'Budi Santoso',
-                    'email' => 'budisutanto@gmail.com',
-                    'telepon' => '081234567890',
-                    'alamat' => 'Jl. Melati No. 25, RT 03/RW 05, Kel. Sukamaju, Kec. Cibeunying Kaler, Kota Bandung, Jawa Barat 40123',
-                    'tanggal' => '1 April 2024',
-                    'status' => 'Aktif',
-                    'ktp_file' => 'ktp_budi.jpg',
-                    'total_pesanan' => 4,
-                    'total_dibatalkan' => 1,
-                    'total_diterima' => 1,
-                ];
-
-                $daftarPesanan = [
-                    ['nomor' => 'WYG-2025-0001', 'tanggal' => '10 Januari 2025', 'jenis' => 'Pribadi', 'status' => 'Sedang Dikirim'],
-                    ['nomor' => 'WYG-2025-0002', 'tanggal' => '8 Januari 2025', 'jenis' => 'Pribadi', 'status' => 'Sedang Dicetak'],
-                    ['nomor' => 'WYG-2025-0003', 'tanggal' => '1 Desember 2024', 'jenis' => 'Pribadi', 'status' => 'Selesai'],
-                    ['nomor' => 'WYG-2025-0004', 'tanggal' => '14 Januari 2025', 'jenis' => 'Pribadi', 'status' => 'Menunggu Diproses'],
-                    ['nomor' => 'WYG-2025-0005', 'tanggal' => '5 Januari 2025', 'jenis' => 'Pribadi', 'status' => 'Dibatalkan'],
-                ];
-
                 $statusClassMap = [
                     'Sedang Dikirim' => 'status-dikirim',
                     'Sedang Dicetak' => 'status-dicetak',
@@ -164,60 +139,75 @@
             <div class="detail-layout">
 
                 <div class="profile-card">
-                    <div class="profile-avatar">B</div>
+                    <div class="profile-avatar">{{ strtoupper(substr($pelanggan->nama, 0, 1)) }}</div>
 
                     <div class="profile-field">
                         <div class="field-label">Id Pelanggan</div>
-                        <div class="field-value">{{ $pelanggan['id'] }}</div>
+                        <div class="field-value">PWG-{{ str_pad($pelanggan->id, 4, '0', STR_PAD_LEFT) }}</div>
                     </div>
                     <div class="profile-field">
                         <div class="field-label">Nama Pelanggan</div>
-                        <div class="field-value">{{ $pelanggan['nama'] }}</div>
+                        <div class="field-value">{{ $pelanggan->nama }}</div>
                     </div>
                     <div class="profile-field">
                         <div class="field-label">Email</div>
-                        <div class="field-value">{{ $pelanggan['email'] }}</div>
+                        <div class="field-value">{{ $pelanggan->email }}</div>
                     </div>
                     <div class="profile-field">
                         <div class="field-label">Nomor Telepon</div>
-                        <div class="field-value">{{ $pelanggan['telepon'] }}</div>
+                        <div class="field-value">{{ $pelanggan->nomor_telepon ?? '-' }}</div>
                     </div>
                     <div class="profile-field">
                         <div class="field-label">Alamat</div>
-                        <div class="field-value">{{ $pelanggan['alamat'] }}</div>
+                        <div class="field-value">{{ $pelanggan->alamat ?? '-' }}</div>
                     </div>
                     <div class="profile-field">
                         <div class="field-label">Tanggal Daftar</div>
-                        <div class="field-value">{{ $pelanggan['tanggal'] }}</div>
+                        <div class="field-value">{{ \Carbon\Carbon::parse($pelanggan->created_at)->translatedFormat('j F Y') }}</div>
                     </div>
                     <div class="profile-field">
                         <div class="field-label">Status Akun</div>
-                        <div class="field-value status-{{ strtolower($pelanggan['status']) }}">{{ $pelanggan['status'] }}</div>
+                        <div class="field-value status-aktif">Aktif</div>
                     </div>
 
                     <div class="profile-divider"></div>
 
                     <div class="ktp-label">Dokumen Identitas (KTP)</div>
-                    <div class="ktp-thumbnail">
-                        <div class="ktp-icon-box"><i class="fas fa-user"></i></div>
-                        <div class="ktp-lines"><span></span><span></span><span></span></div>
-                    </div>
-                    <div class="ktp-filename">{{ $pelanggan['ktp_file'] }}</div>
+                    
+                    @if($pelanggan->foto_ktp)
+                        @php
+                            if (str_starts_with($pelanggan->foto_ktp, 'http')) {
+                                $urlKtp = $pelanggan->foto_ktp;
+                            } else {
+                                $urlKtp = env('SUPABASE_URL') . '/storage/v1/object/public/ktp/' . $pelanggan->ktp;
+                            }
+                        @endphp
+
+                        <a href="{{ $urlKtp }}" target="_blank">
+                            <img src="{{ $urlKtp }}" alt="KTP {{ $pelanggan->nama }}" style="width: 100%; max-width: 100%; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); margin-bottom: 6px;">
+                        </a>
+                        <div class="ktp-filename" style="font-size: 11px; text-decoration: underline; cursor: pointer;">(Klik gambar untuk memperbesar)</div>
+                    @else
+                        <div class="ktp-thumbnail" style="background: #e0e0e0;">
+                            <div class="ktp-icon-box" style="color: #999;"><i class="fas fa-image"></i></div>
+                        </div>
+                        <div class="ktp-filename">Belum ada KTP yang diunggah</div>
+                    @endif
                 </div>
 
                 <div>
                     <div class="stats-row">
                         <div class="mini-stat-card yellow">
                             <div class="mini-stat-icon"><i class="far fa-file-alt"></i> Total Pesanan</div>
-                            <div class="mini-stat-number">{{ $pelanggan['total_pesanan'] }}</div>
+                            <div class="mini-stat-number">{{ $daftarPesanan->count() }}</div>
                         </div>
                         <div class="mini-stat-card red">
                             <div class="mini-stat-icon"><i class="far fa-times-circle"></i> Total Dibatalkan</div>
-                            <div class="mini-stat-number">{{ $pelanggan['total_dibatalkan'] }}</div>
+                            <div class="mini-stat-number">{{ $daftarPesanan->where('status', 'Dibatalkan')->count() }}</div>
                         </div>
                         <div class="mini-stat-card green">
                             <div class="mini-stat-icon"><i class="fas fa-sync-alt"></i> Total Diterima</div>
-                            <div class="mini-stat-number">{{ $pelanggan['total_diterima'] }}</div>
+                            <div class="mini-stat-number">{{ $daftarPesanan->where('status', 'Selesai')->count() }}</div>
                         </div>
                     </div>
 
@@ -251,14 +241,18 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($daftarPesanan as $pesanan)
-                                        <tr data-status="{{ $pesanan['status'] }}">
-                                            <td>{{ $pesanan['nomor'] }}</td>
-                                            <td>{{ $pesanan['tanggal'] }}</td>
-                                            <td>{{ $pesanan['jenis'] }}</td>
-                                            <td class="{{ $statusClassMap[$pesanan['status']] ?? '' }}">{{ $pesanan['status'] }}</td>
+                                    @forelse($daftarPesanan as $pesanan)
+                                        <tr data-status="{{ $pesanan->status }}">
+                                            <td>{{ $pesanan->nomor_pesanan }}</td>
+                                            <td>{{ \Carbon\Carbon::parse($pesanan->tanggal_pemesanan)->translatedFormat('j F Y') }}</td>
+                                            <td>{{ $pesanan->jenis_pesanan }}</td>
+                                            <td class="{{ $statusClassMap[$pesanan->status] ?? '' }}">{{ $pesanan->status }}</td>
                                         </tr>
-                                    @endforeach
+                                    @empty
+                                        <tr>
+                                            <td colspan="4" style="text-align: center; color: var(--text-muted); font-weight: normal;">Belum ada pesanan</td>
+                                        </tr>
+                                    @endforelse
                                 </tbody>
                             </table>
                         </div>

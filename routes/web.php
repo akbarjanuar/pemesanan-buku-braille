@@ -319,6 +319,12 @@ Route::middleware([
     // Halaman Pencetakan Admin
     Route::get('/admin/pencetakan', [AdminController::class, 'pencetakan'])->name('admin.pencetakan');
 
+    // Halaman Data Pelanggan
+    Route::get('/admin/data-pelanggan', [AdminController::class, 'dataPelanggan'])->name('admin.data-pelanggan');
+
+    // Halaman Detail Pelanggan
+    Route::get('/admin/data-pelanggan/{id}', [AdminController::class, 'detailPelanggan'])->name('admin.detail-pelanggan');
+
 });
 
 

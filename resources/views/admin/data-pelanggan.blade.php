@@ -69,23 +69,13 @@
                 <p>Monitoring data pelanggan untuk memantau dan mengelola data pelanggan.</p>
             </div>
 
-            <form method="GET" class="search-section">
+            <form method="GET" action="{{ route('admin.data-pelanggan') }}" class="search-section">
                 <label for="cariPelanggan">Cari data pelanggan</label>
-                <input type="text" id="cariPelanggan" name="cari" class="search-input" placeholder="Nama atau email pelanggan..." value="{{ request('cari') }}">
+                {{-- name diubah menjadi "search" agar sesuai dengan controller --}}
+                <input type="text" id="cariPelanggan" name="search" class="search-input" placeholder="Nama atau email pelanggan..." value="{{ request('search') }}">
             </form>
 
-            {{-- DATA DUMMY SEMENTARA — nanti diganti data asli dari database --}}
-            @php
-                $daftarPelanggan = [
-                    ['id' => 'PWG-0001', 'nama' => 'Budi Santoso', 'telepon' => '081234567890', 'tanggal' => '1 April 2024', 'pesanan' => 4, 'status' => 'Aktif'],
-                    ['id' => 'PWG-0002', 'nama' => 'Yayasan Tunas Bangsa', 'telepon' => '083456789012', 'tanggal' => '14 April 2024', 'pesanan' => 1, 'status' => 'Aktif'],
-                    ['id' => 'PWG-0003', 'nama' => 'SLB Negeri 1 Bandung', 'telepon' => '022-1234567', 'tanggal' => '5 Agustus 2024', 'pesanan' => 1, 'status' => 'Aktif'],
-                    ['id' => 'PWG-0004', 'nama' => 'Pertuni Kota Surabaya', 'telepon' => '08567891234', 'tanggal' => '7 Agustus 2024', 'pesanan' => 1, 'status' => 'Aktif'],
-                    ['id' => 'PWG-0005', 'nama' => 'Siti Rahayu', 'telepon' => '082956760016', 'tanggal' => '9 September 2024', 'pesanan' => 2, 'status' => 'Aktif'],
-                ];
-            @endphp
-
-            <p class="result-count">Menampilkan <strong>{{ count($daftarPelanggan) }}</strong> pelanggan</p>
+            <p class="result-count">Menampilkan <strong>{{ $daftarPelanggan->count() }}</strong> pelanggan</p>
 
             <div class="table-card">
                 <div class="table-wrapper">
@@ -102,17 +92,24 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($daftarPelanggan as $pelanggan)
+                            {{-- Menggunakan data dari database --}}
+                            @forelse($daftarPelanggan as $pelanggan)
                                 <tr>
-                                    <td>{{ $pelanggan['id'] }}</td>
-                                    <td>{{ $pelanggan['nama'] }}</td>
-                                    <td>{{ $pelanggan['telepon'] }}</td>
-                                    <td>{{ $pelanggan['tanggal'] }}</td>
-                                    <td>{{ $pelanggan['pesanan'] }}</td>
-                                    <td class="status-{{ strtolower($pelanggan['status']) }}">{{ $pelanggan['status'] }}</td>
-                                    <td><a href="/admin/data-pelanggan/{{ $pelanggan['id'] }}" class="btn-detail">Detail</a></td>
+                                    <td>PWG-{{ str_pad($pelanggan->id, 4, '0', STR_PAD_LEFT) }}</td>
+                                    <td>{{ $pelanggan->nama }}</td>
+                                    <td>{{ $pelanggan->nomor_telepon ?? '-' }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($pelanggan->created_at)->translatedFormat('j F Y') }}</td>
+                                    <td>{{ $pelanggan->pesanan_count ?? 0 }}</td>
+                                    <td class="status-aktif">Aktif</td>
+                                    <td><a href="{{ route('admin.detail-pelanggan', $pelanggan->id) }}" class="btn-detail">Detail</a></td>
                                 </tr>
-                            @endforeach
+                            @empty
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: var(--text-muted); font-weight: normal;">
+                                        Tidak ada data pelanggan ditemukan.
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>

@@ -129,6 +129,44 @@ class AdminController extends Controller
         );
     }
 
+// ===== Halaman Data Pelanggan =====
+    public function dataPelanggan(Request $request)
+    {
+        $search = $request->input('search');
+        
+        // 1. Ambil data user, hitung jumlah pesanan, dan FILTER hanya pelanggan
+        // (Catatan: Sesuaikan 'pelanggan' dengan isi kolom role di database kamu. 
+        // Jika menggunakan 'user', ganti jadi where('role', 'user'))
+        $query = \App\Models\User::withCount('pesanan')->where('role', 'user');
+        
+        // 2. Fitur Pencarian
+        if ($search) {
+            // Gunakan function($q) agar 'orWhere' tidak merusak filter role di atas
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'ilike', "%{$search}%")
+                  ->orWhere('email', 'ilike', "%{$search}%");
+            });
+        }
+
+        $daftarPelanggan = $query->orderBy('created_at', 'desc')->get();
+
+        return view('admin.data-pelanggan', compact('daftarPelanggan', 'search'));
+    }
+
+    // ===== Halaman Detail Pelanggan =====
+    public function detailPelanggan($id)
+    {
+        // Ambil data user
+        $pelanggan = \App\Models\User::findOrFail($id);
+        
+        // Ambil riwayat pesanan milik user ini
+        $daftarPesanan = \App\Models\Pesanan::where('user_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('admin.data-pelanggan-detail', compact('pelanggan', 'daftarPesanan'));
+    }
+
 
     // =====================================================
     // ===== HALAMAN PENCETAKAN ============================
