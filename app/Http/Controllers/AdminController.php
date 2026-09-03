@@ -89,23 +89,21 @@ class AdminController extends Controller
     }
 
 
-    // =====================================================
-    // ===== HALAMAN PERMINTAAN BUKU =======================
-    // =====================================================
-
-    public function permintaanBuku()
+    // ===== Halaman Permintaan Buku =====
+    public function permintaanBuku(Request $request)
     {
+        $statusFilter = $request->input('status');
 
-        // Mengambil seluruh pesanan beserta data user
-        $daftarPesanan = Pesanan::with('user')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $query = \App\Models\Pesanan::with('user')->orderBy('created_at', 'desc');
 
+        // Jika ada filter status dari dropdown
+        if ($statusFilter && $statusFilter !== 'semua') {
+            $query->where('status', $statusFilter);
+        }
 
-        return view(
-            'admin.permintaan-buku',
-            compact('daftarPesanan')
-        );
+        $daftarPesanan = $query->get();
+
+        return view('admin.permintaan-buku', compact('daftarPesanan', 'statusFilter'));
     }
 
 

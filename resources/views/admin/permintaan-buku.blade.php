@@ -6,6 +6,16 @@
     <title>Permintaan Buku - BrailleKita</title>
 
     <style>
+        :root {
+            --primary: #c62828;
+            --primary-hover: #b71c1c;
+            --surface: #ffffff;
+            --text-dark: #111111;
+            --text-muted: #757575;
+            --border: #e0e0e0;
+            --background: #f4f6f9;
+        }
+        
         .page-header { margin-bottom: 20px; }
         .page-header h2 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
         .page-header p { color: var(--text-muted); font-size: 14px; }
@@ -84,38 +94,50 @@
         }
         .btn-update-status.enabled:hover { background-color: var(--primary-hover); }
 
+        /* ===== PERBAIKAN WARNA HEADER TABEL ===== */
         .table-card { background-color: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
         .table-wrapper { width: 100%; overflow-x: auto; }
         .data-table { width: 100%; border-collapse: collapse; }
-        .data-table th { background-color: #f1f1f1; padding: 14px 24px; text-align: left; font-size: 13px; color: var(--text-muted); font-weight: 700; white-space: nowrap; }
-        .data-table td { padding: 16px 24px; border-bottom: 1px solid var(--border); font-size: 14px; font-weight: 700; color: var(--text-dark); white-space: nowrap; }
+        
+        /* Warna abu-abu sekarang dipasang di baris tabel (TR), bukan di sel (TH) agar tidak ada celah */
+        .data-table thead tr { background-color: #f1f1f1; border-bottom: 1px solid var(--border); }
+        .data-table th { padding: 14px 24px; text-align: left; font-size: 13px; color: var(--text-muted); font-weight: 700; white-space: nowrap; }
+        .data-table td { padding: 16px 24px; border-bottom: 1px solid var(--border); font-size: 14px; font-weight: 700; color: var(--text-dark); white-space: nowrap; vertical-align: middle; }
         .data-table tr:last-child td { border-bottom: none; }
+        .data-table tbody tr:hover { background-color: #fafafa; }
 
-        /* Kolom checklist — animasi smooth saat muncul/hilang */
+        /* Kolom checklist — diperbaiki agar selnya tidak tembus pandang */
         .select-col {
             width: 0;
-            padding: 16px 0 !important;
-            opacity: 0;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
             overflow: hidden;
-            transition: width 0.25s ease, padding 0.25s ease, opacity 0.2s ease;
+            transition: width 0.25s ease, padding 0.25s ease;
         }
         .select-col.visible {
             width: 44px;
-            padding: 16px 12px !important;
-            opacity: 1;
+            padding-left: 16px !important;
+            padding-right: 12px !important;
         }
-        .select-col input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
+        .select-col input[type="checkbox"] { 
+            width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); 
+            opacity: 0; pointer-events: none; transition: opacity 0.2s ease; 
+        }
+        .select-col.visible input[type="checkbox"] { 
+            opacity: 1; pointer-events: auto; 
+        }
 
-        /* Warna status — pakai selector lebih spesifik supaya tidak ketiban aturan .data-table td */
-        .data-table td.status-dikirim { color: #0097a7; }
-        .data-table td.status-dicetak { color: #fbc02d; }
-        .data-table td.status-selesai { color: #2e7d32; }
-        .data-table td.status-diproses { color: #e65100; }
-        .data-table td.status-batal { color: #c62828; }
+        /* Warna status dinamis */
+        .status-dikirim { color: #0097a7 !important; }
+        .status-dicetak { color: #fbc02d !important; }
+        .status-selesai { color: #2e7d32 !important; }
+        .status-diproses { color: #e65100 !important; }
+        .status-batal { color: #c62828 !important; }
+        .status-baru { color: #1976d2 !important; }
 
         .btn-detail {
             background-color: var(--primary); color: white; padding: 6px 16px; border-radius: 6px;
-            font-size: 13px; font-weight: 700; border: none; cursor: pointer; font-family: inherit; display: inline-block;
+            font-size: 13px; font-weight: 700; border: none; cursor: pointer; font-family: inherit; display: inline-block; text-decoration: none;
         }
         .btn-detail:hover { background-color: var(--primary-hover); }
 
@@ -182,15 +204,14 @@
         <header class="topbar">
             <div class="topbar-left">
                 <button type="button" class="menu-toggle"><i class="fas fa-bars"></i></button>
-                <span>Permintaan Buku</span>
+                <span style="font-size: 20px; font-weight: 900; font-family: 'Georgia', serif; margin-left: 10px;">Permintaan Buku</span>
             </div>
 
             <div class="topbar-right">
                 <i class="far fa-bell notification-bell"></i>
-
-                <div class="user-profile">
-                    <span>{{ auth()->user()->nama ?? 'Admin' }}</span>
-                    <i class="fas fa-user-circle"></i>
+                <div class="user-profile" style="display: flex; align-items: center; gap: 10px; font-weight: 700;">
+                    <span>{{ auth()->user()->nama ?? 'Admin Pengiriman' }}</span>
+                    <i class="fas fa-user-circle" style="font-size: 20px;"></i>
                 </div>
             </div>
         </header>
@@ -211,11 +232,13 @@
                         </button>
                         <div class="status-dropdown-menu" id="statusDropdownMenu">
                             <a data-status="semua" class="status-filter-item active">Semua Status</a>
-                            <a data-status="menunggu-diproses" class="status-filter-item">Menunggu Diproses</a>
-                            <a data-status="sedang-dicetak" class="status-filter-item">Sedang Dicetak</a>
-                            <a data-status="sedang-dikirim" class="status-filter-item">Sedang Dikirim</a>
-                            <a data-status="selesai" class="status-filter-item">Selesai</a>
-                            <a data-status="dibatalkan" class="status-filter-item">Dibatalkan</a>
+                            <a data-status="Permintaan Baru" class="status-filter-item">Permintaan Baru</a>
+                            <a data-status="Sedang Diproses" class="status-filter-item">Sedang Diproses</a>
+                            <a data-status="Menunggu Pencetakan" class="status-filter-item">Menunggu Pencetakan</a>
+                            <a data-status="Sedang Dicetak" class="status-filter-item">Sedang Dicetak</a>
+                            <a data-status="Sedang Dikirim" class="status-filter-item">Sedang Dikirim</a>
+                            <a data-status="Selesai" class="status-filter-item">Selesai</a>
+                            <a data-status="Dibatalkan" class="status-filter-item">Dibatalkan</a>
                         </div>
                     </div>
 
@@ -238,7 +261,7 @@
                     <table class="data-table" id="permintaanTable">
                         <thead>
                             <tr>
-                                <th class="select-col" id="selectColHeader" style="padding-top:14px; padding-bottom:14px;"><input type="checkbox" id="selectAllCheckbox"></th>
+                                <th class="select-col" id="selectColHeader"><input type="checkbox" id="selectAllCheckbox"></th>
                                 <th>Nomor</th>
                                 <th>Tanggal</th>
                                 <th>Pelanggan</th>
@@ -248,52 +271,34 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {{-- DATA DUMMY SEMENTARA — nanti diganti data asli dari database --}}
-                            <tr data-status="sedang-dikirim">
-                                <td class="select-col"><input type="checkbox" class="row-checkbox" value="1"></td>
-                                <td>WYG-2025-0001</td>
-                                <td>10 Januari 2025</td>
-                                <td>Budi Santoso</td>
-                                <td>Pribadi</td>
-                                <td class="status-dikirim">Sedang dikirim</td>
-                                <td><a href="#" class="btn-detail">Detail</a></td>
-                            </tr>
-                            <tr data-status="sedang-dicetak">
-                                <td class="select-col"><input type="checkbox" class="row-checkbox" value="2"></td>
-                                <td>WYG-2025-0002</td>
-                                <td>8 Januari 2025</td>
-                                <td>Budi Santoso</td>
-                                <td>Pribadi</td>
-                                <td class="status-dicetak">Sedang dicetak</td>
-                                <td><a href="#" class="btn-detail">Detail</a></td>
-                            </tr>
-                            <tr data-status="selesai">
-                                <td class="select-col"><input type="checkbox" class="row-checkbox" value="3"></td>
-                                <td>WYG-2025-0003</td>
-                                <td>1 Desember 2024</td>
-                                <td>Budi Santoso</td>
-                                <td>Pribadi</td>
-                                <td class="status-selesai">Selesai</td>
-                                <td><a href="#" class="btn-detail">Detail</a></td>
-                            </tr>
-                            <tr data-status="menunggu-diproses">
-                                <td class="select-col"><input type="checkbox" class="row-checkbox" value="4"></td>
-                                <td>WYG-2025-0004</td>
-                                <td>14 Januari 2025</td>
-                                <td>Yayasan Tunas Bangsa</td>
-                                <td>Lembaga</td>
-                                <td class="status-diproses">Menunggu diproses</td>
-                                <td><a href="#" class="btn-detail">Detail</a></td>
-                            </tr>
-                            <tr data-status="dibatalkan">
-                                <td class="select-col"><input type="checkbox" class="row-checkbox" value="5"></td>
-                                <td>WYG-2025-0005</td>
-                                <td>5 Januari 2025</td>
-                                <td>Budi Santoso</td>
-                                <td>Pribadi</td>
-                                <td class="status-batal">Dibatalkan</td>
-                                <td><a href="#" class="btn-detail">Detail</a></td>
-                            </tr>
+                            @forelse($daftarPesanan as $pesanan)
+                                @php
+                                    // Penentuan warna kelas status
+                                    $statusClass = '';
+                                    $s = strtolower($pesanan->status);
+                                    if(str_contains($s, 'dikirim')) $statusClass = 'status-dikirim';
+                                    elseif(str_contains($s, 'dicetak')) $statusClass = 'status-dicetak';
+                                    elseif(str_contains($s, 'selesai')) $statusClass = 'status-selesai';
+                                    elseif(str_contains($s, 'diproses') || str_contains($s, 'menunggu')) $statusClass = 'status-diproses';
+                                    elseif(str_contains($s, 'batal')) $statusClass = 'status-batal';
+                                    else $statusClass = 'status-baru';
+                                @endphp
+                                <tr data-status="{{ $pesanan->status }}">
+                                    <td class="select-col"><input type="checkbox" class="row-checkbox" value="{{ $pesanan->id }}"></td>
+                                    <td>WYG-{{ date('Y', strtotime($pesanan->created_at)) }}-{{ str_pad($pesanan->id, 4, '0', STR_PAD_LEFT) }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($pesanan->created_at)->translatedFormat('j F Y') }}</td>
+                                    <td>{{ $pesanan->user->nama ?? 'Nama Pelanggan' }}</td>
+                                    <td>{{ $pesanan->jenis_pesanan ?? 'Pribadi' }}</td>
+                                    <td class="{{ $statusClass }}">{{ $pesanan->status }}</td>
+                                    <td><a href="{{ route('admin.detail-pesanan', $pesanan->id) }}" class="btn-detail">Detail</a></td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="7" style="text-align: center; color: var(--text-muted); font-weight: normal; padding: 40px;">
+                                        Belum ada permintaan buku.
+                                    </td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -310,20 +315,28 @@
 
             <div class="status-option-list">
                 <label class="status-option">
-                    <input type="radio" name="statusBaru" value="Diproses">
+                    <input type="radio" name="statusBaru" value="Sedang Diproses">
                     Diproses
                 </label>
                 <label class="status-option">
-                    <input type="radio" name="statusBaru" value="Dicetak">
+                    <input type="radio" name="statusBaru" value="Menunggu Pencetakan">
+                    Menunggu Pencetakan
+                </label>
+                <label class="status-option">
+                    <input type="radio" name="statusBaru" value="Sedang Dicetak">
                     Dicetak
                 </label>
                 <label class="status-option">
-                    <input type="radio" name="statusBaru" value="Dikirim">
+                    <input type="radio" name="statusBaru" value="Sedang Dikirim">
                     Dikirim
                 </label>
                 <label class="status-option">
                     <input type="radio" name="statusBaru" value="Selesai">
                     Selesai
+                </label>
+                <label class="status-option">
+                    <input type="radio" name="statusBaru" value="Dibatalkan">
+                    Dibatalkan
                 </label>
             </div>
 
@@ -396,11 +409,9 @@
 
             docBtn.addEventListener('click', function () {
                 if (!selectMode) {
-                    // Aktifkan mode pilih dokumen + buka dropdown
                     setSelectMode(true);
                     docMenu.classList.add('open');
                 } else {
-                    // Matikan mode pilih dokumen (batal)
                     setSelectMode(false);
                 }
             });
@@ -410,7 +421,6 @@
                 var semuaSudahDicentang = document.querySelectorAll('.row-checkbox:checked').length === rowCheckboxes.length;
 
                 rowCheckboxes.forEach(function (cb) {
-                    // Hanya centang baris yang sedang terlihat (sesuai filter status aktif)
                     var row = cb.closest('tr');
                     if (row.style.display !== 'none') {
                         cb.checked = !semuaSudahDicentang;
@@ -450,7 +460,6 @@
                 var jumlah = document.querySelectorAll('.row-checkbox:checked').length;
                 jumlahDipilihSpan.textContent = jumlah;
 
-                // Reset pilihan status tiap kali modal dibuka
                 radioButtons.forEach(function (r) { r.checked = false; });
                 statusOptions.forEach(function (opt) { opt.classList.remove('selected'); });
                 btnModalSave.disabled = true;
@@ -479,14 +488,14 @@
                 var statusTerpilih = document.querySelector('input[name="statusBaru"]:checked');
                 var idTerpilih = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(function (cb) { return cb.value; });
 
-                // TODO: kirim idTerpilih dan statusTerpilih.value ke backend (belum diimplementasikan)
+                // TODO: kirim idTerpilih dan statusTerpilih.value ke backend
                 console.log('Update status ke:', statusTerpilih.value, 'untuk dokumen:', idTerpilih);
 
                 modal.classList.remove('open');
                 setSelectMode(false);
             });
 
-            // Klik di luar dropdown untuk menutupnya (tidak mematikan select mode)
+            // Klik di luar dropdown untuk menutupnya
             document.addEventListener('click', function (e) {
                 if (!statusBtn.contains(e.target) && !statusMenu.contains(e.target)) {
                     statusMenu.classList.remove('open');
