@@ -84,7 +84,7 @@ class PemesananController extends Controller
         $pesanan = Pesanan::create([
             'user_id'           => $user_id,
             'nomor_pesanan'     => $nomor_pesanan,
-            'status'            => 'Menunggu Diproses',
+            'status'            => 'Diproses',
             'jenis_pesanan'     => $jenisPesanan,
             'tanggal_pemesanan' => date('Y-m-d'),
             'nama_penerima'     => $request->nama_penerima,

@@ -63,11 +63,12 @@
         .badge { padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 700; margin-right: 8px; border: 1px solid; display: inline-block; }
         .badge-gray { background: #f5f5f5; color: #616161; border-color: #e0e0e0; }
 
-        .status-diproses        { background: #fff3e0; color: #e65100; border-color: #ffb74d; }
-        .status-menunggu-diproses { background: #fff3e0; color: #e65100; border-color: #ffb74d; }
-        .status-dikirim         { background: #e3f2fd; color: #1565c0; border-color: #64b5f6; }
-        .status-pesanan-sampai  { background: #e8f5e9; color: #2e7d32; border-color: #81c784; }
-        .status-dibatalkan      { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+        .status-diproses    { background: #fff3e0; color: #e65100; border-color: #ffb74d; }
+        .status-dicetak     { background: #fffde7; color: #fbc02d; border-color: #ffee58; }
+        .status-dikirim     { background: #e3f2fd; color: #1565c0; border-color: #64b5f6; }
+        .status-selesai     { background: #e8f5e9; color: #2e7d32; border-color: #81c784; }
+        .status-return      { background: #f3e5f5; color: #8e24aa; border-color: #ce93d8; }
+        .status-dibatalkan  { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
 
         .order-date { font-size: 14px; color: var(--muted-foreground); margin-top: -6px; }
         
@@ -96,9 +97,9 @@
         .tracker-step.done .tracker-label, .tracker-step.active .tracker-label { color: var(--foreground); }
 
         .cancelled-note { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; border-radius: 6px; padding: 10px 14px; font-size: 14px; font-weight: 700; }
+        .return-note { background: #f3e5f5; color: #8e24aa; border: 1px solid #ce93d8; border-radius: 6px; padding: 10px 14px; font-size: 14px; font-weight: 700; }
 
         .order-items { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 16px 0; }
-        
         .order-actions { display: flex; gap: 12px; }
         .btn-outline-gray { border: 1px solid var(--border); background: white; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-family: inherit; font-size: 14px; }
     </style>
@@ -106,18 +107,30 @@
 <body>
 
     @php
-        $tahapanStatus = [
+        // 3 Tahapan Utama yang ingin ditampilkan di Timeline Customer
+        $tahapanTimeline = [
             'Diproses',
             'Dikirim',
-            'Pesanan Sampai',
+            'Pesanan Sampai'
         ];
+
+        // Fungsi pemetaan status dari database admin ke index timeline customer (0, 1, atau 2)
+        $getTrackerIndex = function($status) {
+            $s = strtolower($status);
+            if (str_contains($s, 'selesai')) {
+                return 2; // Pesanan Sampai (Selesai)
+            } elseif (str_contains($s, 'dikirim')) {
+                return 1; // Dikirim
+            } else {
+                return 0; // Diproses atau Dicetak masuk ke tahap awal
+            }
+        };
 
         $slugStatus = function ($status) {
             return 'status-' . \Illuminate\Support\Str::slug($status);
         };
     @endphp
 
-    {{-- Memanggil komponen Navbar utama yang sudah disesuaikan --}}
     @include('partials.navbar')
 
     <main class="main-container">
@@ -139,29 +152,30 @@
         @else
             <div class="filter-tabs">
                 <button class="tab-btn active" data-filter="semua">Semua ({{ $daftarPesanan->count() }})</button>
-                @foreach($tahapanStatus as $status)
-                    <button class="tab-btn" data-filter="{{ $slugStatus($status) }}">
-                        {{ $status }} ({{ $daftarPesanan->where('status', $status)->count() }})
-                    </button>
-                @endforeach
-                <button class="tab-btn" data-filter="status-dibatalkan">
-                    Dibatalkan ({{ $daftarPesanan->where('status', 'Dibatalkan')->count() }})
-                </button>
+                <button class="tab-btn" data-filter="status-diproses">Diproses ({{ $daftarPesanan->where('status', 'Diproses')->count() }})</button>
+                <button class="tab-btn" data-filter="status-dicetak">Dicetak ({{ $daftarPesanan->where('status', 'Dicetak')->count() }})</button>
+                <button class="tab-btn" data-filter="status-dikirim">Dikirim ({{ $daftarPesanan->where('status', 'Dikirim')->count() }})</button>
+                <button class="tab-btn" data-filter="status-selesai">Selesai ({{ $daftarPesanan->where('status', 'Selesai')->count() }})</button>
+                <button class="tab-btn" data-filter="status-return">Return ({{ $daftarPesanan->where('status', 'Return')->count() }})</button>
+                <button class="tab-btn" data-filter="status-dibatalkan">Dibatalkan ({{ $daftarPesanan->where('status', 'Dibatalkan')->count() }})</button>
             </div>
 
             <div class="order-list">
                 @foreach($daftarPesanan as $pesanan)
                     @php
-                        $isDibatalkan = $pesanan->status === 'Dibatalkan';
-                        $indexSaatIni = array_search($pesanan->status, $tahapanStatus);
-                        if ($indexSaatIni === false) { $indexSaatIni = 0; }
+                        $statusDb = $pesanan->status;
+                        $isDibatalkan = str_contains(strtolower($statusDb), 'batal');
+                        $isReturn = str_contains(strtolower($statusDb), 'return');
+                        
+                        // Ambil posisi index aktif untuk 3 tahapan timeline
+                        $indexSaatIni = $getTrackerIndex($statusDb);
                     @endphp
 
-                    <div class="order-card" data-status="{{ $isDibatalkan ? 'status-dibatalkan' : $slugStatus($pesanan->status) }}">
+                    <div class="order-card" data-status="{{ $slugStatus($statusDb) }}">
                         <div class="order-header">
                             <div>
                                 <span class="order-id">{{ $pesanan->nomor_pesanan }}</span>
-                                <span class="badge {{ $isDibatalkan ? 'status-dibatalkan' : $slugStatus($pesanan->status) }}">{{ $pesanan->status }}</span>
+                                <span class="badge {{ $slugStatus($statusDb) }}">{{ $statusDb }}</span>
                                 <span class="badge badge-gray">{{ $pesanan->jenis_pesanan }}</span>
                             </div>
                             <div class="total-box">
@@ -172,6 +186,7 @@
                         
                         <div class="order-date">Tanggal Pemesanan: {{ $pesanan->tanggal_pemesanan }}</div>
 
+                        {{-- Tampilan khusus jika Dibatalkan --}}
                         @if($isDibatalkan)
                             <div class="cancelled-note">
                                 ✕ Pesanan ini telah dibatalkan.
@@ -179,10 +194,16 @@
                                     <br>Alasan: {{ $pesanan->alasan_pembatalan }}
                                 @endif
                             </div>
+                        {{-- Tampilan khusus jika Return --}}
+                        @elseif($isReturn)
+                            <div class="return-note">
+                                ⚠ Pesanan dalam status pengembalian (Return).
+                            </div>
+                        {{-- Tampilan Timeline 3 Tahap Standar --}}
                         @else
                             <div class="status-tracker">
                                 <div class="tracker-row">
-                                    @foreach($tahapanStatus as $i => $tahap)
+                                    @foreach($tahapanTimeline as $i => $tahap)
                                         @php
                                             $state = $i < $indexSaatIni ? 'done' : ($i === $indexSaatIni ? 'active' : '');
                                         @endphp
@@ -204,7 +225,7 @@
                         
                         <div class="order-actions">
                             <a href="/pesanan/{{ $pesanan->id }}" class="btn-outline-primary" style="display:inline-flex; align-items:center;">Lihat Detail</a>
-                            @if(!$isDibatalkan && in_array($pesanan->status, ['Diproses', 'Menunggu Diproses']))
+                            @if(!$isDibatalkan && !$isReturn && in_array($statusDb, ['Diproses', 'Dicetak']))
                                 <a href="/pesanan/{{ $pesanan->id }}/batalkan" class="btn-outline-gray" style="display:flex; align-items:center; text-decoration:none;">Batalkan Pesanan</a>
                             @endif
                         </div>
