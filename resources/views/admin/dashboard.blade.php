@@ -581,7 +581,7 @@
             <div class="table-card">
                 <div class="table-header">
                     <h3>Permintaan Terbaru</h3>
-                    <a href="#">Lihat Semua</a>
+                    <a href="/admin/permintaan-buku">Lihat Semua</a>
                 </div>
                 
                 <div class="table-wrapper">

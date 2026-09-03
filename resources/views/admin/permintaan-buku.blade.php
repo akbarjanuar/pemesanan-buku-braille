@@ -334,14 +334,6 @@
                     <input type="radio" name="statusBaru" value="Selesai">
                     Selesai
                 </label>
-                <label class="status-option">
-                    <input type="radio" name="statusBaru" value="Return">
-                    Return
-                </label>
-                <label class="status-option">
-                    <input type="radio" name="statusBaru" value="Dibatalkan">
-                    Dibatalkan
-                </label>
             </div>
 
             <div class="modal-actions">
