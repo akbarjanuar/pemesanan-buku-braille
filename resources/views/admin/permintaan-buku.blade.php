@@ -232,12 +232,11 @@
                         </button>
                         <div class="status-dropdown-menu" id="statusDropdownMenu">
                             <a data-status="semua" class="status-filter-item active">Semua Status</a>
-                            <a data-status="Permintaan Baru" class="status-filter-item">Permintaan Baru</a>
-                            <a data-status="Sedang Diproses" class="status-filter-item">Sedang Diproses</a>
-                            <a data-status="Menunggu Pencetakan" class="status-filter-item">Menunggu Pencetakan</a>
-                            <a data-status="Sedang Dicetak" class="status-filter-item">Sedang Dicetak</a>
-                            <a data-status="Sedang Dikirim" class="status-filter-item">Sedang Dikirim</a>
+                            <a data-status="Sedang Diproses" class="status-filter-item">Diproses</a>
+                            <a data-status="Menunggu Pencetakan" class="status-filter-item">Dicetak</a>
+                            <a data-status="Sedang Dikirim" class="status-filter-item">Dikirim</a>
                             <a data-status="Selesai" class="status-filter-item">Selesai</a>
+                            <a data-status="Return" class="status-filter-item">Return</a>
                             <a data-status="Dibatalkan" class="status-filter-item">Dibatalkan</a>
                         </div>
                     </div>
@@ -315,24 +314,24 @@
 
             <div class="status-option-list">
                 <label class="status-option">
-                    <input type="radio" name="statusBaru" value="Sedang Diproses">
+                    <input type="radio" name="statusBaru" value="Diproses">
                     Diproses
                 </label>
                 <label class="status-option">
-                    <input type="radio" name="statusBaru" value="Menunggu Pencetakan">
-                    Menunggu Pencetakan
-                </label>
-                <label class="status-option">
-                    <input type="radio" name="statusBaru" value="Sedang Dicetak">
+                    <input type="radio" name="statusBaru" value="Dicetak">
                     Dicetak
                 </label>
                 <label class="status-option">
-                    <input type="radio" name="statusBaru" value="Sedang Dikirim">
+                    <input type="radio" name="statusBaru" value="Dikirim">
                     Dikirim
                 </label>
                 <label class="status-option">
                     <input type="radio" name="statusBaru" value="Selesai">
                     Selesai
+                </label>
+                <label class="status-option">
+                    <input type="radio" name="statusBaru" value="Return">
+                    Return
                 </label>
                 <label class="status-option">
                     <input type="radio" name="statusBaru" value="Dibatalkan">
