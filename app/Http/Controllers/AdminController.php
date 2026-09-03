@@ -106,6 +106,22 @@ class AdminController extends Controller
         return view('admin.permintaan-buku', compact('daftarPesanan', 'statusFilter'));
     }
 
+    // ===== Proses Update Status Massal =====
+    public function updateStatusPesanan(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'status' => 'required|string'
+        ]);
+
+        // Memperbarui status semua pesanan yang diceklis
+        \App\Models\Pesanan::whereIn('id', $request->ids)->update([
+            'status' => $request->status
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Status berhasil diperbarui!']);
+    }
+
 
     // =====================================================
     // ===== HALAMAN DETAIL PESANAN ========================

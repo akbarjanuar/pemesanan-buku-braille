@@ -325,6 +325,9 @@ Route::middleware([
     // Halaman Detail Pelanggan
     Route::get('/admin/data-pelanggan/{id}', [AdminController::class, 'detailPelanggan'])->name('admin.detail-pelanggan');
 
+    // Proses Update Status Pesanan
+    Route::post('/admin/permintaan-buku/update-status', [AdminController::class, 'updateStatusPesanan'])->name('admin.permintaan-buku.update-status');
+
 });
 
 

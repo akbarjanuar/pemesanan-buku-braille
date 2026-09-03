@@ -20,12 +20,10 @@
 
         *, *::before, *::after { box-sizing: border-box; }
 
-        /* ===== BASE & TOPBAR ===== */
         .menu-toggle { display: inline-flex !important; align-items: center; justify-content: center; width: 24px; height: 24px; padding: 0; color: var(--text-muted); background: none; border: none; cursor: pointer; font-size: 20px; flex-shrink: 0; }
         .menu-toggle:hover { color: var(--primary); }
         .topbar-title { font-size: 20px; font-weight: 900; font-family: 'Georgia', serif; color: var(--text-dark); margin-left: 10px; }
         
-        /* ===== LAYOUT DETAIL ===== */
         .content-area { padding: 32px; overflow-y: auto; flex-grow: 1; }
         
         .back-link {
@@ -49,7 +47,6 @@
         .col-left { display: flex; flex-direction: column; gap: 24px; }
         .col-right { display: flex; flex-direction: column; gap: 24px; }
 
-        /* ===== CARD ===== */
         .card {
             background-color: var(--surface);
             border: 1px solid var(--border);
@@ -66,7 +63,6 @@
             margin-bottom: 24px;
         }
 
-        /* ===== ALASAN BATAL BOX ===== */
         .card-cancel {
             background-color: #f9d8d8;
             border: 1px solid #f2b6b6;
@@ -78,7 +74,6 @@
             font-size: 16px;
         }
 
-        /* ===== ORDER INFO GRID ===== */
         .order-info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -94,7 +89,7 @@
 
         .info-group p {
             font-size: 16px;
-            font-weight: 900; /* Disesuaikan dengan desain: tebal & serif */
+            font-weight: 900;
             font-family: 'Georgia', serif;
             color: var(--text-dark);
             margin: 0;
@@ -109,14 +104,14 @@
             font-weight: 800;
         }
 
-        /* Mapping Warna Status Sesuai Desain */
-        .color-dikirim { color: #0097a7; } /* Biru */
-        .color-dicetak { color: #fbc02d; } /* Kuning */
-        .color-selesai { color: #2e7d32; } /* Hijau */
-        .color-diproses { color: #e65100; } /* Oranye */
-        .color-batal { color: #c62828; } /* Merah */
+        /* Mapping Warna Status */
+        .color-dikirim { color: #0097a7; }
+        .color-dicetak { color: #fbc02d; }
+        .color-selesai { color: #2e7d32; }
+        .color-diproses { color: #e65100; }
+        .color-batal { color: #c62828; }
+        .color-return { color: #8e24aa; }
 
-        /* ===== LIST BUKU ===== */
         .book-item {
             display: flex;
             gap: 20px;
@@ -153,11 +148,9 @@
         .stock-available { font-size: 13px; color: #2e7d32; font-weight: 700; margin: 0; }
         .stock-empty { font-size: 13px; color: #c62828; font-weight: 700; margin: 0; }
 
-        /* ===== ALAMAT PENGIRIMAN ===== */
         .address-text { font-size: 14px; color: var(--text-muted); margin: 0 0 16px 0; line-height: 1.6; }
         .address-note { font-size: 13px; color: var(--text-muted); margin: 0; }
 
-        /* ===== BUTTON ACTION ===== */
         .btn-outline {
             display: block;
             width: 100%;
@@ -204,13 +197,12 @@
             width: 14px;
             height: 14px;
             border-radius: 50%;
-            background-color: #e0e0e0; /* Default abu-abu untuk history masa lalu */
+            background-color: #e0e0e0;
             border: 4px solid var(--surface);
             box-sizing: content-box;
             z-index: 2;
         }
         
-        /* Titik Terakhir / Active SELALU Merah di desain */
         .timeline-item.active .timeline-dot { background-color: var(--primary); }
         
         .timeline-time { font-size: 12px; color: #9e9e9e; margin: 0 0 4px 0; }
@@ -224,13 +216,10 @@
 </head>
 <body>
 
-    {{-- SIDEBAR ADMIN --}}
     @include('partials.admin-nav', ['activeMenu' => 'permintaan-buku'])
 
-    {{-- MAIN WRAPPER --}}
     <div class="main-wrapper">
 
-        {{-- TOPBAR --}}
         <header class="topbar">
             <div class="topbar-left">
                 <button type="button" class="menu-toggle" aria-label="Buka atau tutup sidebar">
@@ -248,32 +237,29 @@
             </div>
         </header>
 
-        {{-- CONTENT --}}
         <main class="content-area">
 
-            {{-- BACK LINK --}}
             <a href="{{ route('admin.permintaan-buku') }}" class="back-link">
                 &larr; Permintaan Buku
             </a>
 
             <div class="detail-grid">
                 
-                {{-- KOLOM KIRI --}}
                 <div class="col-left">
                     
-                    {{-- KARTU 1: INFO PESANAN --}}
                     <div class="card">
                         @php
                             $dbStatus = $pesanan->status;
+                            $s = strtolower($dbStatus);
                             $statusColor = 'color-diproses'; 
                             
-                            if(in_array($dbStatus, ['Sedang Dikirim', 'Siap Dikirim'])) $statusColor = 'color-dikirim';
-                            elseif(in_array($dbStatus, ['Sedang Dicetak', 'Menunggu Pencetakan'])) $statusColor = 'color-dicetak';
-                            elseif($dbStatus == 'Selesai') $statusColor = 'color-selesai';
-                            elseif(in_array($dbStatus, ['Dibatalkan', 'Kendala'])) $statusColor = 'color-batal';
+                            if(str_contains($s, 'dikirim')) $statusColor = 'color-dikirim';
+                            elseif(str_contains($s, 'dicetak')) $statusColor = 'color-dicetak';
+                            elseif(str_contains($s, 'selesai')) $statusColor = 'color-selesai';
+                            elseif(str_contains($s, 'batal') || str_contains($s, 'kendala')) $statusColor = 'color-batal';
+                            elseif(str_contains($s, 'return')) $statusColor = 'color-return';
                         @endphp
 
-                        {{-- Teks status di pojok kanan atas --}}
                         <div class="status-text-top {{ $statusColor }}">
                             {{ $pesanan->status }}
                         </div>
@@ -306,7 +292,6 @@
                         </div>
                     </div>
 
-                    {{-- KARTU 2: BUKU YANG DIPESAN --}}
                     <div class="card">
                         <div class="card-title">Buku yang dipesan</div>
                         
@@ -327,8 +312,7 @@
                                     <h4>{{ $detail->buku->judul ?? 'Judul Buku Tidak Ditemukan' }}</h4>
                                     <p class="meta">{{ $detail->buku->kategori ?? 'Kategori' }} . {{ $detail->jumlah }} Eksemplar</p>
                                     
-                                    {{-- Logika Simulasi Indikator Stok Sesuai Gambar --}}
-                                    @if(in_array($dbStatus, ['Sedang Dicetak', 'Menunggu Pencetakan']))
+                                    @if(str_contains($s, 'dicetak'))
                                         <p class="stock-empty"><i class="far fa-times-circle"></i> Stok Kosong</p>
                                     @else
                                         <p class="stock-available">✔ Stok Tersedia</p>
@@ -340,27 +324,19 @@
                         @endforelse
                     </div>
 
-                    {{-- KARTU KHUSUS: ALASAN PEMBATALAN (Hanya Tampil Jika Dibatalkan) --}}
-                    @if(in_array($dbStatus, ['Dibatalkan', 'Kendala']))
+                    @if(str_contains($s, 'batal'))
                         <div class="card-cancel">
-                            Alasan Pembatalan: {{ $pesanan->alasan_pembatalan ?? 'Salah memilih buku' }}
+                            Alasan Pembatalan: {{ $pesanan->alasan_pembatalan ?? 'Dibatalkan oleh sistem/admin.' }}
                         </div>
                     @endif
 
-                    {{-- KARTU 3: ALAMAT PENGIRIMAN --}}
                     <div class="card">
                         <div class="card-title">Alamat Pengiriman</div>
                         <p class="address-text">
                             {{ $pesanan->alamat_lengkap ?? '-' }}<br>
-                            @if($pesanan->kecamatan)
-                                Kecamatan {{ $pesanan->kecamatan }}, 
-                            @endif
-                            @if($pesanan->kota)
-                                {{ $pesanan->kota }}, 
-                            @endif
-                            @if($pesanan->provinsi)
-                                {{ $pesanan->provinsi }} 
-                            @endif
+                            @if($pesanan->kecamatan) Kecamatan {{ $pesanan->kecamatan }}, @endif
+                            @if($pesanan->kota) {{ $pesanan->kota }}, @endif
+                            @if($pesanan->provinsi) {{ $pesanan->provinsi }} @endif
                             {{ $pesanan->kode_pos ?? '' }}
                         </p>
                         <p class="address-note">
@@ -370,16 +346,14 @@
 
                 </div>
 
-                {{-- KOLOM KANAN --}}
                 <div class="col-right">
                     
-                    {{-- KARTU 4: AKSI --}}
                     <div class="card">
                         <div class="card-title">Aksi</div>
                         <button class="btn-outline">Tambah Catatan</button>
                     </div>
 
-                    {{-- KARTU 5: RIWAYAT STATUS --}}
+                    {{-- KARTU RIWAYAT STATUS SESUAI 6 STATUS UTAMA --}}
                     <div class="card">
                         <div class="card-title">Riwayat Status</div>
                         
@@ -388,108 +362,97 @@
                                 $waktuAwal = \Carbon\Carbon::parse($pesanan->created_at);
                             @endphp
 
-                            {{-- KONDISI 1: MENUNGGU DIPROSES --}}
-                            @if(in_array($dbStatus, ['Permintaan Baru', 'Menunggu Diproses', 'Sedang Diproses']))
-                                <div class="timeline-item active">
-                                    <div class="timeline-dot"></div>
-                                    <p class="timeline-time">{{ $waktuAwal->translatedFormat('j M Y, H.i') }}</p>
-                                    <p class="timeline-title">Menunggu diproses</p>
-                                </div>
-                            @endif
-
-                            {{-- KONDISI 2: SEDANG DICETAK --}}
-                            @if(in_array($dbStatus, ['Menunggu Pencetakan', 'Sedang Dicetak']))
+                            {{-- 1. Status Dibatalkan --}}
+                            @if(str_contains($s, 'batal'))
                                 <div class="timeline-item">
                                     <div class="timeline-dot"></div>
                                     <p class="timeline-time">{{ $waktuAwal->translatedFormat('j M Y, H.i') }}</p>
-                                    <p class="timeline-title">Menunggu diproses</p>
+                                    <p class="timeline-title">Diproses</p>
+                                </div>
+                                <div class="timeline-item active">
+                                    <div class="timeline-dot"></div>
+                                    <p class="timeline-time">{{ $waktuAwal->copy()->addMinutes(15)->translatedFormat('j M Y, H.i') }}</p>
+                                    <p class="timeline-title">Dibatalkan</p>
+                                </div>
+
+                            {{-- 2. Status Return --}}
+                            @elseif(str_contains($s, 'return'))
+                                <div class="timeline-item">
+                                    <div class="timeline-dot"></div>
+                                    <p class="timeline-time">{{ $waktuAwal->translatedFormat('j M Y, H.i') }}</p>
+                                    <p class="timeline-title">Diproses</p>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-dot"></div>
+                                    <p class="timeline-time">{{ $waktuAwal->copy()->addDays(1)->translatedFormat('j M Y, H.i') }}</p>
+                                    <p class="timeline-title">Dikirim</p>
+                                </div>
+                                <div class="timeline-item active">
+                                    <div class="timeline-dot"></div>
+                                    <p class="timeline-time">{{ $waktuAwal->copy()->addDays(3)->translatedFormat('j M Y, H.i') }}</p>
+                                    <p class="timeline-title">Return</p>
+                                </div>
+
+                            {{-- 3. Status Selesai --}}
+                            @elseif(str_contains($s, 'selesai'))
+                                <div class="timeline-item">
+                                    <div class="timeline-dot"></div>
+                                    <p class="timeline-time">{{ $waktuAwal->translatedFormat('j M Y, H.i') }}</p>
+                                    <p class="timeline-title">Diproses</p>
                                 </div>
                                 <div class="timeline-item">
                                     <div class="timeline-dot"></div>
                                     <p class="timeline-time">{{ $waktuAwal->copy()->addHours(3)->translatedFormat('j M Y, H.i') }}</p>
-                                    <p class="timeline-title">Diproses</p>
-                                    <p class="timeline-desc">Sedang dicek ketersediaan</p>
-                                </div>
-                                <div class="timeline-item active">
-                                    <div class="timeline-dot"></div>
-                                    <p class="timeline-time">{{ $waktuAwal->copy()->addDays(1)->translatedFormat('j M Y, H.i') }}</p>
-                                    <p class="timeline-title">Menunggu pencetakan</p>
-                                    <p class="timeline-desc">Buku tidak tersedia, Menunggu pencetakan</p>
-                                </div>
-                            @endif
-
-                            {{-- KONDISI 3: SEDANG DIKIRIM --}}
-                            @if(in_array($dbStatus, ['Siap Dikirim', 'Sedang Dikirim']))
-                                <div class="timeline-item">
-                                    <div class="timeline-dot"></div>
-                                    <p class="timeline-time">{{ $waktuAwal->translatedFormat('j M Y, H.i') }}</p>
-                                    <p class="timeline-title">Menunggu diproses</p>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-dot"></div>
-                                    <p class="timeline-time">{{ $waktuAwal->copy()->addHours(5)->translatedFormat('j M Y, H.i') }}</p>
-                                    <p class="timeline-title">Diproses</p>
-                                    <p class="timeline-desc">Sedang dicek ketersediaan</p>
+                                    <p class="timeline-title">Dicetak</p>
                                 </div>
                                 <div class="timeline-item">
                                     <div class="timeline-dot"></div>
                                     <p class="timeline-time">{{ $waktuAwal->copy()->addDays(1)->translatedFormat('j M Y, H.i') }}</p>
-                                    <p class="timeline-title">Siap dikirim</p>
-                                    <p class="timeline-desc">Buku tersedia, siap dikirim</p>
-                                </div>
-                                <div class="timeline-item active">
-                                    <div class="timeline-dot"></div>
-                                    <p class="timeline-time">{{ $waktuAwal->copy()->addDays(2)->translatedFormat('j M Y, H.i') }}</p>
                                     <p class="timeline-title">Dikirim</p>
-                                    <p class="timeline-desc">Buku sedang dikirim</p>
-                                </div>
-                            @endif
-
-                            {{-- KONDISI 4: SELESAI --}}
-                            @if($dbStatus == 'Selesai')
-                                <div class="timeline-item">
-                                    <div class="timeline-dot"></div>
-                                    <p class="timeline-time">{{ $waktuAwal->translatedFormat('j M Y, H.i') }}</p>
-                                    <p class="timeline-title">Menunggu diproses</p>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-dot"></div>
-                                    <p class="timeline-time">{{ $waktuAwal->copy()->addHours(4)->translatedFormat('j M Y, H.i') }}</p>
-                                    <p class="timeline-title">Diproses</p>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-dot"></div>
-                                    <p class="timeline-time">{{ $waktuAwal->copy()->addDays(1)->translatedFormat('j M Y, H.i') }}</p>
-                                    <p class="timeline-title">Siap dikirim</p>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-dot"></div>
-                                    <p class="timeline-time">{{ $waktuAwal->copy()->addDays(2)->translatedFormat('j M Y, H.i') }}</p>
-                                    <p class="timeline-title">Sedang dikirim</p>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-dot"></div>
-                                    <p class="timeline-time">{{ $waktuAwal->copy()->addDays(4)->translatedFormat('j M Y, H.i') }}</p>
-                                    <p class="timeline-title">Diterima</p>
                                 </div>
                                 <div class="timeline-item active">
                                     <div class="timeline-dot"></div>
-                                    <p class="timeline-time">{{ $waktuAwal->copy()->addDays(4)->addMinutes(5)->translatedFormat('j M Y, H.i') }}</p>
+                                    <p class="timeline-time">{{ $waktuAwal->copy()->addDays(3)->translatedFormat('j M Y, H.i') }}</p>
                                     <p class="timeline-title">Selesai</p>
                                 </div>
-                            @endif
 
-                            {{-- KONDISI 5: DIBATALKAN --}}
-                            @if(in_array($dbStatus, ['Dibatalkan', 'Kendala']))
+                            {{-- 4. Status Dikirim --}}
+                            @elseif(str_contains($s, 'dikirim'))
                                 <div class="timeline-item">
                                     <div class="timeline-dot"></div>
                                     <p class="timeline-time">{{ $waktuAwal->translatedFormat('j M Y, H.i') }}</p>
-                                    <p class="timeline-title">Menunggu diproses</p>
+                                    <p class="timeline-title">Diproses</p>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-dot"></div>
+                                    <p class="timeline-time">{{ $waktuAwal->copy()->addHours(3)->translatedFormat('j M Y, H.i') }}</p>
+                                    <p class="timeline-title">Dicetak</p>
                                 </div>
                                 <div class="timeline-item active">
                                     <div class="timeline-dot"></div>
-                                    <p class="timeline-time">{{ $waktuAwal->copy()->addMinutes(10)->translatedFormat('j M Y, H.i') }}</p>
-                                    <p class="timeline-title">Dibatalkan</p>
+                                    <p class="timeline-time">{{ $waktuAwal->copy()->addDays(1)->translatedFormat('j M Y, H.i') }}</p>
+                                    <p class="timeline-title">Dikirim</p>
+                                </div>
+
+                            {{-- 5. Status Dicetak --}}
+                            @elseif(str_contains($s, 'dicetak'))
+                                <div class="timeline-item">
+                                    <div class="timeline-dot"></div>
+                                    <p class="timeline-time">{{ $waktuAwal->translatedFormat('j M Y, H.i') }}</p>
+                                    <p class="timeline-title">Diproses</p>
+                                </div>
+                                <div class="timeline-item active">
+                                    <div class="timeline-dot"></div>
+                                    <p class="timeline-time">{{ $waktuAwal->copy()->addHours(3)->translatedFormat('j M Y, H.i') }}</p>
+                                    <p class="timeline-title">Dicetak</p>
+                                </div>
+
+                            {{-- 6. Status Diproses (Default awal) --}}
+                            @else
+                                <div class="timeline-item active">
+                                    <div class="timeline-dot"></div>
+                                    <p class="timeline-time">{{ $waktuAwal->translatedFormat('j M Y, H.i') }}</p>
+                                    <p class="timeline-title">Diproses</p>
                                 </div>
                             @endif
                             

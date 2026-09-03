@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Permintaan Buku - BrailleKita</title>
+    
+    {{-- Token CSRF WAJIB ditambahkan agar update AJAX ke backend diizinkan oleh Laravel --}}
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <style>
         :root {
@@ -127,12 +130,13 @@
             opacity: 1; pointer-events: auto; 
         }
 
-        /* Warna status dinamis */
+        /* Warna status dinamis (Sudah ditambah Return) */
         .status-dikirim { color: #0097a7 !important; }
         .status-dicetak { color: #fbc02d !important; }
         .status-selesai { color: #2e7d32 !important; }
         .status-diproses { color: #e65100 !important; }
         .status-batal { color: #c62828 !important; }
+        .status-return { color: #8e24aa !important; } /* Tambahan warna Return (Ungu) */
         .status-baru { color: #1976d2 !important; }
 
         .btn-detail {
@@ -232,9 +236,9 @@
                         </button>
                         <div class="status-dropdown-menu" id="statusDropdownMenu">
                             <a data-status="semua" class="status-filter-item active">Semua Status</a>
-                            <a data-status="Sedang Diproses" class="status-filter-item">Diproses</a>
-                            <a data-status="Menunggu Pencetakan" class="status-filter-item">Dicetak</a>
-                            <a data-status="Sedang Dikirim" class="status-filter-item">Dikirim</a>
+                            <a data-status="Diproses" class="status-filter-item">Diproses</a>
+                            <a data-status="Dicetak" class="status-filter-item">Dicetak</a>
+                            <a data-status="Dikirim" class="status-filter-item">Dikirim</a>
                             <a data-status="Selesai" class="status-filter-item">Selesai</a>
                             <a data-status="Return" class="status-filter-item">Return</a>
                             <a data-status="Dibatalkan" class="status-filter-item">Dibatalkan</a>
@@ -279,6 +283,7 @@
                                     elseif(str_contains($s, 'dicetak')) $statusClass = 'status-dicetak';
                                     elseif(str_contains($s, 'selesai')) $statusClass = 'status-selesai';
                                     elseif(str_contains($s, 'diproses') || str_contains($s, 'menunggu')) $statusClass = 'status-diproses';
+                                    elseif(str_contains($s, 'return')) $statusClass = 'status-return'; // Tambahan Return
                                     elseif(str_contains($s, 'batal')) $statusClass = 'status-batal';
                                     else $statusClass = 'status-baru';
                                 @endphp
@@ -362,7 +367,7 @@
             statusItems.forEach(function (item) {
                 item.addEventListener('click', function (e) {
                     e.preventDefault();
-                    var status = this.dataset.status;
+                    var status = this.dataset.status.toLowerCase();
 
                     statusItems.forEach(function (i) { i.classList.remove('active'); });
                     this.classList.add('active');
@@ -370,7 +375,13 @@
                     statusMenu.classList.remove('open');
 
                     rows.forEach(function (row) {
-                        row.style.display = (status === 'semua' || row.dataset.status === status) ? '' : 'none';
+                        var rowStatus = row.dataset.status.toLowerCase();
+                        // Menggunakan .includes() agar "Menunggu Diproses" cocok saat filter "Diproses" dipilih
+                        if (status === 'semua' || rowStatus.includes(status)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
                     });
                 });
             });
@@ -392,7 +403,6 @@
                 selectCols.forEach(function (col) { col.classList.toggle('visible', active); });
 
                 if (!active) {
-                    // Reset semua ceklis saat mode dimatikan
                     rowCheckboxes.forEach(function (cb) { cb.checked = false; });
                     selectAllCheckbox.checked = false;
                     docMenu.classList.remove('open');
@@ -481,17 +491,44 @@
                 modal.classList.remove('open');
             });
 
+            /* ===== PENGIRIMAN DATA KE BACKEND (AJAX Fetch) ===== */
             btnModalSave.addEventListener('click', function () {
                 if (btnModalSave.disabled) return;
 
-                var statusTerpilih = document.querySelector('input[name="statusBaru"]:checked');
+                var statusTerpilih = document.querySelector('input[name="statusBaru"]:checked').value;
                 var idTerpilih = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(function (cb) { return cb.value; });
 
-                // TODO: kirim idTerpilih dan statusTerpilih.value ke backend
-                console.log('Update status ke:', statusTerpilih.value, 'untuk dokumen:', idTerpilih);
+                var originalText = btnModalSave.textContent;
+                btnModalSave.textContent = "Menyimpan...";
+                btnModalSave.disabled = true;
 
-                modal.classList.remove('open');
-                setSelectMode(false);
+                fetch('{{ route("admin.permintaan-buku.update-status") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        ids: idTerpilih,
+                        status: statusTerpilih
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload(); // Segarkan halaman saat sukses
+                    } else {
+                        alert('Gagal memperbarui status. Pastikan rute sudah dibuat di web.php');
+                        btnModalSave.textContent = originalText;
+                        btnModalSave.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan. Pastikan database/server aktif.');
+                    btnModalSave.textContent = originalText;
+                    btnModalSave.disabled = false;
+                });
             });
 
             // Klik di luar dropdown untuk menutupnya
