@@ -11,6 +11,7 @@ class Pencetakan extends Model
 
     protected $table = 'pencetakans';
 
+    // Cukup satu $fillable saja untuk mendefinisikan kolom yang boleh diisi
     protected $fillable = [
         'pesanan_id',
         'kode_cetak',
@@ -22,7 +23,7 @@ class Pencetakan extends Model
         'status',
     ];
 
-    // Relasi ke Pesanan
+    // Relasi ke tabel Pesanan
     public function pesanan()
     {
         return $this->belongsTo(Pesanan::class, 'pesanan_id');
