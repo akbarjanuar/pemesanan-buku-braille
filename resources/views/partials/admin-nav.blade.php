@@ -270,7 +270,6 @@
             box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
         }
 
-        /* Jangan biarkan collapsed = 0 di mobile */
         .sidebar.collapsed {
             width: var(--sidebar-width);
         }
@@ -316,37 +315,32 @@
 
     <nav class="sidebar-menu">
 
-        <a href="/admin/dashboard"
+        {{-- Menggunakan route() agar konsisten dan tidak bentrok di halaman manapun --}}
+        <a href="{{ route('admin.dashboard') }}"
            class="nav-item {{ $activeMenu === 'dashboard' ? 'active' : '' }}">
             <i class="fas fa-th-large"></i>
             Dashboard
         </a>
 
-        <a href="/admin/permintaan-buku"
+        <a href="{{ route('admin.permintaan-buku') }}"
            class="nav-item {{ $activeMenu === 'permintaan-buku' ? 'active' : '' }}">
             <i class="far fa-file-alt"></i>
             Permintaan Buku
         </a>
 
-        <a href="/admin/kelola-buku"
+        <a href="{{ route('admin.kelola-buku') }}"
            class="nav-item {{ $activeMenu === 'kelola-buku' ? 'active' : '' }}">
             <i class="fas fa-book"></i>
             Kelola Buku
         </a>
 
-        <a href="/admin/pencetakan"
+        <a href="{{ route('admin.pencetakan') }}"
            class="nav-item {{ $activeMenu === 'pencetakan' ? 'active' : '' }}">
             <i class="fas fa-print"></i>
             Pencetakan
         </a>
 
-        <a href="#"
-           class="nav-item {{ $activeMenu === 'pengiriman' ? 'active' : '' }}">
-            <i class="fas fa-truck"></i>
-            Pengiriman
-        </a>
-
-        <a href="/admin/data-pelanggan"
+        <a href="{{ route('admin.data-pelanggan') }}"
            class="nav-item {{ $activeMenu === 'data-pelanggan' ? 'active' : '' }}">
             <i class="fas fa-users"></i>
             Data Pelanggan
@@ -373,7 +367,7 @@
     </nav>
 
     <div class="sidebar-footer">
-        <form action="/logout" method="POST" style="margin: 0;">
+        <form action="{{ url('logout') }}" method="POST" style="margin: 0;">
             @csrf
 
             <button type="submit" class="btn-logout">
@@ -387,44 +381,28 @@
 
 <script>
     (function () {
-
         var sidebar = document.getElementById('adminSidebar');
         var overlay = document.getElementById('sidebarOverlay');
 
         document.addEventListener('click', function (e) {
-
             var toggleBtn = e.target.closest('.menu-toggle');
 
             if (!toggleBtn) {
                 return;
             }
 
-            /* =========================
-               DESKTOP / LAPTOP
-               ========================= */
             if (window.innerWidth > 900) {
-
                 sidebar.classList.toggle('collapsed');
-
                 return;
             }
 
-            /* =========================
-               MOBILE / HP
-               ========================= */
-
             sidebar.classList.toggle('open');
             overlay.classList.toggle('open');
-
         });
 
-        /* Klik area gelap untuk menutup sidebar di HP */
         overlay.addEventListener('click', function () {
-
             sidebar.classList.remove('open');
             overlay.classList.remove('open');
-
         });
-
     })();
 </script>
