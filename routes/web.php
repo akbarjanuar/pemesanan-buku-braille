@@ -19,8 +19,6 @@ Route::get('/home', function () {
 });
 
 // ===== HALAMAN UTAMA =====
-// Belum login → Pemilihan Akun
-// Sudah login → Beranda
 Route::get('/', function (Request $request) {
     if (Auth::check()) {
         $query = Buku::query();
@@ -212,23 +210,28 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::get('/admin/pencetakan/buat', [AdminController::class, 'buatPencetakan'])
         ->name('admin.buat-pencetakan');
 
-    // Proses simpan permintaan pencetakan
-    Route::post('/admin/pencetakan', function (Request $request) {
-        // TODO: simpan ke database nanti
-        return redirect('/admin/pencetakan')
-            ->with('success', 'Permintaan pencetakan berhasil dibuat.');
-    });
+    // ✅ DIPERBAIKI: Proses simpan permintaan pencetakan sekarang memanggil controller,
+    // bukan closure kosong yang cuma redirect tanpa menyimpan apa pun.
+    Route::post('/admin/pencetakan', [AdminController::class, 'storePencetakan'])
+        ->name('admin.pencetakan.store');
 
-<<<<<<< HEAD
-    Route::get('/admin/profile', [App\Http\Controllers\AdminController::class, 'profile'])->name('admin.profile');
-
-=======
     // Data Pelanggan
     Route::get('/admin/data-pelanggan', [AdminController::class, 'dataPelanggan'])
         ->name('admin.data-pelanggan');
     Route::get('/admin/data-pelanggan/{id}', [AdminController::class, 'detailPelanggan'])
         ->name('admin.detail-pelanggan');
->>>>>>> 8f0a6b97aba84b78bf36a284716317a88db5c389
+
+    // ===== PROFILE ADMIN =====
+    Route::get('/admin/profile', [AdminController::class, 'profile'])
+        ->name('admin.profile');
+
+    Route::put('/admin/profile', [AdminController::class, 'updateProfile'])
+        ->name('admin.profile.update');
+
+    // ===== UPDATE NOTIFIKASI ADMIN =====
+    Route::put('/admin/profile/notifikasi', [AdminController::class, 'updateNotifikasi'])
+        ->name('admin.profile.notifikasi');
+
 });
 
 // ===== LOGOUT =====

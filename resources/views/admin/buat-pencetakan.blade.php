@@ -172,7 +172,7 @@
         </header>
 
         <main class="content-area">
-            <a href="/admin/pencetakan" class="back-link">
+            <a href="{{ route('admin.pencetakan') }}" class="back-link">
                 <i class="fas fa-arrow-left"></i> Kembali
             </a>
 
@@ -181,10 +181,22 @@
                 <p>Buat permintaan pencetakan Buku Braille yang belum tersedia atau belum mencukupi untuk memenuhi pesanan pelanggan.</p>
             </div>
 
-            <form id="formPencetakan" method="POST" action="/admin/pencetakan">
+            {{-- ✅ TAMBAHAN: menampilkan pesan error validasi supaya tidak silent fail --}}
+            @if ($errors->any())
+                <div class="alert-warning">
+                    <ul style="margin:0; padding-left:18px;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            {{-- ✅ DIPERBAIKI: action form sekarang mengarah ke route POST khusus (admin.pencetakan.store) --}}
+            <form id="formPencetakan" method="POST" action="{{ route('admin.pencetakan.store') }}">
                 @csrf
 
-                {{-- STEP 1: FORM --}}
+                {{-- STEP 1: FORM UTAMA --}}
                 <div id="step1" class="form-card">
                     <div class="form-section">
                         <div class="step-title">
@@ -197,9 +209,9 @@
                                 <option value="">-- Pilih Nomor Pesanan --</option>
                                 @foreach($daftarPesanan ?? [] as $p)
                                     <option value="{{ $p->id }}"
-                                        data-nama="{{ $p->nama_penerima ?? $p->user->nama ?? '-' }}"
-                                        data-jenis="{{ $p->jenis_pesanan ?? '-' }}"
-                                        data-alamat="{{ $p->alamat ?? $p->user->alamat ?? '-' }}">
+                                        data-nama="{{ $p->nama_penerima ?? optional($p->user)->nama ?? '-' }}"
+                                        data-jenis="{{ $p->jenis_pesanan ?? 'Pribadi' }}"
+                                        data-alamat="{{ $p->alamat ?? optional($p->user)->alamat ?? '-' }}">
                                         {{ $p->nomor_pesanan ?? 'ORD-'.$p->id }}
                                     </option>
                                 @endforeach
@@ -234,7 +246,7 @@
                                 <select name="buku_id" id="buku_id" class="form-control" required>
                                     <option value="">-- Pilih Nama Buku --</option>
                                     @foreach($daftarBuku ?? [] as $b)
-                                        <option value="{{ $b->id }}" data-kategori="{{ $b->kategori }}">
+                                        <option value="{{ $b->id }}" data-kategori="{{ $b->kategori ?? '-' }}">
                                             {{ $b->judul }}
                                         </option>
                                     @endforeach
@@ -285,9 +297,10 @@
                                 <label>PIC <span class="required">*</span></label>
                                 <select name="pic" id="pic" class="form-control" required>
                                     <option value="">-- Pilih PIC --</option>
-                                    <option value="Devi Kusuma">Devi Kusuma</option>
+                                    <option value="Andi Saputra">Andi Saputra</option>
+                                    <option value="Rina Marlina">Rina Marlina</option>
                                     <option value="Budi Santoso">Budi Santoso</option>
-                                    <option value="Siti Aminah">Siti Aminah</option>
+                                    <option value="Aceng">Aceng</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -298,13 +311,21 @@
                     </div>
 
                     <div class="form-actions">
-                        <a href="/admin/pencetakan" class="btn btn-secondary">Batal</a>
+                        <a href="{{ route('admin.pencetakan') }}" class="btn btn-secondary">Batal</a>
                         <button type="button" class="btn btn-primary" id="btnLihatRingkasan">Lihat Ringkasan</button>
                     </div>
                 </div>
 
                 {{-- STEP 2: RINGKASAN --}}
                 <div id="step2" class="form-card hidden">
+                    <input type="hidden" name="pesanan_id" id="hidden_pesanan_id">
+                    <input type="hidden" name="buku_id" id="hidden_buku_id">
+                    <input type="hidden" name="jumlah" id="hidden_jumlah">
+                    <input type="hidden" name="divisi" id="hidden_divisi">
+                    <input type="hidden" name="target_selesai" id="hidden_target_selesai">
+                    <input type="hidden" name="pic" id="hidden_pic">
+                    <input type="hidden" name="catatan" id="hidden_catatan">
+
                     <div class="alert-warning">
                         Periksa ringkasan sebelum membuat permintaan.
                     </div>
@@ -361,29 +382,17 @@
                     </div>
 
                     <div class="info-box">
-                        Setelah dibuat, pekerjaan akan otomatis muncul di menu Pencetakan dan di dashboard Literasi Manual.<br>
+                        Setelah dibuat, pekerjaan akan otomatis muncul di menu Pencetakan.<br>
                         Status awal: <strong>Menunggu Diproses</strong>
                     </div>
 
                     <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" id="btnKembaliForm">← Kembali ke Form</button>
+                        <button type="button" class="btn btn-secondary" id="btnKembaliForm">&larr; Kembali ke Form</button>
                         <button type="submit" class="btn btn-primary">Buat Permintaan Pencetakan</button>
                     </div>
                 </div>
             </form>
         </main>
-    </div>
-
-    {{-- POPUP SUKSES --}}
-    <div id="successModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); align-items:center; justify-content:center; z-index:9999;">
-        <div style="background:white; border-radius:16px; padding:32px 28px 24px; text-align:center; width:90%; max-width:340px; box-shadow:0 12px 40px rgba(0,0,0,0.2);">
-            <div style="width:80px; height:80px; margin:0 auto 16px; border-radius:50%; border:3px solid #c62828; display:flex; align-items:center; justify-content:center;">
-                <i class="fas fa-check" style="font-size:36px; color:#2e7d32;"></i>
-            </div>
-            <h3 style="font-size:22px; font-weight:700; margin-bottom:8px;">Berhasil!</h3>
-            <p style="font-size:14px; color:#757575; margin-bottom:20px;">Permintaan pencetakan baru berhasil dibuat.</p>
-            <button type="button" id="btnModalKembali" class="btn btn-primary" style="min-width:120px;">Kembali</button>
-        </div>
     </div>
 
     <script>
@@ -406,20 +415,36 @@
                 return;
             }
 
+            const pesananId = document.getElementById('pesanan_id').value;
             const pesananOpt = document.getElementById('pesanan_id').options[document.getElementById('pesanan_id').selectedIndex];
+
+            const bukuId = document.getElementById('buku_id').value;
             const bukuOpt = document.getElementById('buku_id').options[document.getElementById('buku_id').selectedIndex];
+
+            const jumlah = document.getElementById('jumlah').value;
             const divisi = document.getElementById('divisi').value;
             const target = document.getElementById('target_selesai').value;
+            const pic = document.getElementById('pic').value;
+            const picText = document.getElementById('pic').options[document.getElementById('pic').selectedIndex].text;
+            const catatan = document.getElementById('catatan').value;
+
+            document.getElementById('hidden_pesanan_id').value = pesananId;
+            document.getElementById('hidden_buku_id').value = bukuId;
+            document.getElementById('hidden_jumlah').value = jumlah;
+            document.getElementById('hidden_divisi').value = divisi;
+            document.getElementById('hidden_target_selesai').value = target;
+            document.getElementById('hidden_pic').value = pic;
+            document.getElementById('hidden_catatan').value = catatan;
 
             document.getElementById('sum_nomor').textContent = pesananOpt.text;
             document.getElementById('sum_nama').textContent = document.getElementById('nama_pelanggan').value || '-';
             document.getElementById('sum_jenis').textContent = document.getElementById('jenis_pemesan').value || '-';
             document.getElementById('sum_buku').textContent = bukuOpt.text || '-';
             document.getElementById('sum_kategori').textContent = document.getElementById('kategori_buku').value || '-';
-            document.getElementById('sum_jumlah').textContent = (document.getElementById('jumlah').value || '0') + ' eksemplar';
+            document.getElementById('sum_jumlah').textContent = jumlah + ' eksemplar';
             document.getElementById('sum_divisi').textContent = divisi || '-';
             document.getElementById('sum_literasi').textContent = divisi || '-';
-            document.getElementById('sum_pic').textContent = document.getElementById('pic').value || '-';
+            document.getElementById('sum_pic').textContent = picText || '-';
             document.getElementById('sum_target').textContent = target
                 ? new Date(target).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
                 : '-';
@@ -435,28 +460,6 @@
             document.getElementById('step1').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
-
-        // Popup sukses
-        document.getElementById('formPencetakan').addEventListener('submit', function (e) {
-            e.preventDefault();
-            document.getElementById('successModal').style.display = 'flex';
-        });
-
-        document.getElementById('btnModalKembali').addEventListener('click', function () {
-            window.location.href = '/admin/pencetakan';
-        });
     </script>
-
-    {{-- POPUP SUKSES --}}
-    <div id="successModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); align-items:center; justify-content:center; z-index:9999;">
-        <div style="background:white; border-radius:16px; padding:32px 28px 24px; text-align:center; width:90%; max-width:340px; box-shadow:0 12px 40px rgba(0,0,0,0.2);">
-            <div style="width:80px; height:80px; margin:0 auto 16px; border-radius:50%; border:3px solid #c62828; display:flex; align-items:center; justify-content:center;">
-                <i class="fas fa-check" style="font-size:36px; color:#2e7d32;"></i>
-            </div>
-            <h3 style="font-size:22px; font-weight:700; margin-bottom:8px;">Berhasil!</h3>
-            <p style="font-size:14px; color:#757575; margin-bottom:20px;">Permintaan pencetakan baru berhasil dibuat.</p>
-            <button type="button" id="btnModalKembali" class="btn btn-primary" style="min-width:120px;">Kembali</button>
-        </div>
-    </div>
 </body>
 </html>

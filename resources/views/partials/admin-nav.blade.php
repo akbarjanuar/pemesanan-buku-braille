@@ -358,7 +358,7 @@
             Laporan
         </a>
 
-        <a href="#"
+        <a href="{{ route('admin.profile') }}"
            class="nav-item {{ $activeMenu === 'profile' ? 'active' : '' }}">
             <i class="far fa-user"></i>
             Profile

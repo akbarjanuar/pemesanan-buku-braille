@@ -8,6 +8,7 @@ use App\Models\Pesanan;
 use App\Models\PesananDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PemesananController extends Controller
 {
@@ -108,6 +109,20 @@ class PemesananController extends Controller
             if ($buku) {
                 $buku->stok = max(0, $buku->stok - $item->jumlah);
                 $buku->save();
+            }
+        }
+
+        // =====================================================
+        // CEK PENGATURAN NOTIFIKASI ADMIN (PERMINTAAN BUKU BARU)
+        // =====================================================
+        $admins = \App\Models\User::where('role', 'admin')->get();
+
+        foreach ($admins as $admin) {
+            $notif = $admin->notif_settings ?? [];
+            
+            // Periksa apakah admin menyalakan notifikasi "Permintaan Buku Baru"
+            if (isset($notif['permintaan_buku_baru']) && $notif['permintaan_buku_baru'] == true) {
+                Log::info("Notifikasi Terkirim: Admin {$admin->nama} menerima pemberitahuan ada pesanan baru (#{$nomor_pesanan}).");
             }
         }
 

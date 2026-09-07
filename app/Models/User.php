@@ -21,6 +21,12 @@ class User extends Authenticatable
         'kata_sandi',
         'foto_ktp',
         'role',
+        'notif_settings',
+    ];
+
+    // Tambahkan juga casts agar otomatis dikenali sebagai array/json
+    protected $casts = [
+        'notif_settings' => 'array',
     ];
 
     /**

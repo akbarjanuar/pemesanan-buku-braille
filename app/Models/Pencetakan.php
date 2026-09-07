@@ -11,11 +11,15 @@ class Pencetakan extends Model
 
     protected $table = 'pencetakans';
 
-    // Cukup satu $fillable saja untuk mendefinisikan kolom yang boleh diisi
+    // Tambahkan kolom baru ke dalam $fillable
     protected $fillable = [
         'pesanan_id',
+        'buku_id',
         'kode_cetak',
         'jenis_literasi',
+        'divisi',
+        'jumlah',
+        'catatan',
         'pic',
         'target_buku',
         'buku_selesai',
@@ -27,5 +31,11 @@ class Pencetakan extends Model
     public function pesanan()
     {
         return $this->belongsTo(Pesanan::class, 'pesanan_id');
+    }
+
+    // Tambahan relasi ke tabel Buku (opsional tapi sangat disarankan)
+    public function buku()
+    {
+        return $this->belongsTo(Buku::class, 'buku_id');
     }
 }
