@@ -159,6 +159,19 @@ class AdminController extends Controller
         return view('admin.pencetakan', compact('daftarPencetakan', 'activeMenu'));
     }
 
+    public function buatPencetakan()
+    {
+        $daftarPesanan = Pesanan::with('user', 'details.buku')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $daftarBuku = Buku::orderBy('judul')->get();
+
+        $activeMenu = 'pencetakan';
+
+        return view('admin.buat-pencetakan', compact('daftarPesanan', 'daftarBuku', 'activeMenu'));
+    }
+
     public function detailPencetakan()
     {
         // Implementasi untuk halaman detail pencetakan
