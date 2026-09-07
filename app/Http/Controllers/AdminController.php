@@ -260,4 +260,12 @@ class AdminController extends Controller
 
         return redirect()->route('admin.kelola-buku')->with('success', 'Buku baru berhasil ditambahkan!');
     }
+
+    // ===== Halaman Profil Admin =====
+    public function profile()
+    {
+        $activeMenu = 'profile';
+        return view('admin.profile', compact('activeMenu'));
+    }
+    
 }

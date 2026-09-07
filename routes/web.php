@@ -328,6 +328,8 @@ Route::middleware([
     // Proses Update Status Pesanan
     Route::post('/admin/permintaan-buku/update-status', [AdminController::class, 'updateStatusPesanan'])->name('admin.permintaan-buku.update-status');
 
+    Route::get('/admin/profile', [App\Http\Controllers\AdminController::class, 'profile'])->name('admin.profile');
+
 });
 
 
