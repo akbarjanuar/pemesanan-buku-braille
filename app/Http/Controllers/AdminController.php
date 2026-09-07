@@ -16,61 +16,26 @@ class AdminController extends Controller
 
     public function dashboard()
     {
-
         // Menghitung statistik berdasarkan status pesanan
+        // Menggunakan whereIn untuk mengatasi variasi penulisan status (lama vs baru)
         $stats = [
-
-            'baru' => Pesanan::where(
-                'status',
-                'Permintaan Baru'
-            )->count(),
-
-            'diproses' => Pesanan::where(
-                'status',
-                'Sedang Diproses'
-            )->count(),
-
-            'menunggu_pencetakan' => Pesanan::where(
-                'status',
-                'Menunggu Pencetakan'
-            )->count(),
-
-            'dicetak' => Pesanan::where(
-                'status',
-                'Sedang Dicetak'
-            )->count(),
-
-            'siap_dikirim' => Pesanan::where(
-                'status',
-                'Siap Dikirim'
-            )->count(),
-
-            'dikirim' => Pesanan::where(
-                'status',
-                'Sedang Dikirim'
-            )->count(),
-
-            'selesai' => Pesanan::where(
-                'status',
-                'Selesai'
-            )->count(),
-
-            'dibatalkan' => Pesanan::where(
-                'status',
-                'Dibatalkan'
-            )->count(),
-
-            'kendala' => Pesanan::where(
-                'status',
-                'Kendala'
-            )->count(),
-
-            'bahan_baru' => Pesanan::where(
-                'status',
-                'Permintaan Bahan Baru'
-            )->count(),
+            'baru' => Pesanan::where('status', 'Permintaan Baru')->count(),
+            
+            'diproses' => Pesanan::whereIn('status', ['Diproses', 'Sedang Diproses'])->count(),
+            
+            'menunggu_pencetakan' => Pesanan::where('status', 'Menunggu Pencetakan')->count(),
+            
+            'dicetak' => Pesanan::whereIn('status', ['Dicetak', 'Sedang Dicetak'])->count(),
+            
+            'siap_dikirim' => Pesanan::where('status', 'Siap Dikirim')->count(),
+            
+            'dikirim' => Pesanan::whereIn('status', ['Dikirim', 'Sedang Dikirim'])->count(),
+            
+            'selesai' => Pesanan::where('status', 'Selesai')->count(),
+            'dibatalkan' => Pesanan::where('status', 'Dibatalkan')->count(),
+            'kendala' => Pesanan::where('status', 'Kendala')->count(),
+            'bahan_baru' => Pesanan::where('status', 'Permintaan Bahan Baru')->count(),
         ];
-
 
         // Mengambil 5 pesanan terbaru
         $pesananTerbaru = Pesanan::with('user')
@@ -78,14 +43,9 @@ class AdminController extends Controller
             ->take(5)
             ->get();
 
+        $activeMenu = 'dashboard';
 
-        return view(
-            'admin.dashboard',
-            compact(
-                'stats',
-                'pesananTerbaru'
-            )
-        );
+        return view('admin.dashboard', compact('stats', 'pesananTerbaru', 'activeMenu'));
     }
 
 
@@ -102,8 +62,9 @@ class AdminController extends Controller
         }
 
         $daftarPesanan = $query->get();
+        $activeMenu = 'permintaan-buku';
 
-        return view('admin.permintaan-buku', compact('daftarPesanan', 'statusFilter'));
+        return view('admin.permintaan-buku', compact('daftarPesanan', 'statusFilter', 'activeMenu'));
     }
 
     // ===== Proses Update Status Massal =====
@@ -129,33 +90,27 @@ class AdminController extends Controller
 
     public function detailPesanan($id)
     {
-
         // Mengambil pesanan beserta user dan detail buku
         $pesanan = Pesanan::with([
             'user',
             'details.buku'
         ])->findOrFail($id);
 
+        $activeMenu = 'permintaan-buku';
 
-        return view(
-            'admin.detail-pesanan',
-            compact('pesanan')
-        );
+        return view('admin.detail-pesanan', compact('pesanan', 'activeMenu'));
     }
 
-// ===== Halaman Data Pelanggan =====
+    // ===== Halaman Data Pelanggan =====
     public function dataPelanggan(Request $request)
     {
         $search = $request->input('search');
         
         // 1. Ambil data user, hitung jumlah pesanan, dan FILTER hanya pelanggan
-        // (Catatan: Sesuaikan 'pelanggan' dengan isi kolom role di database kamu. 
-        // Jika menggunakan 'user', ganti jadi where('role', 'user'))
         $query = \App\Models\User::withCount('pesanan')->where('role', 'user');
         
         // 2. Fitur Pencarian
         if ($search) {
-            // Gunakan function($q) agar 'orWhere' tidak merusak filter role di atas
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'ilike', "%{$search}%")
                   ->orWhere('email', 'ilike', "%{$search}%");
@@ -163,8 +118,9 @@ class AdminController extends Controller
         }
 
         $daftarPelanggan = $query->orderBy('created_at', 'desc')->get();
+        $activeMenu = 'data-pelanggan';
 
-        return view('admin.data-pelanggan', compact('daftarPelanggan', 'search'));
+        return view('admin.data-pelanggan', compact('daftarPelanggan', 'search', 'activeMenu'));
     }
 
     // ===== Halaman Detail Pelanggan =====
@@ -178,7 +134,9 @@ class AdminController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('admin.data-pelanggan-detail', compact('pelanggan', 'daftarPesanan'));
+        $activeMenu = 'data-pelanggan';
+
+        return view('admin.data-pelanggan-detail', compact('pelanggan', 'daftarPesanan', 'activeMenu'));
     }
 
 
@@ -196,15 +154,15 @@ class AdminController extends Controller
         ->orderBy('created_at', 'desc')
         ->get();
 
-        return view(
-            'admin.pencetakan',
-            compact('daftarPencetakan')
-        );
+        $activeMenu = 'pencetakan';
+
+        return view('admin.pencetakan', compact('daftarPencetakan', 'activeMenu'));
     }
 
     public function detailPencetakan()
     {
         // Implementasi untuk halaman detail pencetakan
+        $activeMenu = 'pencetakan';
     }
 
     // ===== Halaman Kelola Buku =====
@@ -222,16 +180,18 @@ class AdminController extends Controller
         }
 
         $daftarBuku = $query->orderBy('created_at', 'desc')->get();
+        $activeMenu = 'kelola-buku';
 
-        return view('admin.kelola-buku', compact('daftarBuku', 'search'));
+        return view('admin.kelola-buku', compact('daftarBuku', 'search', 'activeMenu'));
     }
 
     // ===== Halaman Edit Buku =====
     public function editBuku($id)
     {
         $buku = Buku::findOrFail($id);
+        $activeMenu = 'kelola-buku';
         
-        return view('admin.edit-buku', compact('buku'));
+        return view('admin.edit-buku', compact('buku', 'activeMenu'));
     }
 
     // ===== Proses Update Buku =====
@@ -259,7 +219,8 @@ class AdminController extends Controller
     // ===== Halaman Tambah Buku =====
     public function createBuku()
     {
-        return view('admin.tambah-buku');
+        $activeMenu = 'kelola-buku';
+        return view('admin.tambah-buku', compact('activeMenu'));
     }
 
     // ===== Proses Simpan Buku Baru =====

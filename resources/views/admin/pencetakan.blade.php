@@ -57,12 +57,6 @@
         .status-menunggu { color: var(--warning); }
         .status-selesai { color: var(--success); }
 
-        .btn-detail {
-            display: inline-block; background: var(--primary); color: white; border: none;
-            border-radius: 4px; padding: 5px 10px; font-family: inherit; font-size: 11px; font-weight: 700; cursor: pointer; text-decoration: none;
-        }
-        .btn-detail:hover { background: var(--primary-hover); }
-
         .book-code { font-size: 16px; font-weight: 800; margin-bottom: 4px; font-family: 'Georgia', serif; }
         .book-title { color: var(--text-muted); font-size: 13px; margin-bottom: 4px; }
         .order-number { color: var(--text-muted); font-size: 11px; margin-bottom: 14px; }
@@ -163,9 +157,6 @@
                                 <div class="print-status {{ $cetak->status == 'Selesai' ? 'status-selesai' : 'status-menunggu' }}">
                                     {{ $cetak->status }}
                                 </div>
-                                <a href="{{ route('admin.detail-pesanan', $cetak->pesanan_id) }}" class="btn-detail">
-                                    Lihat detail
-                                </a>
                             </div>
                         </div>
 
