@@ -221,6 +221,10 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::get('/admin/data-pelanggan/{id}', [AdminController::class, 'detailPelanggan'])
         ->name('admin.detail-pelanggan');
 
+    Route::get('/admin/laporan', function () {
+    return view('admin.laporan');
+    })->middleware('auth');    
+
     // ===== PROFILE ADMIN =====
     Route::get('/admin/profile', [AdminController::class, 'profile'])
         ->name('admin.profile');
@@ -230,7 +234,7 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
 
     // ===== UPDATE NOTIFIKASI ADMIN =====
     Route::put('/admin/profile/notifikasi', [AdminController::class, 'updateNotifikasi'])
-        ->name('admin.profile.notifikasi');
+        ->name('admin.profile.notifikasi');    
 
 });
 

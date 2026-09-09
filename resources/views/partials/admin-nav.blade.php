@@ -352,7 +352,7 @@
             Permintaan Bahan
         </a>
 
-        <a href="#"
+        <a href="/admin/laporan"
            class="nav-item {{ $activeMenu === 'laporan' ? 'active' : '' }}">
             <i class="fas fa-chart-line"></i>
             Laporan
