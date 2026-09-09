@@ -25,9 +25,6 @@
         .topbar-title { font-size: 20px; font-weight: 900; font-family: 'Georgia', serif; color: var(--text-dark); margin-left: 10px; }
         .content-area { padding: 32px; flex-grow: 1; overflow-y: auto; }
 
-        /* =========================================
-            HEADER & GRID
-        ========================================= */
         .page-header { margin-bottom: 24px; }
         .page-header h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
         .page-header p { color: var(--text-muted); font-size: 13px; }
@@ -45,16 +42,14 @@
         .edit-icon { position: absolute; top: 24px; right: 24px; color: var(--text-muted); cursor: pointer; font-size: 14px; }
         .edit-icon:hover { color: var(--text-dark); }
 
-        /* =========================================
-            CARD 1: FOTO PROFILE
-        ========================================= */
         .profile-center { text-align: center; }
         .avatar-lg { 
             width: 100px; height: 100px; background: var(--primary); color: white; 
             font-size: 40px; font-weight: 700; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
-            margin: 0 auto 16px auto; 
+            margin: 0 auto 16px auto; overflow: hidden;
         }
+        .avatar-lg img { width: 100%; height: 100%; object-fit: cover; }
         .profile-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
         .profile-role { font-size: 11px; color: var(--text-muted); margin-bottom: 20px; font-weight: 700; }
         
@@ -67,9 +62,6 @@
         .btn-outline:hover { background: #f9f9f9; border-color: #ccc; }
         .photo-format { font-size: 10px; color: var(--text-muted); }
 
-        /* =========================================
-            CARD 2: FORM INFORMASI PRIBADI
-        ========================================= */
         .form-group { margin-bottom: 16px; text-align: left; }
         .form-label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 8px; }
         .form-label .required { color: var(--primary); }
@@ -90,18 +82,12 @@
         }
         .btn-primary:hover { background: var(--primary-hover); }
 
-        /* =========================================
-            CARD 3: INFORMASI AKUN
-        ========================================= */
         .account-info-group { margin-bottom: 20px; }
         .account-label { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
         .account-value { font-size: 13px; font-weight: 700; }
         .status-dot { display: inline-block; width: 8px; height: 8px; background: var(--success); border-radius: 50%; margin-right: 4px; }
         .status-active { color: var(--success); font-size: 12px; font-weight: 700; display: flex; align-items: center; }
 
-        /* =========================================
-            PENGATURAN NOTIFIKASI
-        ========================================= */
         .notification-card { width: 66%; }
         .notification-header { margin-bottom: 24px; }
         .notification-header h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
@@ -112,7 +98,6 @@
         .notif-info h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
         .notif-info p { font-size: 12px; color: var(--text-muted); }
 
-        /* Custom Toggle Switch */
         .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
         .toggle-slider { 
@@ -135,13 +120,10 @@
 
 <body>
 
-    {{-- SIDEBAR --}}
     @include('partials.admin-nav', ['activeMenu' => 'profile'])
 
-    {{-- MAIN CONTENT --}}
     <div class="main-wrapper">
 
-        {{-- TOPBAR --}}
         <header class="topbar">
             <div class="topbar-left">
                 <button type="button" class="menu-toggle">
@@ -154,7 +136,6 @@
             </div>
         </header>
 
-        {{-- CONTENT --}}
         <main class="content-area">
 
             <div class="page-header">
@@ -162,47 +143,53 @@
                 <p>Kelola informasi akun dan pengaturan akses Anda.</p>
             </div>
 
-            <div class="profile-grid">
-                
-                {{-- CARD 1: FOTO PROFILE --}}
-                <div class="card profile-center">
-                    <div class="card-header" style="text-align: left;">Foto Profile</div>
-                    <i class="fas fa-pen edit-icon"></i>
+            <form action="{{ route('admin.profile.update') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+
+                <div class="profile-grid">
                     
-                    <div class="avatar-lg">
-                        {{ strtoupper(substr(auth()->user()->nama ?? 'A', 0, 1)) }}
+                    {{-- CARD 1: FOTO PROFILE --}}
+                    <div class="card profile-center">
+                        <div class="card-header" style="text-align: left;">Foto Profile</div>
+                        <i class="fas fa-pen edit-icon"></i>
+                        
+                        <div class="avatar-lg" id="avatarPreviewContainer">
+                            @if(auth()->user()->foto_profil)
+                                <img src="{{ auth()->user()->foto_profil }}" alt="Foto Profile" id="previewImg" style="width: 100%; height: 100%; object-fit: cover;">
+                            @else
+                                <span id="initialText">{{ strtoupper(substr(auth()->user()->nama ?? 'A', 0, 1)) }}</span>
+                            @endif
+                        </div>
+
+                        <div class="profile-name">{{ auth()->user()->nama ?? 'Andika Kristian' }}</div>
+                        <div class="profile-role">Admin Pengiriman &middot; Sentra Wyata Guna Bandung</div>
+                        
+                        {{-- Input File Tersembunyi --}}
+                        <input type="file" name="foto" id="inputFoto" accept="image/png, image/jpeg, image/jpg" style="display: none;">
+
+                        <button type="button" class="btn-outline" id="btnUbahFoto">
+                            <i class="fas fa-upload"></i> Ubah Foto
+                        </button>
+                        <div class="photo-format">Format JPG atau PNG. Maksimal 2 MB.</div>
                     </div>
-                    <div class="profile-name">{{ auth()->user()->nama ?? 'Andika Kristian' }}</div>
-                    <div class="profile-role">Admin Pengiriman &middot; Sentra Wyata Guna Bandung</div>
-                    
-                    <button type="button" class="btn-outline">
-                        <i class="fas fa-upload"></i> Ubah Foto
-                    </button>
-                    <div class="photo-format">Format JPG atau PNG. Maksimal 2 MB.</div>
-                </div>
 
-                {{-- CARD 2: INFORMASI PRIBADI --}}
-                <div class="card">
-                    <div class="card-header">Informasi Pribadi</div>
-                    <i class="fas fa-pen edit-icon"></i>
+                    {{-- CARD 2: INFORMASI PRIBADI --}}
+                    <div class="card">
+                        <div class="card-header">Informasi Pribadi</div>
+                        <i class="fas fa-pen edit-icon"></i>
 
-                    {{-- Alert Notifikasi Sukses --}}
-                    @if(session('success'))
-                        <div style="background: var(--success); color: white; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; font-weight: 700;">
-                            <i class="fas fa-check-circle" style="margin-right: 6px;"></i> {{ session('success') }}
-                        </div>
-                    @endif
+                        @if(session('success'))
+                            <div style="background: var(--success); color: white; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; font-weight: 700;">
+                                <i class="fas fa-check-circle" style="margin-right: 6px;"></i> {{ session('success') }}
+                            </div>
+                        @endif
 
-                    {{-- Alert Notifikasi Error (jika email sudah dipakai) --}}
-                    @if($errors->any())
-                        <div style="background: var(--primary); color: white; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; font-weight: 700;">
-                            <i class="fas fa-exclamation-triangle" style="margin-right: 6px;"></i> Gagal menyimpan data. Pastikan format email benar dan belum digunakan.
-                        </div>
-                    @endif
-
-                    <form action="{{ route('admin.profile.update') }}" method="POST">
-                        @csrf
-                        @method('PUT')
+                        @if($errors->any())
+                            <div style="background: var(--primary); color: white; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; font-weight: 700;">
+                                <i class="fas fa-exclamation-triangle" style="margin-right: 6px;"></i> Gagal menyimpan data. Pastikan format email benar dan ukuran foto maksimal 2MB.
+                            </div>
+                        @endif
 
                         <div class="form-group">
                             <label class="form-label">Nama Lengkap <span class="required">*</span></label>
@@ -228,35 +215,35 @@
                         <div class="btn-submit-area">
                             <button type="submit" class="btn-primary">Simpan Perubahan</button>
                         </div>
-                    </form>
+                    </div>
+
+                    {{-- CARD 3: INFORMASI AKUN --}}
+                    <div class="card">
+                        <div class="card-header">Informasi Akun</div>
+
+                        <div class="account-info-group">
+                            <div class="account-label">ID / Username Admin</div>
+                            <div class="account-value">ADM-PNG001</div>
+                        </div>
+                        
+                        <div class="account-info-group">
+                            <div class="account-label">Status Akun</div>
+                            <div class="status-active"><span class="status-dot"></span> Aktif</div>
+                        </div>
+                        
+                        <div class="account-info-group">
+                            <div class="account-label">Tanggal Akun Dibuat</div>
+                            <div class="account-value">{{ auth()->user()->created_at ? auth()->user()->created_at->format('j F Y') : '1 Januari 2024' }}</div>
+                        </div>
+                        
+                        <div class="account-info-group">
+                            <div class="account-label">Terakhir Log In</div>
+                            <div class="account-value">1 September 2026 pukul 09.34</div>
+                        </div>
+                    </div>
+
                 </div>
-
-                {{-- CARD 3: INFORMASI AKUN --}}
-                <div class="card">
-                    <div class="card-header">Informasi Akun</div>
-
-                    <div class="account-info-group">
-                        <div class="account-label">ID / Username Admin</div>
-                        <div class="account-value">ADM-PNG001</div>
-                    </div>
-                    
-                    <div class="account-info-group">
-                        <div class="account-label">Status Akun</div>
-                        <div class="status-active"><span class="status-dot"></span> Aktif</div>
-                    </div>
-                    
-                    <div class="account-info-group">
-                        <div class="account-label">Tanggal Akun Dibuat</div>
-                        <div class="account-value">{{ auth()->user()->created_at ? auth()->user()->created_at->format('j F Y') : '1 Januari 2024' }}</div>
-                    </div>
-                    
-                    <div class="account-info-group">
-                        <div class="account-label">Terakhir Log In</div>
-                        <div class="account-value">1 September 2026 pukul 09.34</div>
-                    </div>
-                </div>
-
-            </div>
+            </form>
 
             {{-- NOTIFIKASI PENGATURAN --}}
             @php
@@ -318,8 +305,23 @@
         </main>
     </div>
 
-    {{-- SCRIPT AJAX UNTUK SIMPAN OTOMATIS TOGGLE NOTIFIKASI --}}
     <script>
+        document.getElementById('btnUbahFoto').addEventListener('click', function () {
+            document.getElementById('inputFoto').click();
+        });
+
+        document.getElementById('inputFoto').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const container = document.getElementById('avatarPreviewContainer');
+                    container.innerHTML = `<img src="${e.target.result}" alt="Preview Foto" id="previewImg" style="width: 100%; height: 100%; object-fit: cover;">`;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
         document.querySelectorAll('.notif-toggle-input').forEach(function(checkbox) {
             checkbox.addEventListener('change', function() {
                 let settings = {};

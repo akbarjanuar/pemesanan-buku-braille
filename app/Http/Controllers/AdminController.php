@@ -7,6 +7,7 @@ use App\Models\Pesanan;
 use App\Models\Buku;
 use App\Models\Pencetakan;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -160,8 +161,11 @@ class AdminController extends Controller
 
     public function buatPencetakan()
     {
+        $pesananSudahDiproses = Pencetakan::pluck('pesanan_id')->toArray();
+
         $daftarPesanan = Pesanan::with('user', 'details.buku')
             ->whereIn('status', ['Dicetak', 'Sedang Dicetak'])
+            ->whereNotIn('id', $pesananSudahDiproses)
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -280,7 +284,7 @@ class AdminController extends Controller
         return view('admin.profile', compact('activeMenu'));
     }
 
-    // ===== Proses Update Profile Admin =====
+    // ===== Proses Update Profile Admin (Termasuk Foto & Informasi) =====
     public function updateProfile(Request $request)
     {
         $user = auth()->user();
@@ -289,15 +293,38 @@ class AdminController extends Controller
             'nama'          => 'required|string|max:255',
             'email'         => 'required|email|max:255|unique:users,email,' . $user->id,
             'nomor_telepon' => 'nullable|string|max:20',
+            'foto'          => 'nullable|image|mimes:jpg,jpeg,png,JFIF|max:2048',
         ]);
 
-        \App\Models\User::where('id', $user->id)->update([
+        $dataUpdate = [
             'nama'          => $request->nama,
             'email'         => $request->email,
             'nomor_telepon' => $request->nomor_telepon,
-        ]);
+        ];
 
-        return redirect()->back()->with('success', 'Informasi pribadi berhasil diperbarui!');
+        // Proses penyimpanan foto ke Supabase Storage (menggunakan disk 'profile_storage')
+        if ($request->hasFile('foto')) {
+            $file = $request->file('foto');
+            $fileName = 'profile_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            
+            // Simpan file ke storage
+            $path = $file->storePubliclyAs('profile_fotos', $fileName, 'profile_storage'); 
+            
+            // Ambil endpoint dari .env dan bersihkan jika ada '/storage/v1/s3' agar tidak dobel
+            $endpoint = rtrim(env('AWS_ENDPOINT'), '/');
+            $endpoint = str_replace('/storage/v1/s3', '', $endpoint);
+            
+            $bucket = env('AWS_BUCKET_PROFILE', 'profile');
+            
+            // Rakit URL publik Supabase yang valid secara langsung
+            $fullUrl = "{$endpoint}/storage/v1/object/public/{$bucket}/{$path}";
+            
+            $dataUpdate['foto_profil'] = $fullUrl;
+        }
+
+        \App\Models\User::where('id', $user->id)->update($dataUpdate);
+
+        return redirect()->back()->with('success', 'Informasi profil dan foto berhasil diperbarui!');
     }
 
     // ===== Proses Update Pengaturan Notifikasi =====
@@ -319,42 +346,102 @@ class AdminController extends Controller
     // ===== Proses Simpan Permintaan Pencetakan =====
     public function storePencetakan(Request $request)
     {
-    $request->validate([
-        'pesanan_id'     => 'required|exists:pesanan,id',
-        'buku_id'        => 'required|exists:buku,id',
-        'jumlah'         => 'required|integer|min:1',
-        'divisi'         => 'required|string',
-        'target_selesai' => 'required|date',
-        'pic'            => 'required|string',
-        'catatan'        => 'nullable|string',
-    ]);
+        $request->validate([
+            'pesanan_id'     => 'required|exists:pesanan,id',
+            'buku_id'        => 'required|exists:buku,id',
+            'jumlah'         => 'required|integer|min:1',
+            'divisi'         => 'required|string',
+            'target_selesai' => 'required|date',
+            'pic'            => 'required|string',
+            'catatan'        => 'nullable|string',
+        ]);
 
-    // Buat kode cetak unik
-    $kodeCetak = 'PRNT-' . date('Ymd') . '-' . rand(1000, 9999);
+        $kodeCetak = 'PRNT-' . date('Ymd') . '-' . rand(1000, 9999);
 
-    // Simpan data secara lengkap ke tabel pencetakans di Supabase
-    Pencetakan::create([
-        'pesanan_id'     => $request->pesanan_id,
-        'buku_id'        => $request->buku_id,
-        'kode_cetak'     => $kodeCetak,
-        'jumlah'         => $request->jumlah,
-        'divisi'         => $request->divisi,
-        'jenis_literasi' => $request->divisi, 
-        'target_buku'    => $request->jumlah,  
-        'deadline'       => $request->target_selesai, 
-        'pic'            => $request->pic,
-        'catatan'        => $request->catatan,
-        'status'         => 'Menunggu Diproses',
-    ]);
+        Pencetakan::create([
+            'pesanan_id'     => $request->pesanan_id,
+            'buku_id'        => $request->buku_id,
+            'kode_cetak'     => $kodeCetak,
+            'jumlah'         => $request->jumlah,
+            'divisi'         => $request->divisi,
+            'jenis_literasi' => $request->divisi, 
+            'target_buku'    => $request->jumlah,  
+            'deadline'       => $request->target_selesai, 
+            'pic'            => $request->pic,
+            'catatan'        => $request->catatan,
+            'status'         => 'Menunggu Diproses',
+        ]);
 
-    // Cek pengaturan notifikasi admin untuk "Update Pencetakan"
-    $admin = auth()->user();
-    $notif = $admin->notif_settings ?? [];
-    if (isset($notif['update_pencetakan']) && $notif['update_pencetakan']) {
-        Log::info("Notifikasi: Permintaan pencetakan baru berhasil dibuat oleh {$admin->nama}");
+        $admin = auth()->user();
+        $notif = $admin->notif_settings ?? [];
+        if (isset($notif['update_pencetakan']) && $notif['update_pencetakan']) {
+            Log::info("Notifikasi: Permintaan pencetakan baru berhasil dibuat oleh {$admin->nama}");
+        }
+
+        return redirect()->route('admin.pencetakan')->with('success', 'Permintaan pencetakan baru berhasil dibuat.');
     }
 
-    return redirect()->route('admin.pencetakan')->with('success', 'Permintaan pencetakan baru berhasil dibuat.');
+    // =====================================================
+    // ===== HALAMAN LAPORAN ===============================
+    // =====================================================
+
+    public function laporan(Request $request)
+    {
+        $range = $request->input('range', '6-bulan');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        $queryStart = null;
+        $queryEnd = \Carbon\Carbon::now()->endOfDay();
+
+        if ($startDate && $endDate) {
+            $queryStart = \Carbon\Carbon::parse($startDate)->startOfDay();
+            $queryEnd = \Carbon\Carbon::parse($endDate)->endOfDay();
+            $range = 'custom';
+        } else {
+            switch ($range) {
+                case 'hari-ini':
+                    $queryStart = \Carbon\Carbon::today();
+                    break;
+                case 'minggu-ini':
+                    $queryStart = \Carbon\Carbon::now()->startOfWeek();
+                    break;
+                case 'bulan-ini':
+                    $queryStart = \Carbon\Carbon::now()->startOfMonth();
+                    break;
+                case '6-bulan':
+                default:
+                    $queryStart = \Carbon\Carbon::now()->subMonths(6)->startOfDay();
+                    break;
+            }
+        }
+
+        $pesanans = \App\Models\Pesanan::with(['user', 'details.buku'])
+            ->whereBetween('created_at', [$queryStart, $queryEnd])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $bukus = \App\Models\Buku::orderBy('judul')->get();
+
+        $pencetakans = \App\Models\Pencetakan::with(['pesanan.user', 'buku'])
+            ->whereBetween('created_at', [$queryStart, $queryEnd])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $pelanggans = \App\Models\User::where('role', 'user')
+            ->whereBetween('created_at', [$queryStart, $queryEnd])
+            ->withCount('pesanan')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $bahans = collect(); 
+
+        $activeMenu = 'laporan';
+
+        return view('admin.laporan', compact(
+            'pesanans', 'bukus', 'pencetakans', 'bahans', 'pelanggans',
+            'range', 'startDate', 'endDate', 'activeMenu'
+        ));
     }
     
 }

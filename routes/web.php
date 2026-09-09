@@ -234,7 +234,10 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
 
     // ===== UPDATE NOTIFIKASI ADMIN =====
     Route::put('/admin/profile/notifikasi', [AdminController::class, 'updateNotifikasi'])
-        ->name('admin.profile.notifikasi');    
+        ->name('admin.profile.notifikasi');   
+
+    // Pastikan route laporan ini ada di dalam file web.php
+    Route::get('/admin/laporan', [AdminController::class, 'laporan'])->name('admin.laporan');
 
 });
 

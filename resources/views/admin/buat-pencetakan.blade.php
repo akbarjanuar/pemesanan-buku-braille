@@ -181,9 +181,8 @@
                 <p>Buat permintaan pencetakan Buku Braille yang belum tersedia atau belum mencukupi untuk memenuhi pesanan pelanggan.</p>
             </div>
 
-            {{-- ✅ TAMBAHAN: menampilkan pesan error validasi supaya tidak silent fail --}}
             @if ($errors->any())
-                <div class="alert-warning">
+                <div class="alert-warning" style="max-width:720px; margin-bottom:20px;">
                     <ul style="margin:0; padding-left:18px;">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -192,9 +191,11 @@
                 </div>
             @endif
 
-            {{-- ✅ DIPERBAIKI: action form sekarang mengarah ke route POST khusus (admin.pencetakan.store) --}}
             <form id="formPencetakan" method="POST" action="{{ route('admin.pencetakan.store') }}">
                 @csrf
+
+                {{-- Hidden input untuk menyimpan ID buku yang akan dikirim ke controller --}}
+                <input type="hidden" name="buku_id" id="buku_id">
 
                 {{-- STEP 1: FORM UTAMA --}}
                 <div id="step1" class="form-card">
@@ -208,10 +209,19 @@
                             <select name="pesanan_id" id="pesanan_id" class="form-control" required>
                                 <option value="">-- Pilih Nomor Pesanan --</option>
                                 @foreach($daftarPesanan ?? [] as $p)
+                                    @php
+                                        $firstDetail = $p->details->first();
+                                        $bukuId = $firstDetail ? $firstDetail->buku_id : '';
+                                        $bukuJudul = $firstDetail && $firstDetail->buku ? $firstDetail->buku->judul : '-';
+                                        $bukuKategori = $firstDetail && $firstDetail->buku ? ($firstDetail->buku->kategori ?? '-') : '-';
+                                    @endphp
                                     <option value="{{ $p->id }}"
                                         data-nama="{{ $p->nama_penerima ?? optional($p->user)->nama ?? '-' }}"
                                         data-jenis="{{ $p->jenis_pesanan ?? 'Pribadi' }}"
-                                        data-alamat="{{ $p->alamat ?? optional($p->user)->alamat ?? '-' }}">
+                                        data-alamat="{{ $p->alamat ?? optional($p->user)->alamat ?? '-' }}"
+                                        data-buku-id="{{ $bukuId }}"
+                                        data-buku-judul="{{ $bukuJudul }}"
+                                        data-buku-kategori="{{ $bukuKategori }}">
                                         {{ $p->nomor_pesanan ?? 'ORD-'.$p->id }}
                                     </option>
                                 @endforeach
@@ -242,15 +252,8 @@
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Nama Buku <span class="required">*</span></label>
-                                <select name="buku_id" id="buku_id" class="form-control" required>
-                                    <option value="">-- Pilih Nama Buku --</option>
-                                    @foreach($daftarBuku ?? [] as $b)
-                                        <option value="{{ $b->id }}" data-kategori="{{ $b->kategori ?? '-' }}">
-                                            {{ $b->judul }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                                <label>Nama Buku</label>
+                                <input type="text" id="nama_buku" class="form-control" readonly placeholder="Otomatis terisi setelah pesanan dipilih">
                             </div>
                             <div class="form-group">
                                 <label>Kategori Buku</label>
@@ -319,7 +322,6 @@
                 {{-- STEP 2: RINGKASAN --}}
                 <div id="step2" class="form-card hidden">
                     <input type="hidden" name="pesanan_id" id="hidden_pesanan_id">
-                    <input type="hidden" name="buku_id" id="hidden_buku_id">
                     <input type="hidden" name="jumlah" id="hidden_jumlah">
                     <input type="hidden" name="divisi" id="hidden_divisi">
                     <input type="hidden" name="target_selesai" id="hidden_target_selesai">
@@ -397,15 +399,27 @@
 
     <script>
         document.getElementById('pesanan_id').addEventListener('change', function () {
-            const opt = this.options[this.selectedIndex];
-            document.getElementById('nama_pelanggan').value = opt.dataset.nama || '';
-            document.getElementById('jenis_pemesan').value = opt.dataset.jenis || '';
-            document.getElementById('alamat_pelanggan').value = opt.dataset.alamat || '';
-        });
+            const selectEl = this;
+            const opt = selectEl.options[selectEl.selectedIndex];
 
-        document.getElementById('buku_id').addEventListener('change', function () {
-            const opt = this.options[this.selectedIndex];
-            document.getElementById('kategori_buku').value = opt.dataset.kategori || '';
+            if (!opt.value) {
+                document.getElementById('nama_pelanggan').value = '';
+                document.getElementById('jenis_pemesan').value = '';
+                document.getElementById('alamat_pelanggan').value = '';
+                document.getElementById('buku_id').value = '';
+                document.getElementById('nama_buku').value = '';
+                document.getElementById('kategori_buku').value = '';
+                return;
+            }
+
+            // Mengisi input otomatis berdasarkan data-* dari option yang dipilih
+            document.getElementById('nama_pelanggan').value = opt.getAttribute('data-nama') || '';
+            document.getElementById('jenis_pemesan').value = opt.getAttribute('data-jenis') || '';
+            document.getElementById('alamat_pelanggan').value = opt.getAttribute('data-alamat') || '';
+
+            document.getElementById('buku_id').value = opt.getAttribute('data-buku-id') || '';
+            document.getElementById('nama_buku').value = opt.getAttribute('data-buku-judul') || '';
+            document.getElementById('kategori_buku').value = opt.getAttribute('data-buku-kategori') || '';
         });
 
         document.getElementById('btnLihatRingkasan').addEventListener('click', function () {
@@ -415,32 +429,32 @@
                 return;
             }
 
-            const pesananId = document.getElementById('pesanan_id').value;
-            const pesananOpt = document.getElementById('pesanan_id').options[document.getElementById('pesanan_id').selectedIndex];
+            const pesananSelect = document.getElementById('pesanan_id');
+            const pesananOpt = pesananSelect.options[pesananSelect.selectedIndex];
 
-            const bukuId = document.getElementById('buku_id').value;
-            const bukuOpt = document.getElementById('buku_id').options[document.getElementById('buku_id').selectedIndex];
+            const namaBuku = document.getElementById('nama_buku').value;
+            const kategoriBuku = document.getElementById('kategori_buku').value;
 
             const jumlah = document.getElementById('jumlah').value;
             const divisi = document.getElementById('divisi').value;
             const target = document.getElementById('target_selesai').value;
             const pic = document.getElementById('pic').value;
-            const picText = document.getElementById('pic').options[document.getElementById('pic').selectedIndex].text;
+            const picSelect = document.getElementById('pic');
+            const picText = picSelect.options[picSelect.selectedIndex].text;
             const catatan = document.getElementById('catatan').value;
 
-            document.getElementById('hidden_pesanan_id').value = pesananId;
-            document.getElementById('hidden_buku_id').value = bukuId;
+            document.getElementById('hidden_pesanan_id').value = pesananSelect.value;
             document.getElementById('hidden_jumlah').value = jumlah;
             document.getElementById('hidden_divisi').value = divisi;
             document.getElementById('hidden_target_selesai').value = target;
             document.getElementById('hidden_pic').value = pic;
             document.getElementById('hidden_catatan').value = catatan;
 
-            document.getElementById('sum_nomor').textContent = pesananOpt.text;
+            document.getElementById('sum_nomor').textContent = pesananOpt.text.trim();
             document.getElementById('sum_nama').textContent = document.getElementById('nama_pelanggan').value || '-';
             document.getElementById('sum_jenis').textContent = document.getElementById('jenis_pemesan').value || '-';
-            document.getElementById('sum_buku').textContent = bukuOpt.text || '-';
-            document.getElementById('sum_kategori').textContent = document.getElementById('kategori_buku').value || '-';
+            document.getElementById('sum_buku').textContent = namaBuku || '-';
+            document.getElementById('sum_kategori').textContent = kategoriBuku || '-';
             document.getElementById('sum_jumlah').textContent = jumlah + ' eksemplar';
             document.getElementById('sum_divisi').textContent = divisi || '-';
             document.getElementById('sum_literasi').textContent = divisi || '-';

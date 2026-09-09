@@ -60,6 +60,30 @@ return [
             'report' => false,
         ],
 
+        // Disk untuk KTP
+        'ktp_storage' => [
+            'driver' => 's3',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+            'bucket' => env('AWS_BUCKET_KTP', 'ktp'), // Mengambil dari env KTP atau default 'ktp'
+            'url' => env('AWS_URL'),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => true,
+        ],
+
+        // Disk untuk Profile
+        'profile_storage' => [
+            'driver' => 's3',
+            'key' => env('AWS_ACCESS_KEY_ID'),
+            'secret' => env('AWS_SECRET_ACCESS_KEY'),
+            'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
+            'bucket' => env('AWS_BUCKET_PROFILE', 'profile'), // Mengambil dari env Profile atau default 'profile'
+            'url' => env('AWS_URL'),
+            'endpoint' => env('AWS_ENDPOINT'),
+            'use_path_style_endpoint' => true,
+        ],
+
     ],
 
     /*
