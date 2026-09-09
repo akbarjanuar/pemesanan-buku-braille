@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Permintaan Buku - BrailleKita</title>
     
-    {{-- Token CSRF WAJIB ditambahkan agar update AJAX ke backend diizinkan oleh Laravel --}}
+    <!-- Token CSRF WAJIB ditambahkan agar update AJAX ke backend diizinkan oleh Laravel -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
@@ -18,6 +20,13 @@
             --border: #e0e0e0;
             --background: #f4f6f9;
         }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: sans-serif; background: var(--background); color: var(--text-dark); }
+
+        .menu-toggle { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; color: var(--text-muted); background: none; border: none; cursor: pointer; font-size: 20px; }
+        .topbar-title { font-size: 20px; font-weight: 900; font-family: 'Georgia', serif; color: var(--text-dark); margin-left: 10px; }
+        .content-area { padding: 32px; flex-grow: 1; overflow-y: auto; }
         
         .page-header { margin-bottom: 20px; }
         .page-header h2 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
@@ -74,6 +83,7 @@
             font-weight: 700;
             color: var(--text-dark);
             cursor: pointer;
+            text-decoration: none;
         }
         .status-dropdown-menu a:hover, .doc-dropdown-menu a:hover { background: #f5f5f5; }
         .status-dropdown-menu a.active { background: var(--primary); color: white; }
@@ -97,19 +107,16 @@
         }
         .btn-update-status.enabled:hover { background-color: var(--primary-hover); }
 
-        /* ===== PERBAIKAN WARNA HEADER TABEL ===== */
         .table-card { background-color: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
         .table-wrapper { width: 100%; overflow-x: auto; }
         .data-table { width: 100%; border-collapse: collapse; }
         
-        /* Warna abu-abu sekarang dipasang di baris tabel (TR), bukan di sel (TH) agar tidak ada celah */
         .data-table thead tr { background-color: #f1f1f1; border-bottom: 1px solid var(--border); }
         .data-table th { padding: 14px 24px; text-align: left; font-size: 13px; color: var(--text-muted); font-weight: 700; white-space: nowrap; }
         .data-table td { padding: 16px 24px; border-bottom: 1px solid var(--border); font-size: 14px; font-weight: 700; color: var(--text-dark); white-space: nowrap; vertical-align: middle; }
         .data-table tr:last-child td { border-bottom: none; }
         .data-table tbody tr:hover { background-color: #fafafa; }
 
-        /* Kolom checklist — diperbaiki agar selnya tidak tembus pandang */
         .select-col {
             width: 0;
             padding-left: 0 !important;
@@ -130,13 +137,12 @@
             opacity: 1; pointer-events: auto; 
         }
 
-        /* Warna status dinamis (Sudah ditambah Return) */
         .status-dikirim { color: #0097a7 !important; }
         .status-dicetak { color: #fbc02d !important; }
         .status-selesai { color: #2e7d32 !important; }
         .status-diproses { color: #e65100 !important; }
         .status-batal { color: #c62828 !important; }
-        .status-return { color: #8e24aa !important; } /* Tambahan warna Return (Ungu) */
+        .status-return { color: #8e24aa !important; }
         .status-baru { color: #1976d2 !important; }
 
         .btn-detail {
@@ -145,7 +151,6 @@
         }
         .btn-detail:hover { background-color: var(--primary-hover); }
 
-        /* ===== MODAL UPDATE STATUS ===== */
         .modal-overlay {
             display: none;
             position: fixed; inset: 0;
@@ -208,15 +213,25 @@
         <header class="topbar">
             <div class="topbar-left">
                 <button type="button" class="menu-toggle"><i class="fas fa-bars"></i></button>
-                <span style="font-size: 20px; font-weight: 900; font-family: 'Georgia', serif; margin-left: 10px;">Permintaan Buku</span>
+                <span class="topbar-title">Permintaan Buku</span>
             </div>
 
-            <div class="topbar-right">
-                <i class="far fa-bell notification-bell"></i>
-                <div class="user-profile" style="display: flex; align-items: center; gap: 10px; font-weight: 700;">
-                    <span>{{ auth()->user()->nama ?? 'Admin Pengiriman' }}</span>
-                    <i class="fas fa-user-circle" style="font-size: 20px;"></i>
-                </div>
+            <div class="topbar-right" style="display: flex; align-items: center; gap: 24px;">
+                <i class="far fa-bell notification-bell" style="font-size: 20px; cursor: pointer;"></i>
+
+                <a href="{{ route('admin.profile') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-dark); cursor: pointer;">
+                    <span style="font-weight: 700; font-size: 15px;">
+                        {{ auth()->user()->nama ?? 'Admin Pengiriman' }}
+                    </span>
+                    
+                    <div style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: #111; display: flex; align-items: center; justify-content: center; color: white;">
+                        @if(auth()->user()->foto_profil)
+                            <img src="{{ auth()->user()->foto_profil }}" alt="Foto Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                        @else
+                            <i class="fas fa-user" style="font-size: 16px;"></i>
+                        @endif
+                    </div>
+                </a>
             </div>
         </header>
 
@@ -276,14 +291,13 @@
                         <tbody>
                             @forelse($daftarPesanan as $pesanan)
                                 @php
-                                    // Penentuan warna kelas status
                                     $statusClass = '';
                                     $s = strtolower($pesanan->status);
                                     if(str_contains($s, 'dikirim')) $statusClass = 'status-dikirim';
                                     elseif(str_contains($s, 'dicetak')) $statusClass = 'status-dicetak';
                                     elseif(str_contains($s, 'selesai')) $statusClass = 'status-selesai';
                                     elseif(str_contains($s, 'diproses') || str_contains($s, 'menunggu')) $statusClass = 'status-diproses';
-                                    elseif(str_contains($s, 'return')) $statusClass = 'status-return'; // Tambahan Return
+                                    elseif(str_contains($s, 'return')) $statusClass = 'status-return';
                                     elseif(str_contains($s, 'batal')) $statusClass = 'status-batal';
                                     else $statusClass = 'status-baru';
                                 @endphp
@@ -345,7 +359,6 @@
 
     <script>
         (function () {
-            /* ===== FILTER STATUS TABEL ===== */
             var statusBtn = document.getElementById('statusDropdownBtn');
             var statusMenu = document.getElementById('statusDropdownMenu');
             var statusLabel = document.getElementById('statusDropdownLabel');
@@ -368,7 +381,6 @@
 
                     rows.forEach(function (row) {
                         var rowStatus = row.dataset.status.toLowerCase();
-                        // Menggunakan .includes() agar "Menunggu Diproses" cocok saat filter "Diproses" dipilih
                         if (status === 'semua' || rowStatus.includes(status)) {
                             row.style.display = '';
                         } else {
@@ -378,7 +390,6 @@
                 });
             });
 
-            /* ===== TOGGLE PILIH DOKUMEN (MODE CHECKLIST) ===== */
             var docBtn = document.getElementById('docDropdownBtn');
             var docMenu = document.getElementById('docDropdownMenu');
             var pilihSemuaBtn = document.getElementById('pilihSemuaBtn');
@@ -447,7 +458,6 @@
                 cb.addEventListener('change', updateUpdateStatusButton);
             });
 
-            /* ===== MODAL UPDATE STATUS ===== */
             var modal = document.getElementById('updateStatusModal');
             var jumlahDipilihSpan = document.getElementById('jumlahDipilih');
             var statusOptions = document.querySelectorAll('.status-option');
@@ -483,7 +493,6 @@
                 modal.classList.remove('open');
             });
 
-            /* ===== PENGIRIMAN DATA KE BACKEND (AJAX Fetch) ===== */
             btnModalSave.addEventListener('click', function () {
                 if (btnModalSave.disabled) return;
 
@@ -508,7 +517,7 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        window.location.reload(); // Segarkan halaman saat sukses
+                        window.location.reload();
                     } else {
                         alert('Gagal memperbarui status. Pastikan rute sudah dibuat di web.php');
                         btnModalSave.textContent = originalText;
@@ -523,7 +532,6 @@
                 });
             });
 
-            // Klik di luar dropdown untuk menutupnya
             document.addEventListener('click', function (e) {
                 if (!statusBtn.contains(e.target) && !statusMenu.contains(e.target)) {
                     statusMenu.classList.remove('open');

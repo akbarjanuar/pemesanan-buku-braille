@@ -152,7 +152,6 @@
                     {{-- CARD 1: FOTO PROFILE --}}
                     <div class="card profile-center">
                         <div class="card-header" style="text-align: left;">Foto Profile</div>
-                        <i class="fas fa-pen edit-icon"></i>
                         
                         <div class="avatar-lg" id="avatarPreviewContainer">
                             @if(auth()->user()->foto_profil)
@@ -177,7 +176,6 @@
                     {{-- CARD 2: INFORMASI PRIBADI --}}
                     <div class="card">
                         <div class="card-header">Informasi Pribadi</div>
-                        <i class="fas fa-pen edit-icon"></i>
 
                         @if(session('success'))
                             <div style="background: var(--success); color: white; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; font-weight: 700;">

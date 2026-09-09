@@ -176,25 +176,37 @@
         <!-- TOPBAR -->
         <header class="topbar">
             <div class="topbar-left">
-                <!-- Tambahkan type="button" agar tidak dianggap submit dan class menu-toggle untuk trigger JS sidebar -->
+                <!-- Tombol Hamburger Trigger JS Sidebar -->
                 <button type="button" class="menu-toggle">
                     <i class="fas fa-bars"></i>
                 </button>
                 <span style="margin-left: 10px;">Dashboard</span>
             </div>
             
-            <div class="topbar-right">
+            <div class="topbar-right" style="display: flex; align-items: center; gap: 24px;">
+                <!-- Search Box -->
                 <div class="search-box">
                     <i class="fas fa-search"></i>
                     <input type="text" placeholder="Search">
                 </div>
                 
-                <i class="far fa-bell notification-bell"></i>
+                <!-- Ikon Notifikasi -->
+                <i class="far fa-bell notification-bell" style="font-size: 20px; cursor: pointer;"></i>
                 
-                <div class="user-profile">
-                    <span>{{ auth()->user()->nama ?? 'Admin' }}</span>
-                    <i class="fas fa-user-circle"></i>
-                </div>
+                <!-- Profil Pengguna (Bisa diklik menuju ke halaman profile) -->
+                <a href="{{ route('admin.profile') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-dark); cursor: pointer;">
+                    <span style="font-weight: 700; font-size: 15px;">
+                        {{ auth()->user()->nama ?? 'Admin Pengiriman' }}
+                    </span>
+                    
+                    <div style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: #111; display: flex; align-items: center; justify-content: center; color: white;">
+                        @if(auth()->user()->foto_profil)
+                            <img src="{{ auth()->user()->foto_profil }}" alt="Foto Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                        @else
+                            <i class="fas fa-user" style="font-size: 16px;"></i>
+                        @endif
+                    </div>
+                </a>
             </div>
         </header>
 

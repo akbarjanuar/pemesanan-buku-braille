@@ -6,7 +6,6 @@
     <title>Laporan - BrailleKita</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* CSS SAMA SEPERTI SEBELUMNYA */
         :root {
             --primary: #c62828;
             --primary-hover: #b71c1c;
@@ -37,7 +36,7 @@
         .date-range-group { display: flex; align-items: center; gap: 10px; margin-left: auto; flex-wrap: wrap; }
         .date-field { display: flex; flex-direction: column; gap: 4px; }
         .date-field label { font-size: 11px; color: var(--text-muted); font-weight: 700; }
-        .date-field input { border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-family: inherit; font-size: 13px; outline: none; }
+        .date-field input { border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-family: inherit; font-size: 13px; outline: none; background: white; }
         .date-field input:focus { border-color: var(--primary); }
         .btn-terapkan { background: var(--primary); color: white; border: none; padding: 9px 18px; border-radius: 8px; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; align-self: flex-end; }
         .btn-terapkan:hover { background: var(--primary-hover); }
@@ -49,14 +48,14 @@
         .data-table th { background-color: #f1f1f1; padding: 12px 20px; text-align: left; font-size: 12px; color: var(--text-muted); font-weight: 700; white-space: nowrap; }
         .data-table td { padding: 14px 20px; border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 700; color: var(--text-dark); white-space: nowrap; }
         .data-table tr:last-child td { border-bottom: none; }
-        .empty-state { padding: 20px; text-align: center; color: var(--text-muted); font-size: 14px; }
+        .empty-state { padding: 20px; text-align: center; color: var(--text-muted); font-size: 14px; font-weight: normal; }
         .status-dikirim { color: #0097a7; }
         .status-dicetak { color: #fbc02d; }
         .status-selesai, .status-tersedia, .status-aktif { color: #2e7d32; }
         .status-diproses, .status-menunggu { color: #e65100; }
         .status-batal { color: #c62828; }
         @media (max-width: 700px) { .filter-row { flex-direction: column; align-items: stretch; } .date-range-group { margin-left: 0; width: 100%; } .date-field { flex: 1; } .btn-terapkan { align-self: stretch; } .btn-export { width: 100%; justify-content: center; } }
-        /* CSS MODAL EXPORT SAMA SEPERTI SEBELUMNYA */
+        
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 300; align-items: center; justify-content: center; padding: 20px; }
         .modal-overlay.open { display: flex; }
         .modal-box { background: var(--surface); border-radius: 12px; width: 100%; max-width: 440px; max-height: 88vh; overflow-y: auto; padding: 24px; }
@@ -68,8 +67,6 @@
         .option-radio-item:hover { border-color: var(--primary); }
         .option-radio-item.selected { border-color: var(--primary); background: #fdecea; }
         .option-radio-item input[type="radio"] { width: 17px; height: 17px; accent-color: var(--primary); flex-shrink: 0; }
-        .periode-date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
-        .periode-date-row .date-field input { width: 100%; padding: 9px 10px; }
         .modal-actions { display: flex; gap: 12px; margin-top: 22px; }
         .btn-modal-cancel { flex: 1; background: white; border: 1px solid var(--border); color: var(--text-dark); padding: 12px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; font-family: inherit; }
         .btn-modal-cancel:hover { background: #f5f5f5; }
@@ -88,12 +85,23 @@
                 <button type="button" class="menu-toggle"><i class="fas fa-bars"></i></button>
                 <span class="topbar-title">Laporan</span>
             </div>
-            <div class="topbar-right">
-                <i class="far fa-bell notification-bell"></i>
-                <div class="user-profile">
-                    <span>{{ auth()->user()->nama ?? 'Admin' }}</span>
-                    <i class="fas fa-user-circle"></i>
-                </div>
+
+            <div class="topbar-right" style="display: flex; align-items: center; gap: 24px;">
+                <i class="far fa-bell notification-bell" style="font-size: 20px; cursor: pointer;"></i>
+
+                <a href="{{ route('admin.profile') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-dark); cursor: pointer;">
+                    <span style="font-weight: 700; font-size: 15px;">
+                        {{ auth()->user()->nama ?? 'Admin Pengiriman' }}
+                    </span>
+                    
+                    <div style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: #111; display: flex; align-items: center; justify-content: center; color: white;">
+                        @if(auth()->user()->foto_profil)
+                            <img src="{{ auth()->user()->foto_profil }}" alt="Foto Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                        @else
+                            <i class="fas fa-user" style="font-size: 16px;"></i>
+                        @endif
+                    </div>
+                </a>
             </div>
         </header>
 
@@ -112,7 +120,6 @@
                 <div class="ringkasan-desc">Pilih rentang waktu untuk melihat data laporan.</div>
 
                 <div class="filter-row">
-                    <!-- Quick Filters (Menggunakan URL parameters) -->
                     <div class="quick-filter-group" id="quickFilterGroup">
                         <a href="{{ route('admin.laporan', ['range' => 'hari-ini']) }}" class="quick-filter-btn {{ $range == 'hari-ini' ? 'active' : '' }}">Hari Ini</a>
                         <a href="{{ route('admin.laporan', ['range' => 'minggu-ini']) }}" class="quick-filter-btn {{ $range == 'minggu-ini' ? 'active' : '' }}">Minggu Ini</a>
@@ -120,7 +127,6 @@
                         <a href="{{ route('admin.laporan', ['range' => '6-bulan']) }}" class="quick-filter-btn {{ $range == '6-bulan' ? 'active' : '' }}">6 Bulan Terakhir</a>
                     </div>
 
-                    <!-- Custom Date Form -->
                     <form action="{{ route('admin.laporan') }}" method="GET" class="date-range-group">
                         <div class="date-field">
                             <label>Tanggal mulai</label>
@@ -309,7 +315,7 @@
         </main>
     </div>
 
-    <!-- MODAL EXPORT DATA (SAMA SEPERTI SEBELUMNYA) -->
+    <!-- MODAL EXPORT DATA -->
     <div class="modal-overlay" id="exportModal">
         <div class="modal-box">
             <div class="modal-title">Export Data</div>
@@ -338,7 +344,6 @@
 
     <script>
         (function () {
-            /* ===== MODAL EXPORT DATA ===== */
             var modal = document.getElementById('exportModal');
             var btnOpen = document.getElementById('btnOpenExportModal');
             var btnCancel = document.getElementById('btnExportCancel');
@@ -385,7 +390,6 @@
                 btnExport.classList.toggle('enabled', !!valid);
             }
 
-            /* ===== GENERATE FILE EXCEL (client-side) ===== */
             function ambilHtmlTabel(jenis) {
                 var mapId = {
                     'pesanan': 'tabelDataPesanan',
