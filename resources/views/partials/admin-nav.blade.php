@@ -346,7 +346,7 @@
             Data Pelanggan
         </a>
 
-        <a href="#"
+        <a href="/admin/permintaan-bahan"
            class="nav-item {{ $activeMenu === 'permintaan-bahan' ? 'active' : '' }}">
             <i class="fas fa-layer-group"></i>
             Permintaan Bahan

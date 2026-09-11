@@ -223,7 +223,11 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
 
     Route::get('/admin/laporan', function () {
     return view('admin.laporan');
-    })->middleware('auth');    
+    })->middleware('auth');
+    
+       Route::get('/admin/permintaan-bahan', function () {
+       return view('admin.permintaan-bahan');
+    })->middleware('auth');
 
     // ===== PROFILE ADMIN =====
     Route::get('/admin/profile', [AdminController::class, 'profile'])
@@ -238,6 +242,22 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
 
     // Pastikan route laporan ini ada di dalam file web.php
     Route::get('/admin/laporan', [AdminController::class, 'laporan'])->name('admin.laporan');
+
+
+Route::get('/admin/resi/cetak', function (Illuminate\Http\Request $request) {
+    $ids = explode(',', $request->query('ids', ''));
+    $ids = array_filter($ids); // buang value kosong
+
+    if (empty($ids)) {
+        abort(404, 'Tidak ada dokumen yang dipilih.');
+    }
+
+    $daftarPesanan = Pesanan::with('details.buku')
+        ->whereIn('id', $ids)
+        ->get();
+
+    return view('admin.cetak-resi', compact('daftarPesanan'));
+})->middleware('auth');
 
 });
 

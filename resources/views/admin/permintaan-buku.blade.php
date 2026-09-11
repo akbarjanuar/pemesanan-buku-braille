@@ -42,6 +42,7 @@
         }
 
         .filter-bar-left { display: flex; flex-direction: column; gap: 10px; }
+        .filter-bar-right { display: flex; gap: 10px; flex-wrap: wrap; align-self: flex-start; }
 
         .status-dropdown, .doc-dropdown { position: relative; display: inline-block; }
         .status-dropdown-btn, .doc-dropdown-btn {
@@ -88,7 +89,7 @@
         .status-dropdown-menu a:hover, .doc-dropdown-menu a:hover { background: #f5f5f5; }
         .status-dropdown-menu a.active { background: var(--primary); color: white; }
 
-        .btn-update-status {
+        .btn-update-status, .btn-cetak-resi {
             background-color: #bdbdbd;
             color: white;
             border: none;
@@ -99,13 +100,15 @@
             font-family: inherit;
             cursor: not-allowed;
             transition: background-color .15s;
-            align-self: flex-start;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        .btn-update-status.enabled {
+        .btn-update-status.enabled, .btn-cetak-resi.enabled {
             background-color: var(--primary);
             cursor: pointer;
         }
-        .btn-update-status.enabled:hover { background-color: var(--primary-hover); }
+        .btn-update-status.enabled:hover, .btn-cetak-resi.enabled:hover { background-color: var(--primary-hover); }
 
         .table-card { background-color: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
         .table-wrapper { width: 100%; overflow-x: auto; }
@@ -200,7 +203,8 @@
         @media (max-width: 640px) {
             .filter-bar { flex-direction: column; align-items: stretch; }
             .status-dropdown-btn, .doc-dropdown-btn { width: 100%; justify-content: space-between; }
-            .btn-update-status { width: 100%; }
+            .filter-bar-right { width: 100%; }
+            .btn-update-status, .btn-cetak-resi { width: 100%; justify-content: center; }
         }
     </style>
 </head>
@@ -271,7 +275,12 @@
                     </div>
                 </div>
 
-                <button type="button" class="btn-update-status" id="btnUpdateStatus" disabled>Update Status</button>
+                <div class="filter-bar-right">
+                    <button type="button" class="btn-cetak-resi" id="btnCetakResi" disabled>
+                        <i class="fas fa-print"></i> Cetak Resi
+                    </button>
+                    <button type="button" class="btn-update-status" id="btnUpdateStatus" disabled>Update Status</button>
+                </div>
             </div>
 
             <div class="table-card">
@@ -397,6 +406,7 @@
             var rowCheckboxes = document.querySelectorAll('.row-checkbox');
             var selectAllCheckbox = document.getElementById('selectAllCheckbox');
             var btnUpdateStatus = document.getElementById('btnUpdateStatus');
+            var btnCetakResi = document.getElementById('btnCetakResi');
 
             var selectMode = false;
 
@@ -409,14 +419,18 @@
                     rowCheckboxes.forEach(function (cb) { cb.checked = false; });
                     selectAllCheckbox.checked = false;
                     docMenu.classList.remove('open');
-                    updateUpdateStatusButton();
+                    updateActionButtons();
                 }
             }
 
-            function updateUpdateStatusButton() {
+            function updateActionButtons() {
                 var jumlahDicentang = document.querySelectorAll('.row-checkbox:checked').length;
+
                 btnUpdateStatus.disabled = jumlahDicentang === 0;
                 btnUpdateStatus.classList.toggle('enabled', jumlahDicentang > 0);
+
+                btnCetakResi.disabled = jumlahDicentang === 0;
+                btnCetakResi.classList.toggle('enabled', jumlahDicentang > 0);
             }
 
             docBtn.addEventListener('click', function () {
@@ -440,7 +454,7 @@
                 });
 
                 selectAllCheckbox.checked = !semuaSudahDicentang;
-                updateUpdateStatusButton();
+                updateActionButtons();
                 docMenu.classList.remove('open');
             });
 
@@ -451,11 +465,23 @@
                         cb.checked = selectAllCheckbox.checked;
                     }
                 });
-                updateUpdateStatusButton();
+                updateActionButtons();
             });
 
             rowCheckboxes.forEach(function (cb) {
-                cb.addEventListener('change', updateUpdateStatusButton);
+                cb.addEventListener('change', updateActionButtons);
+            });
+
+            /* ===== CETAK RESI ===== */
+            btnCetakResi.addEventListener('click', function () {
+                if (btnCetakResi.disabled) return;
+
+                var idTerpilih = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(function (cb) { return cb.value; });
+
+                if (idTerpilih.length === 0) return;
+
+                var url = '/admin/resi/cetak?ids=' + idTerpilih.join(',');
+                window.open(url, '_blank');
             });
 
             var modal = document.getElementById('updateStatusModal');
