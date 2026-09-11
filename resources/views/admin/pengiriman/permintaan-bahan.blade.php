@@ -72,16 +72,16 @@
         .timeline-item { display: flex; gap: 14px; position: relative; padding-bottom: 22px; }
         .timeline-item:last-child { padding-bottom: 0; }
         .timeline-item:not(:last-child)::after { content: ''; position: absolute; left: 13px; top: 28px; bottom: -22px; width: 2px; background: var(--border); }
-        .timeline-icon { width: 27px; height: 27px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 1; font-size: 12px; font-weight: 700; }
+        .timeline-icon { width: 27px; height: 27px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; z-index: 1; font-size: 12px; font-weight: 700; transition: 0.3s; }
         .timeline-icon.done { background: var(--green); color: white; }
         .timeline-icon.current { background: var(--primary); color: white; }
         .timeline-icon.pending { background: #e0e0e0; color: #9e9e9e; }
         .timeline-body { padding-top: 2px; }
-        .timeline-title { font-size: 13.5px; font-weight: 700; }
+        .timeline-title { font-size: 13.5px; font-weight: 700; transition: 0.3s; }
         .timeline-title.done { color: var(--green); }
         .timeline-title.current { color: var(--primary); }
         .timeline-title.pending { color: #9e9e9e; }
-        .timeline-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        .timeline-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; transition: 0.3s; }
         .timeline-desc.pending { color: #bdbdbd; }
 
         .info-box { border: 1px solid #90caf9; background: #e3f2fd; color: #1565c0; padding: 10px 14px; border-radius: 8px; font-size: 12.5px; display: flex; align-items: center; gap: 8px; margin-top: 18px; }
@@ -129,6 +129,12 @@
 
         <main class="content-area">
 
+            @if(session('success'))
+                <div style="background: var(--green); color: white; padding: 12px 20px; border-radius: 8px; margin-bottom: 24px; font-size: 14px; font-weight: 700;">
+                    <i class="fas fa-check-circle" style="margin-right: 6px;"></i> {{ session('success') }}
+                </div>
+            @endif
+
             {{-- ====================== VIEW: LIST ====================== --}}
             <div id="viewList">
 
@@ -142,11 +148,11 @@
                     <div class="filter-card-title">Permohonan Bahan</div>
                     <div class="filter-card-desc">Kelola dan pantau pengajuan kebutuhan bahan dari Literasi Manual dan Literasi Digital hingga proses permintaan selesai.</div>
 
-                    <select class="status-select" id="filterStatus">
-                        <option value="semua">Semua Status</option>
-                        <option value="menunggu">Menunggu Tanda Tangan</option>
-                        <option value="diproses">Menunggu Diproses</option>
-                        <option value="selesai">Selesai</option>
+                    <select class="status-select" id="filterStatus" onchange="window.location.href='{{ route('admin.permintaan-bahan') }}?status=' + this.value">
+                        <option value="semua" {{ ($statusFilter ?? 'semua') == 'semua' ? 'selected' : '' }}>Semua Status</option>
+                        <option value="menunggu" {{ ($statusFilter ?? '') == 'menunggu' ? 'selected' : '' }}>Menunggu Tanda Tangan</option>
+                        <option value="diproses" {{ ($statusFilter ?? '') == 'diproses' ? 'selected' : '' }}>Menunggu Diproses</option>
+                        <option value="selesai" {{ ($statusFilter ?? '') == 'selesai' ? 'selected' : '' }}>Selesai</option>
                     </select>
                 </div>
 
@@ -165,77 +171,40 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php
-                                    // DATA DUMMY — nanti diganti data asli dari controller ($permintaanBahan)
-                                    $permintaanBahan = [
-                                        [
-                                            'id' => 'BHN-2025-0001',
-                                            'tanggal' => '11 Januari 2025',
-                                            'divisi' => 'Literasi Manual',
-                                            'bahan' => 'Kertas Braille',
-                                            'jumlah' => '50000',
-                                            'satuan' => 'Lembar',
-                                            'keperluan' => 'Pencetakan buku untuk pesanan bulan Januari 2025',
-                                            'status' => 'Menunggu Tanda Tangan',
-                                            'statusClass' => 'status-menunggu',
-                                            'pengaju' => 'Dewi Kusuma',
-                                            'prioritas' => 'Normal',
-                                        ],
-                                        [
-                                            'id' => 'BHN-2025-0002',
-                                            'tanggal' => '13 Januari 2025',
-                                            'divisi' => 'Literasi Digital',
-                                            'bahan' => 'Binding Cover',
-                                            'jumlah' => '2000',
-                                            'satuan' => 'Lembar',
-                                            'keperluan' => 'Cover untuk buku yang selesai cetak',
-                                            'status' => 'Menunggu Diproses',
-                                            'statusClass' => 'status-dicetak',
-                                            'pengaju' => 'Rian Saputra',
-                                            'prioritas' => 'Tinggi',
-                                        ],
-                                        [
-                                            'id' => 'BHN-2025-0022',
-                                            'tanggal' => '5 Desember 2024',
-                                            'divisi' => 'Literasi Manual',
-                                            'bahan' => 'Lakban Bening',
-                                            'jumlah' => '50',
-                                            'satuan' => 'Roll',
-                                            'keperluan' => 'Pengemasan buku',
-                                            'status' => 'Selesai',
-                                            'statusClass' => 'status-selesai',
-                                            'pengaju' => 'Dewi Kusuma',
-                                            'prioritas' => 'Normal',
-                                        ],
-                                    ];
-                                @endphp
-
                                 @forelse ($permintaanBahan as $item)
+                                    @php
+                                        $statusClass = 'status-diproses';
+                                        if($item->status == 'Selesai') $statusClass = 'status-selesai';
+                                        elseif(in_array($item->status, ['Menunggu Tanda Tangan', 'Menunggu diproses'])) $statusClass = 'status-menunggu';
+                                        elseif($item->status == 'Kendala') $statusClass = 'status-batal';
+                                    @endphp
                                     <tr>
-                                        <td>{{ $item['id'] }}</td>
-                                        <td>{{ $item['tanggal'] }}</td>
-                                        <td>{{ $item['divisi'] }}</td>
-                                        <td>{{ $item['bahan'] }}</td>
-                                        <td class="keperluan-cell">{{ $item['keperluan'] }}</td>
-                                        <td><span class="{{ $item['statusClass'] }}">{{ $item['status'] }}</span></td>
+                                        <td>{{ $item->id_permintaan ?? 'BHN-'.$item->id }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($item->created_at)->translatedFormat('j F Y') }}</td>
+                                        <td>{{ $item->divisi }}</td>
+                                        <td>{{ $item->nama_bahan }}</td>
+                                        <td class="keperluan-cell">{{ $item->keperluan }}</td>
+                                        <td><span class="{{ $statusClass }}">{{ $item->status }}</span></td>
                                         <td>
                                             <button
                                                 type="button"
                                                 class="btn-detail btn-lihat-detail"
-                                                data-id="{{ $item['id'] }}"
-                                                data-tanggal="{{ $item['tanggal'] }}"
-                                                data-divisi="{{ $item['divisi'] }}"
-                                                data-bahan="{{ $item['bahan'] }}"
-                                                data-jumlah="{{ $item['jumlah'] }}"
-                                                data-satuan="{{ $item['satuan'] }}"
-                                                data-keperluan="{{ $item['keperluan'] }}"
-                                                data-pengaju="{{ $item['pengaju'] }}"
-                                                data-prioritas="{{ $item['prioritas'] }}"
+                                                data-id="{{ $item->id }}"
+                                                data-id_tampil="{{ $item->id_permintaan ?? 'BHN-'.$item->id }}"
+                                                data-tanggal="{{ \Carbon\Carbon::parse($item->created_at)->translatedFormat('j F Y') }}"
+                                                data-divisi="{{ $item->divisi }}"
+                                                data-bahan="{{ $item->nama_bahan }}"
+                                                data-jumlah="{{ $item->jumlah }}"
+                                                data-satuan="{{ $item->satuan }}"
+                                                data-keperluan="{{ $item->keperluan }}"
+                                                data-pengaju="{{ $item->pengaju ?? 'Anonim' }}"
+                                                data-prioritas="{{ $item->prioritas ?? 'Normal' }}"
+                                                data-status="{{ $item->status }}"
                                             >Detail</button>
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="7" class="empty-state">Belum ada permintaan bahan.</td></tr>
+                                    <tr><td colspan="7" class="empty-state">Belum ada data permintaan bahan.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -291,73 +260,42 @@
                         <span class="section-title">Proses Permintaan</span>
                     </div>
                     <div class="info-card">
-                        <div class="timeline">
-                            <div class="timeline-item">
-                                <div class="timeline-icon done"><i class="fas fa-check"></i></div>
-                                <div class="timeline-body">
-                                    <div class="timeline-title done">Menunggu diproses</div>
-                                    <div class="timeline-desc">Permintaan telah diajukan oleh divisi terkait.</div>
-                                </div>
-                            </div>
-                            <div class="timeline-item">
-                                <div class="timeline-icon done"><i class="fas fa-check"></i></div>
-                                <div class="timeline-body">
-                                    <div class="timeline-title done">Diproses</div>
-                                    <div class="timeline-desc">Admin Pengiriman mulai menangani permintaan.</div>
-                                </div>
-                            </div>
-                            <div class="timeline-item">
-                                <div class="timeline-icon done"><i class="fas fa-check"></i></div>
-                                <div class="timeline-body">
-                                    <div class="timeline-title done">Surat Dibuat</div>
-                                    <div class="timeline-desc">Surat permohonan kebutuhan bahan telah dibuat.</div>
-                                </div>
-                            </div>
-                            <div class="timeline-item">
-                                <div class="timeline-icon current">4</div>
-                                <div class="timeline-body">
-                                    <div class="timeline-title current">Menunggu Tanda Tangan</div>
-                                    <div class="timeline-desc">Surat menunggu proses tanda tangan.</div>
-                                </div>
-                            </div>
-                            <div class="timeline-item">
-                                <div class="timeline-icon pending">5</div>
-                                <div class="timeline-body">
-                                    <div class="timeline-title pending">Sudah Ditandatangani</div>
-                                    <div class="timeline-desc pending">Surat telah selesai ditandatangani.</div>
-                                </div>
-                            </div>
-                            <div class="timeline-item">
-                                <div class="timeline-icon pending">6</div>
-                                <div class="timeline-body">
-                                    <div class="timeline-title pending">Selesai</div>
-                                    <div class="timeline-desc pending">Permintaan bahan telah selesai diproses.</div>
-                                </div>
-                            </div>
+                        <div class="timeline" id="timelineContainer"></div>
+
+                        <div class="info-box" id="infoBoxMessage">
+                            <i class="fas fa-info-circle"></i> <span>Memuat status...</span>
                         </div>
 
-                        <div class="info-box">
-                            <i class="fas fa-info-circle"></i> Surat sedang menunggu tanda tangan
+                        <div id="actionArea" style="display: none;">
+                            <div class="tindakan-label">Tindakan Selanjutnya</div>
+                            <form action="{{ route('admin.permintaan-bahan.update-status') }}" method="POST">
+                                @csrf
+                                <input type="hidden" name="id" id="updateIdNormal">
+                                <input type="hidden" name="status" id="nextStatusInput">
+                                <button type="submit" class="btn-primary-action" id="btnActionStatus">
+                                    <i class="fas fa-chevron-right"></i> <span id="btnActionText">Proses</span>
+                                </button>
+                            </form>
                         </div>
-
-                        <div class="tindakan-label">Tindakan Selanjutnya</div>
-                        <button type="button" class="btn-primary-action">
-                            <i class="fas fa-chevron-right"></i> Tandai Sudah Ditandatangani
-                        </button>
                     </div>
                 </div>
 
                 {{-- 4. Tindakan Tambahan --}}
-                <div class="section-block">
+                <div class="section-block" id="kendalaArea">
                     <div class="section-title-row">
                         <span class="step-number-badge">4</span>
                         <span class="section-title">Tindakan Tambahan</span>
                     </div>
                     <div class="info-card">
-                        <textarea class="kendala-textarea" placeholder="Jelaskan kendala yang dialami terkait permintaan ini (opsional)..."></textarea>
-                        <button type="button" class="btn-primary-action">
-                            <i class="fas fa-triangle-exclamation"></i> Laporkan Kendala
-                        </button>
+                        <form action="{{ route('admin.permintaan-bahan.update-status') }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="id" id="updateIdKendala">
+                            <input type="hidden" name="status" value="Kendala">
+                            <textarea name="kendala" class="kendala-textarea" placeholder="Jelaskan kendala yang dialami terkait permintaan ini (opsional)..." required></textarea>
+                            <button type="submit" class="btn-primary-action" style="background: var(--primary);">
+                                <i class="fas fa-triangle-exclamation"></i> Laporkan Kendala
+                            </button>
+                        </form>
                     </div>
                 </div>
 
@@ -374,8 +312,99 @@
             var btnKembali = document.getElementById('btnKembali');
             var tombolDetail = document.querySelectorAll('.btn-lihat-detail');
 
+            const timelineStages = [
+                { status: "Menunggu diproses", title: "Menunggu diproses", desc: "Permintaan telah diajukan oleh divisi terkait." },
+                { status: "Diproses", title: "Diproses", desc: "Admin Pengiriman mulai menangani permintaan." },
+                { status: "Surat Dibuat", title: "Surat Dibuat", desc: "Surat permohonan kebutuhan bahan telah dibuat." },
+                { status: "Menunggu Tanda Tangan", title: "Menunggu Tanda Tangan", desc: "Surat menunggu proses tanda tangan." },
+                { status: "Sudah Ditandatangani", title: "Sudah Ditandatangani", desc: "Surat telah selesai ditandatangani." },
+                { status: "Selesai", title: "Selesai", desc: "Permintaan bahan telah selesai diproses." }
+            ];
+
+            function renderTimeline(currentDbStatus) {
+                const container = document.getElementById('timelineContainer');
+                container.innerHTML = '';
+                
+                let currentIndex = timelineStages.findIndex(stage => stage.status === currentDbStatus);
+                if(currentIndex === -1) currentIndex = 0;
+
+                timelineStages.forEach((stage, index) => {
+                    let stateClass = '';
+                    let iconHtml = '';
+
+                    if (index < currentIndex || currentDbStatus === 'Selesai') {
+                        stateClass = 'done';
+                        iconHtml = '<i class="fas fa-check"></i>';
+                    } else if (index === currentIndex) {
+                        stateClass = 'current';
+                        iconHtml = (index + 1);
+                    } else {
+                        stateClass = 'pending';
+                        iconHtml = (index + 1);
+                    }
+
+                    if(currentDbStatus === 'Selesai' && index === timelineStages.length - 1) {
+                        stateClass = 'done';
+                    }
+
+                    container.innerHTML += `
+                        <div class="timeline-item">
+                            <div class="timeline-icon ${stateClass}">${iconHtml}</div>
+                            <div class="timeline-body">
+                                <div class="timeline-title ${stateClass}">${stage.title}</div>
+                                <div class="timeline-desc ${stateClass}">${stage.desc}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                updateActionsAndInfo(currentDbStatus, currentIndex);
+            }
+
+            function updateActionsAndInfo(status, index) {
+                const infoBox = document.querySelector('#infoBoxMessage span');
+                const actionArea = document.getElementById('actionArea');
+                const kendalaArea = document.getElementById('kendalaArea');
+                const nextStatusInput = document.getElementById('nextStatusInput');
+                const btnActionText = document.getElementById('btnActionText');
+
+                if (status === 'Selesai' || status === 'Kendala') {
+                    actionArea.style.display = 'none';
+                    kendalaArea.style.display = 'none';
+                    infoBox.innerHTML = status === 'Selesai' 
+                        ? 'Permintaan ini telah selesai diproses.' 
+                        : 'Permintaan ini sedang mengalami kendala.';
+                    return;
+                }
+
+                actionArea.style.display = 'block';
+                kendalaArea.style.display = 'block';
+
+                if (index < timelineStages.length - 1) {
+                    let nextStage = timelineStages[index + 1].status;
+                    nextStatusInput.value = nextStage;
+                    
+                    if (nextStage === 'Diproses') {
+                        infoBox.innerHTML = "Permintaan baru masuk. Silakan diproses.";
+                        btnActionText.innerHTML = "Tandai Sedang Diproses";
+                    } else if (nextStage === 'Surat Dibuat') {
+                        infoBox.innerHTML = "Permintaan sedang ditangani.";
+                        btnActionText.innerHTML = "Tandai Surat Dibuat";
+                    } else if (nextStage === 'Menunggu Tanda Tangan') {
+                        infoBox.innerHTML = "Surat telah dibuat, lanjutkan ke pengajuan TTD.";
+                        btnActionText.innerHTML = "Ajukan Tanda Tangan";
+                    } else if (nextStage === 'Sudah Ditandatangani') {
+                        infoBox.innerHTML = "Surat sedang menunggu tanda tangan pimpinan.";
+                        btnActionText.innerHTML = "Tandai Sudah Ditandatangani";
+                    } else if (nextStage === 'Selesai') {
+                        infoBox.innerHTML = "Surat telah ditandatangani. Siap diselesaikan.";
+                        btnActionText.innerHTML = "Selesaikan Permintaan";
+                    }
+                }
+            }
+
             function tampilkanDetail(data) {
-                document.getElementById('dId').textContent = data.id;
+                document.getElementById('dId').textContent = data.id_tampil;
                 document.getElementById('dPengaju').textContent = data.pengaju;
                 document.getElementById('dDivisi').textContent = data.divisi;
                 document.getElementById('dPrioritas').textContent = data.prioritas;
@@ -384,6 +413,11 @@
                 document.getElementById('dJumlah').textContent = data.jumlah;
                 document.getElementById('dSatuan').textContent = data.satuan;
                 document.getElementById('dKeperluan').textContent = data.keperluan;
+
+                document.getElementById('updateIdNormal').value = data.id;
+                document.getElementById('updateIdKendala').value = data.id;
+
+                renderTimeline(data.status);
 
                 viewList.style.display = 'none';
                 viewDetail.style.display = 'block';
@@ -400,23 +434,12 @@
 
             tombolDetail.forEach(function (btn) {
                 btn.addEventListener('click', function () {
-                    tampilkanDetail({
-                        id: btn.dataset.id,
-                        tanggal: btn.dataset.tanggal,
-                        divisi: btn.dataset.divisi,
-                        bahan: btn.dataset.bahan,
-                        jumlah: btn.dataset.jumlah,
-                        satuan: btn.dataset.satuan,
-                        keperluan: btn.dataset.keperluan,
-                        pengaju: btn.dataset.pengaju,
-                        prioritas: btn.dataset.prioritas,
-                    });
+                    tampilkanDetail(this.dataset);
                 });
             });
 
             btnKembali.addEventListener('click', kembaliKeList);
         })();
     </script>
-
 </body>
 </html>

@@ -45,6 +45,8 @@
         .isi-pembuka { font-size: 11px; margin-bottom: 8px; line-height: 1.5; }
 
         .kepada-block { font-size: 11px; margin-bottom: 10px; line-height: 1.6; }
+        .kepada-block .label { display: inline-block; width: 110px; }
+        .kepada-block .value { font-weight: bold; }
 
         table.resi-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
         table.resi-table th, table.resi-table td {
@@ -59,9 +61,9 @@
 
         .ttd-row { display: flex; justify-content: space-between; margin-bottom: 16px; }
         .ttd-col { text-align: center; width: 45%; }
-        .ttd-col .ttd-label { font-size: 11px; font-weight: bold; margin-bottom: 45px; }
-        .ttd-col .ttd-sub { font-size: 10px; margin-bottom: 45px; }
-        .ttd-col .ttd-name { font-size: 11px; font-weight: bold; }
+        .ttd-col .ttd-label { font-size: 11px; font-weight: bold; margin-bottom: 40px; }
+        .ttd-col .ttd-sub { font-size: 10px; }
+        .ttd-col .ttd-name { font-size: 11px; font-weight: bold; margin-top: 4px; }
         .ttd-titik { font-size: 11px; }
 
         .catatan-kaki { font-size: 9px; font-style: italic; line-height: 1.4; }
@@ -103,8 +105,18 @@
                 <div class="isi-pembuka">Bersama ini kami kirimkan Buku-Buku Braille dibawah ini dengan rincian :</div>
 
                 <div class="kepada-block">
-                    <div>KEPADA : {{ $pesanan->nama_penerima }}</div>
-                    <div>ALAMAT PENERIMA : {{ $pesanan->alamat_lengkap }}, {{ $pesanan->kecamatan }}, {{ $pesanan->kota }}, {{ $pesanan->provinsi }} {{ $pesanan->kode_pos }}</div>
+                    <div><span class="label">KEPADA :</span> <span class="value">{{ $pesanan->nama_penerima }}</span></div>
+                    <div><span class="label">No. Telepon :</span> <span class="value">{{ $pesanan->telepon }}</span></div>
+                    <div>
+                        <span class="label">ALAMAT PENERIMA :</span>
+                        <span class="value">
+                            {{ $pesanan->alamat_lengkap }},
+                            {{ $pesanan->kecamatan }},
+                            {{ $pesanan->kota }},
+                            {{ $pesanan->provinsi }}
+                            {{ $pesanan->kode_pos }}
+                        </span>
+                    </div>
                 </div>
 
                 <table class="resi-table">

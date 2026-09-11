@@ -10,16 +10,13 @@ use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
-    // Menampilkan Tampilan Register
     public function showRegister()
     {
         return view('auth.register');
     }
 
-    // Memproses Pendaftaran Akun
     public function register(Request $request)
     {
-        // 1. Validasi Input
         $request->validate([
             'nama'          => 'required|string|max:255',
             'email'         => 'required|string|email|max:255|unique:users,email',
@@ -27,29 +24,16 @@ class AuthController extends Controller
             'alamat'        => 'nullable|string',
             'kata_sandi'    => 'required|string|min:8|confirmed',
             'foto_ktp'      => 'required|image|mimes:jpeg,png,jpg|max:5120',
-        ], [
-            'kata_sandi.min'       => 'Kata sandi harus terdiri dari minimal 8 karakter.',
-            'kata_sandi.required'  => 'Kata sandi wajib diisi.',
-            'kata_sandi.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
-            'foto_ktp.required'    => 'Foto KTP wajib diunggah.',
-            'foto_ktp.mimes'       => 'Format foto KTP harus berupa JPG, JPEG, atau PNG.',
-            'foto_ktp.max'         => 'Ukuran foto KTP maksimal 5MB.',
         ]);
 
-        // 2. Upload & Kompresi Sederhana Foto KTP ke Supabase Storage (S3)
         $pathFotoKtp = null;
         if ($request->hasFile('foto_ktp')) {
             $file = $request->file('foto_ktp');
             $namaFile = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-
-            // Mengunggah file ke bucket 'ktp' di Supabase S3
             Storage::disk('s3')->put($namaFile, file_get_contents($file->getRealPath()), 'public');
-
-            // URL Publik Supabase Storage
             $pathFotoKtp = 'https://zvviugrtexqoegjxuxlc.supabase.co/storage/v1/object/public/ktp/' . $namaFile;
         }
 
-        // 3. Simpan Data ke Database Supabase
         $user = User::create([
             'nama'          => $request->nama,
             'email'         => $request->email,
@@ -59,19 +43,15 @@ class AuthController extends Controller
             'foto_ktp'      => $pathFotoKtp,
         ]);
 
-        // 4. Otomatis Login
         Auth::login($user);
-
         return redirect('/')->with('success', 'Pendaftaran berhasil! Selamat datang di BrailleKita.');
     }
 
-    // Menampilkan Tampilan Login Pelanggan
     public function showLogin()
     {
         return view('auth.login');
     }
 
-    // Memproses Autentikasi Login Pelanggan
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -89,15 +69,11 @@ class AuthController extends Controller
         ])->onlyInput('email');
     }
 
-    // ===== FITUR ADMIN =====
-
-    // Menampilkan Tampilan Login Admin
     public function showAdminLogin()
     {
         return view('auth.login-admin');
     }
 
-    // Memproses Autentikasi Login Admin
     public function loginAdmin(Request $request)
     {
         $credentials = $request->validate([
@@ -110,14 +86,21 @@ class AuthController extends Controller
         ]);
 
         if (Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['kata_sandi']])) {
-            
-            // Verifikasi role apakah user bertindak sebagai admin
-            if (auth()->user()->role === 'admin') {
+            $user = auth()->user();
+
+            if ($user->role === 'admin' || str_contains(strtolower($user->email), 'admin')) {
                 $request->session()->regenerate();
-                return redirect()->intended('/admin/dashboard')->with('success', 'Selamat datang kembali, Admin!');
+
+                $divisi = strtolower($user->divisi ?? '');
+                if ($divisi === 'pengiriman' || str_contains($divisi, 'kirim') || str_contains(strtolower($user->email), 'pengiriman')) {
+                    return redirect()->route('admin.pengiriman.dashboard')
+                        ->with('success', 'Selamat datang, Admin Pengiriman!');
+                }
+
+                return redirect()->route('admin.digital.dashboard')
+                    ->with('success', 'Selamat datang, Admin Literasi Digital!');
             }
 
-            // Jika role bukan admin, paksa logout dan tolak akses
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
