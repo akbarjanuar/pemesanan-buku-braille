@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Tambahan Tag Meta CSRF Token untuk mencegah 419 -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Dashboard Literasi Digital - BrailleKita</title>
     
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -35,85 +33,6 @@
             overflow: hidden;
         }
 
-        /* ===== SIDEBAR ===== */
-        .sidebar {
-            width: 260px;
-            background-color: #ffffff;
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            padding: 24px 16px;
-        }
-
-        .brand-logo {
-            font-family: 'Georgia', serif;
-            font-size: 26px;
-            font-weight: 900;
-            color: var(--primary);
-            text-align: center;
-            margin-bottom: 40px;
-            letter-spacing: 0.5px;
-        }
-
-        .nav-menu {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            flex-grow: 1;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 12px 16px;
-            border-radius: 6px;
-            color: var(--text-main);
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 14px;
-            transition: 0.2s;
-        }
-
-        .nav-item i {
-            font-size: 18px;
-            width: 24px;
-            text-align: center;
-        }
-
-        .nav-item.active {
-            background-color: var(--primary);
-            color: #ffffff;
-        }
-
-        .nav-item:hover:not(.active) {
-            background-color: #f5f5f5;
-        }
-        
-        .form-logout {
-            margin-top: auto;
-        }
-
-        .logout-btn {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 10px;
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 14px;
-            padding: 16px;
-            border-top: 1px solid var(--border-color);
-            border-left: none;
-            border-right: none;
-            border-bottom: none;
-            background: transparent;
-            width: 100%;
-            cursor: pointer;
-        }
-
         /* ===== MAIN CONTENT ===== */
         .main-content {
             flex-grow: 1;
@@ -123,6 +42,13 @@
         }
 
         /* ===== TOPBAR ===== */
+        .menu-toggle {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 24px; height: 24px; color: var(--text-muted);
+            background: none; border: none; cursor: pointer; font-size: 20px;
+        }
+        .topbar-title { font-size: 20px; font-weight: 700; }
+
         .topbar {
             height: 70px;
             background-color: #ffffff;
@@ -137,17 +63,6 @@
             display: flex;
             align-items: center;
             gap: 16px;
-        }
-
-        .menu-toggle {
-            font-size: 20px;
-            color: var(--text-muted);
-            cursor: pointer;
-        }
-
-        .topbar-title {
-            font-size: 18px;
-            font-weight: 900;
         }
 
         .topbar-right {
@@ -369,34 +284,7 @@
 </head>
 <body>
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <div class="brand-logo">BrailleKita</div>
-        <ul class="nav-menu">
-            <a href="{{ route('admin.digital.dashboard') }}" class="nav-item {{ ($activeMenu ?? '') == 'dashboard-digital' ? 'active' : '' }}">
-                <i class="fas fa-list-alt"></i> Dashboard
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-print"></i> Permintaan Pecetakan
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-users"></i> PIC
-            </a>
-            <a href="#" class="nav-item">
-                <i class="fas fa-layer-group"></i> Permintaan Bahan
-            </a>
-            <a href="{{ route('admin.profile') }}" class="nav-item">
-                <i class="far fa-user"></i> Profile
-            </a>
-        </ul>
-
-        <form action="{{ url('/logout') }}" method="POST" class="form-logout">
-            @csrf
-            <button type="submit" class="logout-btn">
-                <i class="fas fa-sign-out-alt"></i> Keluar
-            </button>
-        </form>
-    </aside>
+    @include('partials.admin-digital-nav')
 
     <!-- MAIN CONTENT -->
     <main class="main-content">
@@ -450,7 +338,6 @@
             <div class="permintaan-section">
                 <div class="section-header">
                     <h3>Permintaan Pencetakan</h3>
-                    <!-- Tombol untuk memicu Modal Pop-up Lihat Semua -->
                     <button type="button" onclick="bukaModalSemua()" class="btn-lihat-semua">Lihat semua</button>
                 </div>
 
@@ -509,13 +396,11 @@
     <div id="modalSemua" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
         <div style="background: #fff; width: 85%; max-height: 85vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
             
-            <!-- Header Modal -->
             <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
                 <h3 style="font-size: 16px; font-weight: 800;">Semua Permintaan Pencetakan - Literasi Digital</h3>
                 <button type="button" onclick="tutupModalSemua()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted);"><i class="fas fa-times"></i></button>
             </div>
 
-            <!-- Body Modal (Tabel Data Lengkap + Live Search) -->
             <div style="padding: 24px; overflow-y: auto; flex-grow: 1;">
                 
                 <input type="text" id="inputCariModal" onkeyup="cariDataModal()" placeholder="Cari berdasarkan kode, judul buku, atau PIC..." style="width: 100%; padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; margin-bottom: 20px; outline: none;">
@@ -558,7 +443,6 @@
                 </div>
             </div>
 
-            <!-- Footer Modal -->
             <div style="padding: 16px 24px; border-top: 1px solid var(--border-color); text-align: right; background: #f9f9f9;">
                 <button type="button" onclick="tutupModalSemua()" style="padding: 8px 16px; background: #e0e0e0; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">Tutup</button>
             </div>
@@ -566,7 +450,6 @@
         </div>
     </div>
 
-    <!-- Script JavaScript untuk Modal & Live Search -->
     <script>
         function bukaModalSemua() {
             document.getElementById('modalSemua').style.display = 'flex';
