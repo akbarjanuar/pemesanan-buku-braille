@@ -156,7 +156,7 @@
             <i class="fas fa-list-alt"></i> Dashboard
         </a>
         <a href="{{ route('admin.digital.pencetakan') }}" class="nav-item {{ request()->routeIs('admin.digital.pencetakan') ? 'active' : '' }}">
-            <i class="fas fa-print"></i> Permintaan Pecetakan
+            <i class="fas fa-print"></i> Permintaan Pencetakan
         </a>
         <a href="#" class="nav-item">
             <i class="fas fa-users"></i> PIC

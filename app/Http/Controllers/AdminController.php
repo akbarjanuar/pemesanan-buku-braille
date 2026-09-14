@@ -29,7 +29,7 @@ class AdminController extends Controller
         return redirect()->route('admin.digital.dashboard');
     }
 
-// =====================================================
+    // =====================================================
     // ===== DASHBOARD ADMIN PENGIRIMAN ====================
     // =====================================================
     public function dashboardPengiriman()
@@ -297,6 +297,7 @@ class AdminController extends Controller
         return redirect()->route('admin.pencetakan')->with('success', 'Permintaan pencetakan baru berhasil dibuat.');
     }
 
+    // MENAMPILKAN HALAMAN PENCETAKAN LITERASI DIGITAL
     public function semuaPencetakanDigital(Request $request)
     {
         $search = $request->input('search');
@@ -312,25 +313,68 @@ class AdminController extends Controller
             });
         }
 
-        $daftarPencetakan = $query->orderBy('created_at', 'desc')->paginate(10);
-        $activeMenu = 'dashboard-digital';
+        // Jangan di-paginate(10) karena view Anda mengatur pengelompokan (groupBy) secara manual
+        $daftarPencetakan = $query->orderBy('created_at', 'desc')->get(); 
+        $activeMenu = 'pencetakan';
 
         return view('admin.digital.semua-pencetakan', compact('daftarPencetakan', 'search', 'activeMenu'));
     }
 
+    // MENGUPDATE PENCETAKAN LITERASI DIGITAL VIA JSON
     public function updateProgressDigital(Request $request, $id)
     {
-        $request->validate([
-            'buku_selesai' => 'required|integer|min:0',
-            'status'       => 'required|string',
-        ]);
+        try {
+            $pencetakan = Pencetakan::where('divisi', 'Literasi Digital')->findOrFail($id);
 
-        $pencetakan = Pencetakan::where('divisi', 'Literasi Digital')->findOrFail($id);
-        $pencetakan->buku_selesai = $request->buku_selesai;
-        $pencetakan->status = $request->status;
-        $pencetakan->save();
+            // Jika admin melakukan update 'buku_selesai' (melalui tombol Update)
+            if ($request->has('buku_selesai')) {
+                $request->validate([
+                    'buku_selesai' => 'required|integer|min:0|max:' . ($pencetakan->target_buku ?? 999),
+                ]);
 
-        return redirect()->back()->with('success', 'Progress pencetakan berhasil diperbarui!');
+                $pencetakan->buku_selesai = $request->buku_selesai;
+
+                // Logika Cerdas: Ubah status secara otomatis jika target terpenuhi
+                if ($pencetakan->target_buku && $pencetakan->buku_selesai >= $pencetakan->target_buku) {
+                    $pencetakan->status = 'Selesai';
+                } elseif ($pencetakan->buku_selesai > 0 && strtolower($pencetakan->status) == 'menunggu diproses') {
+                    $pencetakan->status = 'Diproses';
+                }
+            }
+
+            // Jika admin melakukan update 'status' (melalui modal ubah status)
+            if ($request->has('status')) {
+                $request->validate([
+                    'status' => 'required|string',
+                ]);
+                $pencetakan->status = $request->status;
+            }
+
+            $pencetakan->save();
+
+            // Memastikan controller merespons dengan JSON agar Fetch API Javascript Anda berhasil
+            if ($request->wantsJson() || $request->isJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data pencetakan berhasil diperbarui.'
+                ]);
+            }
+
+            // Fallback (jika diakses melalui form HTML biasa)
+            return redirect()->back()->with('success', 'Progress pencetakan berhasil diperbarui!');
+
+        } catch (\Exception $e) {
+            Log::error('Error Update Pencetakan Digital: ' . $e->getMessage());
+
+            if ($request->wantsJson() || $request->isJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan sistem atau input tidak valid.'
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Terjadi kesalahan sistem.');
+        }
     }
 
     // =====================================================
