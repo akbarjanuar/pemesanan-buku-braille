@@ -7,34 +7,26 @@ use App\Models\Pesanan;
 use App\Models\Buku;
 use App\Models\Pencetakan;
 use App\Models\PermintaanBahan;
+use App\Models\Pic;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
-    // =====================================================
-    // ===== FUNGSI PENGARAH / REDIRECTOR DASHBOARD ADMIN ====
-    // =====================================================
     public function redirectDashboardAdmin()
     {
         $user = auth()->user();
         $divisi = strtolower($user->divisi ?? '');
 
-        // Jika divisi atau email mengindikasikan pengiriman
         if ($divisi === 'pengiriman' || str_contains($divisi, 'kirim') || str_contains(strtolower($user->email), 'pengiriman')) {
             return redirect()->route('admin.pengiriman.dashboard');
         }
 
-        // Default diarahkan ke Dashboard Admin Literasi Digital
         return redirect()->route('admin.digital.dashboard');
     }
 
-    // =====================================================
-    // ===== DASHBOARD ADMIN PENGIRIMAN ====================
-    // =====================================================
     public function dashboardPengiriman()
     {
-        // Menyiapkan array $stats lengkap agar angka kartu di dashboard tidak 0
         $stats = [
             'baru'                => Pesanan::whereIn('status', ['Permintaan Baru', 'Permintaan baru', 'Baru'])->count(),
             'diproses'            => Pesanan::whereIn('status', ['Diproses', 'Sedang Diproses', 'Sedang diproses'])->count(),
@@ -73,9 +65,6 @@ class AdminController extends Controller
         ));
     }
 
-    // =====================================================
-    // ===== DASHBOARD ADMIN LITERASI DIGITAL ==============
-    // =====================================================
     public function dashboardLiterasiDigital()
     {
         $totalPencetakan = Pencetakan::where('divisi', 'Literasi Digital')->count();
@@ -103,9 +92,6 @@ class AdminController extends Controller
         ));
     }
 
-    // =====================================================
-    // ===== HALAMAN PERMINTAAN BUKU =======================
-    // =====================================================
     public function permintaanBuku(Request $request)
     {
         $statusFilter = $request->input('status');
@@ -118,7 +104,6 @@ class AdminController extends Controller
         $daftarPesanan = $query->get();
         $activeMenu = 'permintaan-buku';
 
-        // Sesuaikan path view jika berada di folder pengiriman atau utama
         if (view()->exists('admin.pengiriman.permintaan-buku')) {
             return view('admin.pengiriman.permintaan-buku', compact('daftarPesanan', 'statusFilter', 'activeMenu'));
         }
@@ -139,10 +124,8 @@ class AdminController extends Controller
             'status' => 'required|string'
         ]);
 
-        $statusBaru = $request->status;
-
         Pesanan::whereIn('id', $request->ids)->update([
-            'status' => $statusBaru
+            'status' => $request->status
         ]);
 
         return response()->json(['success' => true, 'message' => 'Status berhasil diperbarui!']);
@@ -166,9 +149,6 @@ class AdminController extends Controller
         ]);
     }
 
-    // =====================================================
-    // ===== HALAMAN DATA PELANGGAN ========================
-    // =====================================================
     public function dataPelanggan(Request $request)
     {
         $search = $request->input('search');
@@ -216,9 +196,6 @@ class AdminController extends Controller
         ]);
     }
 
-    // =====================================================
-    // ===== HALAMAN PENCETAKAN ============================
-    // =====================================================
     public function pencetakan()
     {
         $daftarPencetakan = Pencetakan::with(['pesanan.user', 'pesanan.details.buku'])
@@ -297,7 +274,6 @@ class AdminController extends Controller
         return redirect()->route('admin.pencetakan')->with('success', 'Permintaan pencetakan baru berhasil dibuat.');
     }
 
-    // MENAMPILKAN HALAMAN PENCETAKAN LITERASI DIGITAL
     public function semuaPencetakanDigital(Request $request)
     {
         $search = $request->input('search');
@@ -313,20 +289,17 @@ class AdminController extends Controller
             });
         }
 
-        // Jangan di-paginate(10) karena view Anda mengatur pengelompokan (groupBy) secara manual
         $daftarPencetakan = $query->orderBy('created_at', 'desc')->get(); 
         $activeMenu = 'pencetakan';
 
         return view('admin.digital.semua-pencetakan', compact('daftarPencetakan', 'search', 'activeMenu'));
     }
 
-    // MENGUPDATE PENCETAKAN LITERASI DIGITAL VIA JSON
     public function updateProgressDigital(Request $request, $id)
     {
         try {
             $pencetakan = Pencetakan::where('divisi', 'Literasi Digital')->findOrFail($id);
 
-            // Jika admin melakukan update 'buku_selesai' (melalui tombol Update)
             if ($request->has('buku_selesai')) {
                 $request->validate([
                     'buku_selesai' => 'required|integer|min:0|max:' . ($pencetakan->target_buku ?? 999),
@@ -334,7 +307,6 @@ class AdminController extends Controller
 
                 $pencetakan->buku_selesai = $request->buku_selesai;
 
-                // Logika Cerdas: Ubah status secara otomatis jika target terpenuhi
                 if ($pencetakan->target_buku && $pencetakan->buku_selesai >= $pencetakan->target_buku) {
                     $pencetakan->status = 'Selesai';
                 } elseif ($pencetakan->buku_selesai > 0 && strtolower($pencetakan->status) == 'menunggu diproses') {
@@ -342,7 +314,6 @@ class AdminController extends Controller
                 }
             }
 
-            // Jika admin melakukan update 'status' (melalui modal ubah status)
             if ($request->has('status')) {
                 $request->validate([
                     'status' => 'required|string',
@@ -352,7 +323,6 @@ class AdminController extends Controller
 
             $pencetakan->save();
 
-            // Memastikan controller merespons dengan JSON agar Fetch API Javascript Anda berhasil
             if ($request->wantsJson() || $request->isJson()) {
                 return response()->json([
                     'success' => true,
@@ -360,7 +330,6 @@ class AdminController extends Controller
                 ]);
             }
 
-            // Fallback (jika diakses melalui form HTML biasa)
             return redirect()->back()->with('success', 'Progress pencetakan berhasil diperbarui!');
 
         } catch (\Exception $e) {
@@ -377,9 +346,6 @@ class AdminController extends Controller
         }
     }
 
-    // =====================================================
-    // ===== HALAMAN KELOLA BUKU ===========================
-    // =====================================================
     public function kelolaBuku(Request $request)
     {
         $search = $request->input('search');
@@ -406,9 +372,6 @@ class AdminController extends Controller
         ]);
     }
 
-    // =====================================================
-    // ===== HALAMAN PROFILE ADMIN =========================
-    // =====================================================
     public function profile()
     {
         $activeMenu = 'profile';
@@ -473,9 +436,6 @@ class AdminController extends Controller
         ]);
     }
 
-    // =====================================================
-    // ===== HALAMAN PERMINTAAN BAHAN ======================
-    // =====================================================
     public function permintaanBahan(Request $request)
     {
         $statusFilter = $request->input('status', 'semua');
@@ -534,9 +494,6 @@ class AdminController extends Controller
         return redirect()->back()->with('success', 'Status permintaan bahan berhasil diperbarui!');
     }
 
-    // =====================================================
-    // ===== HALAMAN LAPORAN ===============================
-    // =====================================================
     public function laporan(Request $request)
     {
         $range = $request->input('range', '6-bulan');
@@ -578,5 +535,92 @@ class AdminController extends Controller
             'pesananTerbaru' => Pesanan::with('user')->orderBy('created_at', 'desc')->take(5)->get(),
             'activeMenu' => $activeMenu
         ]);
+    }
+
+    // =====================================================
+    // ===== FITUR PIC =====================================
+    // =====================================================
+    public function daftarPic()
+    {
+        $daftarPic = \App\Models\Pic::orderBy('nama', 'asc')->get();
+
+        foreach ($daftarPic as $pic) {
+            $pic->pekerjaan_aktif = \App\Models\Pencetakan::where(function($q) use ($pic) {
+                    // Hitung pekerjaan milik Aceng yang BELUM dialihkan ke siapa-siapa
+                    $q->where('pic', $pic->nama)->whereNull('alihkan_kepada');
+                })
+                ->orWhere(function($q) use ($pic) {
+                    // DITAMBAH: Hitung pekerjaan yang DIALIHKAN kepada Siti Aminah
+                    $q->where('alihkan_kepada', $pic->nama);
+                })
+                ->whereNotIn('status', ['Selesai', 'Dibatalkan'])
+                ->count();
+        }
+
+        $activeMenu = 'pic';
+
+        return view('admin.digital.pic', compact('daftarPic', 'activeMenu'));
+    }
+
+    public function detailPic($id)
+    {
+        $pic = \App\Models\Pic::findOrFail($id);
+
+        $data = [
+            'nama' => $pic->nama,
+            'jabatan' => 'Staf Literasi Digital',
+            'nomor_telepon' => $pic->nomor_telepon,
+            'keterangan' => $pic->keterangan ?? '-',
+            'status' => 'Aktif'
+        ];
+
+        // Tampilkan jika dia PIC utama ATAU jika dia adalah PIC penerima alihan
+        $daftarKerjaan = \App\Models\Pencetakan::with('buku')
+            ->where('pic', $pic->nama)
+            ->orWhere('alihkan_kepada', $pic->nama)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Ambil semua PIC kecuali PIC yang sedang dibuka untuk dropdown modal
+        $semuaPic = \App\Models\Pic::where('id', '!=', $id)->orderBy('nama')->get();
+        
+        $activeMenu = 'pic';
+
+        return view('admin.digital.detail-pic', compact('data', 'daftarKerjaan', 'semuaPic', 'activeMenu'));
+    }
+
+    public function alihkanPic(Request $request)
+    {
+        $request->validate([
+            'pencetakan_ids' => 'required|string', 
+            'pic_tujuan' => 'required|string',
+            'alasan_pengalihan' => 'required|string',
+        ]);
+
+        $ids = explode(',', $request->pencetakan_ids);
+        
+        // HANYA update kolom alihkan_kepada dan alasannya
+        // Kolom 'pic' awal biarkan tetap milik Aceng (tidak diubah)
+        \App\Models\Pencetakan::whereIn('id', $ids)->update([
+            'alihkan_kepada' => $request->pic_tujuan,
+            'alasan_pengalihan' => $request->alasan_pengalihan,
+        ]);
+
+        return redirect()->back()->with('success', 'Pekerjaan berhasil dialihkan ke ' . $request->pic_tujuan);
+    }
+
+    public function storePic(Request $request)
+    {
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'nomor_telepon' => 'required|string|max:20',
+        ]);
+
+        Pic::create([
+            'nama' => $request->nama,
+            'nomor_telepon' => $request->nomor_telepon,
+        ]);
+
+        return redirect()->back()->with('success', 'PIC baru berhasil ditambahkan!');
     }
 }
