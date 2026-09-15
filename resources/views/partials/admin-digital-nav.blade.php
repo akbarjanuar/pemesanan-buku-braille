@@ -151,20 +151,30 @@
 
 <aside class="sidebar" id="adminDigitalSidebar">
     <div class="brand-logo">BrailleKita</div>
+
     <ul class="nav-menu">
-        <a href="{{ route('admin.digital.dashboard') }}" class="nav-item {{ request()->routeIs('admin.digital.dashboard') ? 'active' : '' }}">
+        <a href="{{ route('admin.digital.dashboard') }}"
+           class="nav-item {{ request()->routeIs('admin.digital.dashboard') ? 'active' : '' }}">
             <i class="fas fa-list-alt"></i> Dashboard
         </a>
-        <a href="{{ route('admin.digital.pencetakan') }}" class="nav-item {{ request()->routeIs('admin.digital.pencetakan') ? 'active' : '' }}">
+
+        <a href="{{ route('admin.digital.pencetakan') }}"
+           class="nav-item {{ request()->routeIs('admin.digital.pencetakan') ? 'active' : '' }}">
             <i class="fas fa-print"></i> Permintaan Pencetakan
         </a>
-        <a href="#" class="nav-item">
+
+        <a href="{{ route('admin.digital.pic') }}"
+           class="nav-item {{ request()->routeIs('admin.digital.pic') ? 'active' : '' }}">
             <i class="fas fa-users"></i> PIC
         </a>
-        <a href="{{ route('admin.permintaan-bahan') }}" class="nav-item {{ request()->routeIs('admin.permintaan-bahan') ? 'active' : '' }}">
+
+        <a href="{{ route('admin.permintaan-bahan') }}"
+           class="nav-item {{ request()->routeIs('admin.permintaan-bahan') ? 'active' : '' }}">
             <i class="fas fa-layer-group"></i> Permintaan Bahan
         </a>
-        <a href="{{ route('admin.profile') }}" class="nav-item {{ request()->routeIs('admin.profile') ? 'active' : '' }}">
+
+        <a href="{{ route('admin.profile') }}"
+           class="nav-item {{ request()->routeIs('admin.profile') ? 'active' : '' }}">
             <i class="far fa-user"></i> Profile
         </a>
     </ul>
