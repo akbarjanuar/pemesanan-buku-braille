@@ -17,10 +17,10 @@
 
     body {
         display: flex;
-        height: 100vh;
+        min-height: 100vh;
         background-color: var(--bg-color);
         color: var(--text-main);
-        overflow: hidden;
+        overflow-x: hidden;
     }
 
     /* ===== SIDEBAR ===== */
@@ -32,8 +32,10 @@
         flex-direction: column;
         padding: 24px 16px;
         transition: width 0.25s ease, transform 0.25s ease;
-        overflow: hidden;
         flex-shrink: 0;
+        position: sticky;
+        top: 0;
+        height: 100vh;
     }
 
     .sidebar.collapsed {
@@ -96,24 +98,37 @@
         margin-top: auto;
     }
 
+    /* DIPERBAIKI: Mengubah alignment dan padding tombol keluar agar rapi di kiri */
     .logout-btn {
         display: flex;
         align-items: center;
-        justify-content: flex-end;
-        gap: 10px;
+        justify-content: flex-start;
+        gap: 12px;
         color: var(--primary);
         text-decoration: none;
         font-weight: 700;
         font-size: 14px;
-        padding: 16px;
+        padding: 12px 16px;
         border-top: 1px solid var(--border-color);
-        border-left: none;
-        border-right: none;
-        border-bottom: none;
         background: transparent;
         width: 100%;
         cursor: pointer;
         white-space: nowrap;
+        border-left: none;
+        border-right: none;
+        border-bottom: none;
+        border-radius: 6px;
+        transition: 0.2s;
+    }
+
+    .logout-btn:hover {
+        background-color: #f5f5f5;
+    }
+
+    .logout-btn i {
+        font-size: 18px;
+        width: 24px;
+        text-align: center;
     }
 
     /* ===== OVERLAY (Mobile) ===== */
@@ -126,10 +141,7 @@
     }
     .sidebar-overlay.open { display: block; }
 
-    /* ===== RESPONSIVE MOBILE ===== */
     @media (max-width: 900px) {
-        body { overflow: visible; height: auto; }
-
         .sidebar {
             position: fixed;
             top: 0; left: 0; bottom: 0;
@@ -137,13 +149,9 @@
             transform: translateX(-100%);
             box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15);
             width: 260px;
+            height: 100vh;
         }
-
-        .sidebar.collapsed { width: 260px; padding: 24px 16px; border-right: 1px solid var(--border-color); }
-
         .sidebar.open { transform: translateX(0); }
-
-        .menu-toggle { display: inline-flex !important; }
     }
 </style>
 
@@ -154,28 +162,27 @@
 
     <ul class="nav-menu">
         <a href="{{ route('admin.digital.dashboard') }}"
-           class="nav-item {{ request()->routeIs('admin.digital.dashboard') ? 'active' : '' }}">
+            class="nav-item {{ request()->routeIs('admin.digital.dashboard') ? 'active' : '' }}">
             <i class="fas fa-list-alt"></i> Dashboard
         </a>
 
         <a href="{{ route('admin.digital.pencetakan') }}"
-           class="nav-item {{ request()->routeIs('admin.digital.pencetakan') ? 'active' : '' }}">
+            class="nav-item {{ request()->routeIs('admin.digital.pencetakan') ? 'active' : '' }}">
             <i class="fas fa-print"></i> Permintaan Pencetakan
         </a>
 
         <a href="{{ route('admin.digital.pic') }}"
-           class="nav-item {{ request()->routeIs('admin.digital.pic*') ? 'active' : '' }}">
+            class="nav-item {{ request()->routeIs('admin.digital.pic*') ? 'active' : '' }}">
             <i class="fas fa-users"></i> PIC
         </a>
 
         <a href="{{ route('admin.permintaan-bahan') }}"
-           class="nav-item {{ request()->routeIs('admin.permintaan-bahan') ? 'active' : '' }}">
+            class="nav-item {{ request()->routeIs('admin.permintaan-bahan') ? 'active' : '' }}">
             <i class="fas fa-layer-group"></i> Permintaan Bahan
         </a>
 
-        <a href="{{ route('admin.digital.profile') }}"
-           class="nav-item {{ request()->routeIs('admin.digital.profile') ? 'active' : '' }}">
-            <i class="far fa-user"></i> Profile
+        <a href="{{ route('admin.digital.profile') }}" class="nav-item {{ ($activeMenu ?? '') == 'profile' ? 'active' : '' }}">
+            <i class="fas fa-user"></i> Profile
         </a>
     </ul>
 
