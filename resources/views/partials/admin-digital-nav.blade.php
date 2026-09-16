@@ -164,7 +164,7 @@
         </a>
 
         <a href="{{ route('admin.digital.pic') }}"
-           class="nav-item {{ request()->routeIs('admin.digital.pic') ? 'active' : '' }}">
+           class="nav-item {{ request()->routeIs('admin.digital.pic*') ? 'active' : '' }}">
             <i class="fas fa-users"></i> PIC
         </a>
 
@@ -173,8 +173,8 @@
             <i class="fas fa-layer-group"></i> Permintaan Bahan
         </a>
 
-        <a href="{{ route('admin.profile') }}"
-           class="nav-item {{ request()->routeIs('admin.profile') ? 'active' : '' }}">
+        <a href="{{ route('admin.digital.profile') }}"
+           class="nav-item {{ request()->routeIs('admin.digital.profile') ? 'active' : '' }}">
             <i class="far fa-user"></i> Profile
         </a>
     </ul>

@@ -120,6 +120,9 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::get('/admin/digital/pencetakan', [AdminController::class, 'semuaPencetakanDigital'])->name('admin.digital.pencetakan');
     Route::post('/admin/digital/pencetakan/update/{id}', [AdminController::class, 'updateProgressDigital'])->name('admin.digital.pencetakan.update');
     
+    // PROFILE ADMIN LITERASI DIGITAL
+    Route::get('/admin/digital/profile', [AdminController::class, 'profileDigital'])->name('admin.digital.profile');
+    
     // PIC Routes
     Route::get('/admin/digital/pic', [AdminController::class, 'daftarPic'])->name('admin.digital.pic');
     Route::post('/admin/digital/pic', [AdminController::class, 'storePic'])->name('admin.digital.pic.store');

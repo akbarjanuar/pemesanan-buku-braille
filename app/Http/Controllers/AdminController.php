@@ -25,6 +25,7 @@ class AdminController extends Controller
         return redirect()->route('admin.digital.dashboard');
     }
 
+
     public function dashboardPengiriman()
     {
         $stats = [
@@ -42,7 +43,7 @@ class AdminController extends Controller
 
         $totalSiapDikirim = $stats['siap_dikirim'];
         $totalDikirim = $stats['dikirim'];
-        
+
         $daftarPengiriman = Pesanan::with('user')
             ->whereIn('status', ['Siap Dikirim', 'Siap dikirim', 'Dikirim', 'Sedang Dikirim'])
             ->orderBy('created_at', 'desc')
@@ -57,19 +58,20 @@ class AdminController extends Controller
 
         return view('admin.pengiriman.dashboard', compact(
             'stats',
-            'totalSiapDikirim', 
-            'totalDikirim', 
-            'daftarPengiriman', 
-            'pesananTerbaru', 
+            'totalSiapDikirim',
+            'totalDikirim',
+            'daftarPengiriman',
+            'pesananTerbaru',
             'activeMenu'
         ));
     }
+
 
     public function dashboardLiterasiDigital()
     {
         $totalPencetakan = Pencetakan::where('divisi', 'Literasi Digital')->count();
         $totalPermintaanBahan = PermintaanBahan::where('divisi', 'Literasi Digital')->count();
-        
+
         $daftarPencetakan = Pencetakan::with(['pesanan.user', 'buku'])
             ->where('divisi', 'Literasi Digital')
             ->orderBy('created_at', 'desc')
@@ -84,13 +86,14 @@ class AdminController extends Controller
         $activeMenu = 'dashboard';
 
         return view('admin.digital.dashboard', compact(
-            'totalPencetakan', 
-            'totalPermintaanBahan', 
-            'daftarPencetakan', 
-            'semuaPencetakan', 
+            'totalPencetakan',
+            'totalPermintaanBahan',
+            'daftarPencetakan',
+            'semuaPencetakan',
             'activeMenu'
         ));
     }
+
 
     public function permintaanBuku(Request $request)
     {
@@ -105,17 +108,25 @@ class AdminController extends Controller
         $activeMenu = 'permintaan-buku';
 
         if (view()->exists('admin.pengiriman.permintaan-buku')) {
-            return view('admin.pengiriman.permintaan-buku', compact('daftarPesanan', 'statusFilter', 'activeMenu'));
+            return view('admin.pengiriman.permintaan-buku', compact(
+                'daftarPesanan',
+                'statusFilter',
+                'activeMenu'
+            ));
         }
 
         return view('admin.pengiriman.dashboard', [
             'totalSiapDikirim' => Pesanan::whereIn('status', ['Siap Dikirim', 'Siap dikirim'])->count(),
             'totalDikirim' => Pesanan::whereIn('status', ['Dikirim', 'Sedang Dikirim'])->count(),
             'daftarPengiriman' => $daftarPesanan,
-            'pesananTerbaru' => Pesanan::with('user')->orderBy('created_at', 'desc')->take(5)->get(),
+            'pesananTerbaru' => Pesanan::with('user')
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get(),
             'activeMenu' => $activeMenu
         ]);
     }
+
 
     public function updateStatusPesanan(Request $request)
     {
@@ -128,8 +139,12 @@ class AdminController extends Controller
             'status' => $request->status
         ]);
 
-        return response()->json(['success' => true, 'message' => 'Status berhasil diperbarui!']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Status berhasil diperbarui!'
+        ]);
     }
+
 
     public function detailPesanan($id)
     {
@@ -137,85 +152,126 @@ class AdminController extends Controller
         $activeMenu = 'permintaan-buku';
 
         if (view()->exists('admin.pengiriman.detail-pesanan')) {
-            return view('admin.pengiriman.detail-pesanan', compact('pesanan', 'activeMenu'));
+            return view('admin.pengiriman.detail-pesanan', compact(
+                'pesanan',
+                'activeMenu'
+            ));
         }
 
         return view('admin.pengiriman.dashboard', [
             'totalSiapDikirim' => Pesanan::whereIn('status', ['Siap Dikirim', 'Siap dikirim'])->count(),
             'totalDikirim' => Pesanan::whereIn('status', ['Dikirim', 'Sedang Dikirim'])->count(),
             'daftarPengiriman' => Pesanan::with('user')->take(5)->get(),
-            'pesananTerbaru' => Pesanan::with('user')->orderBy('created_at', 'desc')->take(5)->get(),
+            'pesananTerbaru' => Pesanan::with('user')
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get(),
             'activeMenu' => $activeMenu
         ]);
     }
+
 
     public function dataPelanggan(Request $request)
     {
         $search = $request->input('search');
-        $query = \App\Models\User::withCount('pesanan')->where('role', 'user');
-        
+        $query = \App\Models\User::withCount('pesanan')
+            ->where('role', 'user');
+
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('nama', 'ilike', "%{$search}%")
-                  ->orWhere('email', 'ilike', "%{$search}%");
+                    ->orWhere('email', 'ilike', "%{$search}%");
             });
         }
 
-        $daftarPelanggan = $query->orderBy('created_at', 'desc')->get();
+        $daftarPelanggan = $query
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         $activeMenu = 'data-pelanggan';
 
         if (view()->exists('admin.pengiriman.data-pelanggan')) {
-            return view('admin.pengiriman.data-pelanggan', compact('daftarPelanggan', 'search', 'activeMenu'));
+            return view('admin.pengiriman.data-pelanggan', compact(
+                'daftarPelanggan',
+                'search',
+                'activeMenu'
+            ));
         }
 
         return view('admin.pengiriman.dashboard', [
             'totalSiapDikirim' => Pesanan::whereIn('status', ['Siap Dikirim', 'Siap dikirim'])->count(),
             'totalDikirim' => Pesanan::whereIn('status', ['Dikirim', 'Sedang Dikirim'])->count(),
             'daftarPengiriman' => Pesanan::with('user')->take(5)->get(),
-            'pesananTerbaru' => Pesanan::with('user')->orderBy('created_at', 'desc')->take(5)->get(),
+            'pesananTerbaru' => Pesanan::with('user')
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get(),
             'activeMenu' => $activeMenu
         ]);
     }
+
 
     public function detailPelanggan($id)
     {
         $pelanggan = \App\Models\User::findOrFail($id);
-        $daftarPesanan = Pesanan::where('user_id', $id)->orderBy('created_at', 'desc')->get();
+
+        $daftarPesanan = Pesanan::where('user_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         $activeMenu = 'data-pelanggan';
 
         if (view()->exists('admin.pengiriman.data-pelanggan-detail')) {
-            return view('admin.pengiriman.data-pelanggan-detail', compact('pelanggan', 'daftarPesanan', 'activeMenu'));
+            return view('admin.pengiriman.data-pelanggan-detail', compact(
+                'pelanggan',
+                'daftarPesanan',
+                'activeMenu'
+            ));
         }
 
         return view('admin.pengiriman.dashboard', [
             'totalSiapDikirim' => Pesanan::whereIn('status', ['Siap Dikirim', 'Siap dikirim'])->count(),
             'totalDikirim' => Pesanan::whereIn('status', ['Dikirim', 'Sedang Dikirim'])->count(),
             'daftarPengiriman' => Pesanan::with('user')->take(5)->get(),
-            'pesananTerbaru' => Pesanan::with('user')->orderBy('created_at', 'desc')->take(5)->get(),
+            'pesananTerbaru' => Pesanan::with('user')
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get(),
             'activeMenu' => $activeMenu
         ]);
     }
 
+
     public function pencetakan()
     {
-        $daftarPencetakan = Pencetakan::with(['pesanan.user', 'pesanan.details.buku'])
+        $daftarPencetakan = Pencetakan::with([
+                'pesanan.user',
+                'pesanan.details.buku'
+            ])
             ->orderBy('created_at', 'desc')
             ->get();
 
         $activeMenu = 'pencetakan';
 
         if (view()->exists('admin.pengiriman.pencetakan')) {
-            return view('admin.pengiriman.pencetakan', compact('daftarPencetakan', 'activeMenu'));
+            return view('admin.pengiriman.pencetakan', compact(
+                'daftarPencetakan',
+                'activeMenu'
+            ));
         }
 
         return view('admin.pengiriman.dashboard', [
             'totalSiapDikirim' => Pesanan::whereIn('status', ['Siap Dikirim', 'Siap dikirim'])->count(),
             'totalDikirim' => Pesanan::whereIn('status', ['Dikirim', 'Sedang Dikirim'])->count(),
             'daftarPengiriman' => Pesanan::with('user')->take(5)->get(),
-            'pesananTerbaru' => Pesanan::with('user')->orderBy('created_at', 'desc')->take(5)->get(),
+            'pesananTerbaru' => Pesanan::with('user')
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get(),
             'activeMenu' => $activeMenu
         ]);
     }
+
 
     public function buatPencetakan()
     {
@@ -231,17 +287,25 @@ class AdminController extends Controller
         $activeMenu = 'pencetakan';
 
         if (view()->exists('admin.pengiriman.buat-pencetakan')) {
-            return view('admin.pengiriman.buat-pencetakan', compact('daftarPesanan', 'daftarBuku', 'activeMenu'));
+            return view('admin.pengiriman.buat-pencetakan', compact(
+                'daftarPesanan',
+                'daftarBuku',
+                'activeMenu'
+            ));
         }
 
         return view('admin.pengiriman.dashboard', [
             'totalSiapDikirim' => Pesanan::whereIn('status', ['Siap Dikirim', 'Siap dikirim'])->count(),
             'totalDikirim' => Pesanan::whereIn('status', ['Dikirim', 'Sedang Dikirim'])->count(),
             'daftarPengiriman' => Pesanan::with('user')->take(5)->get(),
-            'pesananTerbaru' => Pesanan::with('user')->orderBy('created_at', 'desc')->take(5)->get(),
+            'pesananTerbaru' => Pesanan::with('user')
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get(),
             'activeMenu' => $activeMenu
         ]);
     }
+
 
     public function storePencetakan(Request $request)
     {
@@ -263,42 +327,59 @@ class AdminController extends Controller
             'kode_cetak'     => $kodeCetak,
             'jumlah'         => $request->jumlah,
             'divisi'         => $request->divisi,
-            'jenis_literasi' => $request->divisi, 
-            'target_buku'    => $request->jumlah,  
-            'deadline'       => $request->target_selesai, 
+            'jenis_literasi' => $request->divisi,
+            'target_buku'    => $request->jumlah,
+            'deadline'       => $request->target_selesai,
             'pic'            => $request->pic,
             'catatan'        => $request->catatan,
             'status'         => 'Menunggu Diproses',
         ]);
 
-        return redirect()->route('admin.pencetakan')->with('success', 'Permintaan pencetakan baru berhasil dibuat.');
+        return redirect()
+            ->route('admin.pencetakan')
+            ->with('success', 'Permintaan pencetakan baru berhasil dibuat.');
     }
+
 
     public function semuaPencetakanDigital(Request $request)
     {
         $search = $request->input('search');
-        $query = Pencetakan::with(['pesanan.user', 'buku'])->where('divisi', 'Literasi Digital');
+
+        $query = Pencetakan::with([
+                'pesanan.user',
+                'buku'
+            ])
+            ->where('divisi', 'Literasi Digital');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('kode_cetak', 'ilike', "%{$search}%")
-                  ->orWhere('pic', 'ilike', "%{$search}%")
-                  ->orWhereHas('buku', function($sub) use ($search) {
-                      $sub->where('judul', 'ilike', "%{$search}%");
-                  });
+                    ->orWhere('pic', 'ilike', "%{$search}%")
+                    ->orWhereHas('buku', function ($sub) use ($search) {
+                        $sub->where('judul', 'ilike', "%{$search}%");
+                    });
             });
         }
 
-        $daftarPencetakan = $query->orderBy('created_at', 'desc')->get(); 
+        $daftarPencetakan = $query
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         $activeMenu = 'pencetakan';
 
-        return view('admin.digital.semua-pencetakan', compact('daftarPencetakan', 'search', 'activeMenu'));
+        return view('admin.digital.semua-pencetakan', compact(
+            'daftarPencetakan',
+            'search',
+            'activeMenu'
+        ));
     }
+
 
     public function updateProgressDigital(Request $request, $id)
     {
         try {
-            $pencetakan = Pencetakan::where('divisi', 'Literasi Digital')->findOrFail($id);
+            $pencetakan = Pencetakan::where('divisi', 'Literasi Digital')
+                ->findOrFail($id);
 
             if ($request->has('buku_selesai')) {
                 $request->validate([
@@ -307,9 +388,15 @@ class AdminController extends Controller
 
                 $pencetakan->buku_selesai = $request->buku_selesai;
 
-                if ($pencetakan->target_buku && $pencetakan->buku_selesai >= $pencetakan->target_buku) {
+                if (
+                    $pencetakan->target_buku &&
+                    $pencetakan->buku_selesai >= $pencetakan->target_buku
+                ) {
                     $pencetakan->status = 'Selesai';
-                } elseif ($pencetakan->buku_selesai > 0 && strtolower($pencetakan->status) == 'menunggu diproses') {
+                } elseif (
+                    $pencetakan->buku_selesai > 0 &&
+                    strtolower($pencetakan->status) == 'menunggu diproses'
+                ) {
                     $pencetakan->status = 'Diproses';
                 }
             }
@@ -318,6 +405,7 @@ class AdminController extends Controller
                 $request->validate([
                     'status' => 'required|string',
                 ]);
+
                 $pencetakan->status = $request->status;
             }
 
@@ -330,10 +418,15 @@ class AdminController extends Controller
                 ]);
             }
 
-            return redirect()->back()->with('success', 'Progress pencetakan berhasil diperbarui!');
+            return redirect()
+                ->back()
+                ->with('success', 'Progress pencetakan berhasil diperbarui!');
 
         } catch (\Exception $e) {
-            Log::error('Error Update Pencetakan Digital: ' . $e->getMessage());
+
+            Log::error(
+                'Error Update Pencetakan Digital: ' . $e->getMessage()
+            );
 
             if ($request->wantsJson() || $request->isJson()) {
                 return response()->json([
@@ -342,39 +435,58 @@ class AdminController extends Controller
                 ], 500);
             }
 
-            return redirect()->back()->with('error', 'Terjadi kesalahan sistem.');
+            return redirect()
+                ->back()
+                ->with('error', 'Terjadi kesalahan sistem.');
         }
     }
+
 
     public function kelolaBuku(Request $request)
     {
         $search = $request->input('search');
         $query = Buku::query();
-        
+
         if ($search) {
             $query->where('judul', 'ilike', "%{$search}%")
-                  ->orWhere('pengarang', 'ilike', "%{$search}%");
+                ->orWhere('pengarang', 'ilike', "%{$search}%");
         }
 
-        $daftarBuku = $query->orderBy('created_at', 'desc')->get();
+        $daftarBuku = $query
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         $activeMenu = 'kelola-buku';
 
         if (view()->exists('admin.pengiriman.kelola-buku')) {
-            return view('admin.pengiriman.kelola-buku', compact('daftarBuku', 'search', 'activeMenu'));
+            return view('admin.pengiriman.kelola-buku', compact(
+                'daftarBuku',
+                'search',
+                'activeMenu'
+            ));
         }
 
         return view('admin.pengiriman.dashboard', [
             'totalSiapDikirim' => Pesanan::whereIn('status', ['Siap Dikirim', 'Siap dikirim'])->count(),
             'totalDikirim' => Pesanan::whereIn('status', ['Dikirim', 'Sedang Dikirim'])->count(),
             'daftarPengiriman' => Pesanan::with('user')->take(5)->get(),
-            'pesananTerbaru' => Pesanan::with('user')->orderBy('created_at', 'desc')->take(5)->get(),
+            'pesananTerbaru' => Pesanan::with('user')
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get(),
             'activeMenu' => $activeMenu
         ]);
     }
 
+
+    // =====================================================
+    // PROFILE ADMIN PENGIRIMAN
+    // =====================================================
+
     public function profile()
     {
         $activeMenu = 'profile';
+
         if (view()->exists('admin.pengiriman.profile')) {
             return view('admin.pengiriman.profile', compact('activeMenu'));
         }
@@ -383,10 +495,31 @@ class AdminController extends Controller
             'totalSiapDikirim' => Pesanan::whereIn('status', ['Siap Dikirim', 'Siap dikirim'])->count(),
             'totalDikirim' => Pesanan::whereIn('status', ['Dikirim', 'Sedang Dikirim'])->count(),
             'daftarPengiriman' => Pesanan::with('user')->take(5)->get(),
-            'pesananTerbaru' => Pesanan::with('user')->orderBy('created_at', 'desc')->take(5)->get(),
+            'pesananTerbaru' => Pesanan::with('user')
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get(),
             'activeMenu' => $activeMenu
         ]);
     }
+
+
+    // =====================================================
+    // PROFILE ADMIN LITERASI DIGITAL
+    // =====================================================
+
+    public function profileDigital()
+    {
+        $user = auth()->user();
+
+        $activeMenu = 'profile';
+
+        return view('admin.digital.profile', compact(
+            'user',
+            'activeMenu'
+        ));
+    }
+
 
     public function updateProfile(Request $request)
     {
@@ -407,70 +540,111 @@ class AdminController extends Controller
 
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
+
             $fileName = 'profile_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storePubliclyAs('profile_fotos', $fileName, 'profile_storage'); 
-            
+
+            $path = $file->storePubliclyAs(
+                'profile_fotos',
+                $fileName,
+                'profile_storage'
+            );
+
             $endpoint = rtrim(env('AWS_ENDPOINT'), '/');
             $endpoint = str_replace('/storage/v1/s3', '', $endpoint);
+
             $bucket = env('AWS_BUCKET_PROFILE', 'profile');
-            
+
             $fullUrl = "{$endpoint}/storage/v1/object/public/{$bucket}/{$path}";
+
             $dataUpdate['foto_profil'] = $fullUrl;
         }
 
         \App\Models\User::where('id', $user->id)->update($dataUpdate);
 
-        return redirect()->back()->with('success', 'Informasi profil dan foto berhasil diperbarui!');
+        return redirect()
+            ->back()
+            ->with('success', 'Informasi profil dan foto berhasil diperbarui!');
     }
+
 
     public function updateNotifikasi(Request $request)
     {
         $user = auth()->user();
+
         $settings = $request->input('settings', []);
+
         $user->notif_settings = $settings;
         $user->save();
 
         return response()->json([
-            'success' => true, 
+            'success' => true,
             'message' => 'Pengaturan notifikasi berhasil diperbarui!'
         ]);
     }
 
+
     public function permintaanBahan(Request $request)
     {
         $statusFilter = $request->input('status', 'semua');
+
         $query = PermintaanBahan::orderBy('created_at', 'desc');
 
         if ($statusFilter !== 'semua') {
+
             if ($statusFilter == 'menunggu') {
-                $query->where('status', 'like', '%Menunggu Tanda Tangan%');
+
+                $query->where(
+                    'status',
+                    'like',
+                    '%Menunggu Tanda Tangan%'
+                );
+
             } elseif ($statusFilter == 'diproses') {
-                $query->where(function($q) {
+
+                $query->where(function ($q) {
                     $q->where('status', 'like', '%Menunggu diproses%')
-                      ->orWhere('status', 'like', '%Menunggu Diproses%')
-                      ->orWhere('status', 'like', '%Diproses%')
-                      ->orWhere('status', 'like', '%Surat Dibuat%');
+                        ->orWhere('status', 'like', '%Menunggu Diproses%')
+                        ->orWhere('status', 'like', '%Diproses%')
+                        ->orWhere('status', 'like', '%Surat Dibuat%');
                 });
+
             } elseif ($statusFilter == 'selesai') {
-                $query->where('status', 'like', '%Selesai%');
+
+                $query->where(
+                    'status',
+                    'like',
+                    '%Selesai%'
+                );
             }
         }
 
         $permintaanBahan = $query->get();
+
         $activeMenu = 'permintaan-bahan';
 
         if (view()->exists('admin.pengiriman.permintaan-bahan')) {
-            return view('admin.pengiriman.permintaan-bahan', compact('permintaanBahan', 'statusFilter', 'activeMenu'));
+            return view(
+                'admin.pengiriman.permintaan-bahan',
+                compact(
+                    'permintaanBahan',
+                    'statusFilter',
+                    'activeMenu'
+                )
+            );
         }
 
         return view('admin.pengiriman.dashboard', [
             'totalSiapDikirim' => Pesanan::whereIn('status', ['Siap Dikirim', 'Siap dikirim'])->count(),
             'totalDikirim' => Pesanan::whereIn('status', ['Dikirim', 'Sedang Dikirim'])->count(),
             'daftarPengiriman' => Pesanan::with('user')->take(5)->get(),
-            'pesananTerbaru' => Pesanan::with('user')->orderBy('created_at', 'desc')->take(5)->get(),
+            'pesananTerbaru' => Pesanan::with('user')
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get(),
             'activeMenu' => $activeMenu
         ]);
     }
+
 
     public function updateStatusBahan(Request $request)
     {
@@ -481,7 +655,7 @@ class AdminController extends Controller
         ]);
 
         $bahan = PermintaanBahan::findOrFail($request->id);
-        
+
         if ($request->has('kendala') && !empty($request->kendala)) {
             $bahan->status = 'Kendala';
             $bahan->catatan_kendala = $request->kendala;
@@ -491,12 +665,16 @@ class AdminController extends Controller
 
         $bahan->save();
 
-        return redirect()->back()->with('success', 'Status permintaan bahan berhasil diperbarui!');
+        return redirect()
+            ->back()
+            ->with('success', 'Status permintaan bahan berhasil diperbarui!');
     }
+
 
     public function laporan(Request $request)
     {
         $range = $request->input('range', '6-bulan');
+
         $startDate = $request->input('start_date');
         $endDate = $request->input('end_date');
 
@@ -504,54 +682,119 @@ class AdminController extends Controller
         $queryEnd = \Carbon\Carbon::now()->endOfDay();
 
         if ($startDate && $endDate) {
+
             $queryStart = \Carbon\Carbon::parse($startDate)->startOfDay();
             $queryEnd = \Carbon\Carbon::parse($endDate)->endOfDay();
+
             $range = 'custom';
+
         } else {
+
             switch ($range) {
-                case 'hari-ini':   $queryStart = \Carbon\Carbon::today(); break;
-                case 'minggu-ini': $queryStart = \Carbon\Carbon::now()->startOfWeek(); break;
-                case 'bulan-ini':  $queryStart = \Carbon\Carbon::now()->startOfMonth(); break;
+
+                case 'hari-ini':
+                    $queryStart = \Carbon\Carbon::today();
+                    break;
+
+                case 'minggu-ini':
+                    $queryStart = \Carbon\Carbon::now()->startOfWeek();
+                    break;
+
+                case 'bulan-ini':
+                    $queryStart = \Carbon\Carbon::now()->startOfMonth();
+                    break;
+
                 case '6-bulan':
-                default:           $queryStart = \Carbon\Carbon::now()->subMonths(6)->startOfDay(); break;
+                default:
+                    $queryStart = \Carbon\Carbon::now()
+                        ->subMonths(6)
+                        ->startOfDay();
+                    break;
             }
         }
 
-        $pesanans = Pesanan::with(['user', 'details.buku'])->whereBetween('created_at', [$queryStart, $queryEnd])->orderBy('created_at', 'desc')->get();
+        $pesanans = Pesanan::with(['user', 'details.buku'])
+            ->whereBetween('created_at', [$queryStart, $queryEnd])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         $bukus = Buku::orderBy('judul')->get();
-        $pencetakans = Pencetakan::with(['pesanan.user', 'buku'])->whereBetween('created_at', [$queryStart, $queryEnd])->orderBy('created_at', 'desc')->get();
-        $pelanggans = \App\Models\User::where('role', 'user')->whereBetween('created_at', [$queryStart, $queryEnd])->withCount('pesanan')->orderBy('created_at', 'desc')->get();
-        $bahans = PermintaanBahan::whereBetween('created_at', [$queryStart, $queryEnd])->orderBy('created_at', 'desc')->get(); 
+
+        $pencetakans = Pencetakan::with([
+                'pesanan.user',
+                'buku'
+            ])
+            ->whereBetween('created_at', [$queryStart, $queryEnd])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $pelanggans = \App\Models\User::where('role', 'user')
+            ->whereBetween('created_at', [$queryStart, $queryEnd])
+            ->withCount('pesanan')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $bahans = PermintaanBahan::whereBetween(
+                'created_at',
+                [$queryStart, $queryEnd]
+            )
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         $activeMenu = 'laporan';
 
         if (view()->exists('admin.pengiriman.laporan')) {
-            return view('admin.pengiriman.laporan', compact('pesanans', 'bukus', 'pencetakans', 'bahans', 'pelanggans', 'range', 'startDate', 'endDate', 'activeMenu'));
+            return view(
+                'admin.pengiriman.laporan',
+                compact(
+                    'pesanans',
+                    'bukus',
+                    'pencetakans',
+                    'bahans',
+                    'pelanggans',
+                    'range',
+                    'startDate',
+                    'endDate',
+                    'activeMenu'
+                )
+            );
         }
 
         return view('admin.pengiriman.dashboard', [
             'totalSiapDikirim' => Pesanan::whereIn('status', ['Siap Dikirim', 'Siap dikirim'])->count(),
             'totalDikirim' => Pesanan::whereIn('status', ['Dikirim', 'Sedang Dikirim'])->count(),
             'daftarPengiriman' => Pesanan::with('user')->take(5)->get(),
-            'pesananTerbaru' => Pesanan::with('user')->orderBy('created_at', 'desc')->take(5)->get(),
+            'pesananTerbaru' => Pesanan::with('user')
+                ->orderBy('created_at', 'desc')
+                ->take(5)
+                ->get(),
             'activeMenu' => $activeMenu
         ]);
     }
 
+
     // =====================================================
     // ===== FITUR PIC =====================================
     // =====================================================
+
     public function daftarPic()
     {
         $daftarPic = \App\Models\Pic::orderBy('nama', 'asc')->get();
 
         foreach ($daftarPic as $pic) {
-            $pic->pekerjaan_aktif = \App\Models\Pencetakan::where(function($q) use ($pic) {
+
+            $pic->pekerjaan_aktif = \App\Models\Pencetakan::where(function ($q) use ($pic) {
+
                     // Hitung pekerjaan milik Aceng yang BELUM dialihkan ke siapa-siapa
-                    $q->where('pic', $pic->nama)->whereNull('alihkan_kepada');
+                    $q->where('pic', $pic->nama)
+                        ->whereNull('alihkan_kepada');
+
                 })
-                ->orWhere(function($q) use ($pic) {
+                ->orWhere(function ($q) use ($pic) {
+
                     // DITAMBAH: Hitung pekerjaan yang DIALIHKAN kepada Siti Aminah
                     $q->where('alihkan_kepada', $pic->nama);
+
                 })
                 ->whereNotIn('status', ['Selesai', 'Dibatalkan'])
                 ->count();
@@ -559,8 +802,15 @@ class AdminController extends Controller
 
         $activeMenu = 'pic';
 
-        return view('admin.digital.pic', compact('daftarPic', 'activeMenu'));
+        return view(
+            'admin.digital.pic',
+            compact(
+                'daftarPic',
+                'activeMenu'
+            )
+        );
     }
+
 
     public function detailPic($id)
     {
@@ -580,25 +830,36 @@ class AdminController extends Controller
             ->orWhere('alihkan_kepada', $pic->nama)
             ->orderBy('created_at', 'desc')
             ->get();
-        
+
         // Ambil semua PIC kecuali PIC yang sedang dibuka untuk dropdown modal
-        $semuaPic = \App\Models\Pic::where('id', '!=', $id)->orderBy('nama')->get();
-        
+        $semuaPic = \App\Models\Pic::where('id', '!=', $id)
+            ->orderBy('nama')
+            ->get();
+
         $activeMenu = 'pic';
 
-        return view('admin.digital.detail-pic', compact('data', 'daftarKerjaan', 'semuaPic', 'activeMenu'));
+        return view(
+            'admin.digital.detail-pic',
+            compact(
+                'data',
+                'daftarKerjaan',
+                'semuaPic',
+                'activeMenu'
+            )
+        );
     }
+
 
     public function alihkanPic(Request $request)
     {
         $request->validate([
-            'pencetakan_ids' => 'required|string', 
+            'pencetakan_ids' => 'required|string',
             'pic_tujuan' => 'required|string',
             'alasan_pengalihan' => 'required|string',
         ]);
 
         $ids = explode(',', $request->pencetakan_ids);
-        
+
         // HANYA update kolom alihkan_kepada dan alasannya
         // Kolom 'pic' awal biarkan tetap milik Aceng (tidak diubah)
         \App\Models\Pencetakan::whereIn('id', $ids)->update([
@@ -606,8 +867,14 @@ class AdminController extends Controller
             'alasan_pengalihan' => $request->alasan_pengalihan,
         ]);
 
-        return redirect()->back()->with('success', 'Pekerjaan berhasil dialihkan ke ' . $request->pic_tujuan);
+        return redirect()
+            ->back()
+            ->with(
+                'success',
+                'Pekerjaan berhasil dialihkan ke ' . $request->pic_tujuan
+            );
     }
+
 
     public function storePic(Request $request)
     {
@@ -621,6 +888,8 @@ class AdminController extends Controller
             'nomor_telepon' => $request->nomor_telepon,
         ]);
 
-        return redirect()->back()->with('success', 'PIC baru berhasil ditambahkan!');
+        return redirect()
+            ->back()
+            ->with('success', 'PIC baru berhasil ditambahkan!');
     }
 }
