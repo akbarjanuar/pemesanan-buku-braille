@@ -505,13 +505,12 @@ class AdminController extends Controller
 
 
     // =====================================================
-    // PROFILE ADMIN LITERASI DIGITAL
+    // ===== PROFILE ADMIN LITERASI DIGITAL =================
     // =====================================================
 
     public function profileDigital()
     {
         $user = auth()->user();
-
         $activeMenu = 'profile';
 
         return view('admin.digital.profile', compact(

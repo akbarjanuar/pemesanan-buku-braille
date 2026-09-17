@@ -171,7 +171,7 @@
         <a href="{{ route('admin.digital.permintaan-bahan') }}"
            class="nav-item {{ request()->routeIs('admin.digital.permintaan-bahan') ? 'active' : '' }}">
             <i class="fas fa-layer-group"></i> Permintaan Bahan
-        </a>
+    </a>
 
         <a href="{{ route('admin.digital.profile') }}"
            class="nav-item {{ request()->routeIs('admin.digital.profile') ? 'active' : '' }}">
