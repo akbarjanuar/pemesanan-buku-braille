@@ -168,8 +168,8 @@
             <i class="fas fa-users"></i> PIC
         </a>
 
-        <a href="{{ route('admin.permintaan-bahan') }}"
-           class="nav-item {{ request()->routeIs('admin.permintaan-bahan') ? 'active' : '' }}">
+        <a href="{{ route('admin.digital.permintaan-bahan') }}"
+           class="nav-item {{ request()->routeIs('admin.digital.permintaan-bahan') ? 'active' : '' }}">
             <i class="fas fa-layer-group"></i> Permintaan Bahan
         </a>
 

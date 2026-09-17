@@ -566,6 +566,77 @@ class AdminController extends Controller
             ->with('success', 'Informasi profil dan foto berhasil diperbarui!');
     }
 
+    public function permintaanBahanDigital(Request $request)
+    {
+    $statusFilter = $request->input('status', 'semua');
+
+    $query = PermintaanBahan::where('divisi', 'Literasi Digital')
+        ->orderBy('created_at', 'desc');
+
+    if ($statusFilter !== 'semua') {
+
+        if ($statusFilter === 'menunggu') {
+
+            $query->where('status', 'like', '%Menunggu Tanda Tangan%');
+
+        } elseif ($statusFilter === 'diproses') {
+
+            $query->where(function ($q) {
+                $q->where('status', 'like', '%Menunggu diproses%')
+                    ->orWhere('status', 'like', '%Menunggu Diproses%')
+                    ->orWhere('status', 'like', '%Diproses%')
+                    ->orWhere('status', 'like', '%Surat Dibuat%');
+            });
+
+        } elseif ($statusFilter === 'selesai') {
+
+            $query->where('status', 'like', '%Selesai%');
+
+        } elseif ($statusFilter === 'kendala') {
+
+            $query->where('status', 'like', '%Kendala%');
+        }
+    }
+
+    $permintaanBahan = $query->get();
+
+    $activeMenu = 'permintaan-bahan';
+
+    return view('admin.digital.permintaan-bahan', compact(
+        'permintaanBahan',
+        'statusFilter',
+        'activeMenu'
+    ));
+}
+
+    public function updateStatusBahanDigital(Request $request)
+{
+    $request->validate([
+        'id' => 'required',
+        'status' => 'required|string',
+        'kendala' => 'nullable|string'
+    ]);
+
+    $bahan = PermintaanBahan::where('id', $request->id)
+        ->where('divisi', 'Literasi Digital')
+        ->firstOrFail();
+
+    if ($request->has('kendala') && !empty($request->kendala)) {
+
+        $bahan->status = 'Kendala';
+        $bahan->catatan_kendala = $request->kendala;
+
+    } else {
+
+        $bahan->status = $request->status;
+    }
+
+    $bahan->save();
+
+    return redirect()
+        ->back()
+        ->with('success', 'Status permintaan bahan berhasil diperbarui!');
+}
 
     public function updateNotifikasi(Request $request)
     {
