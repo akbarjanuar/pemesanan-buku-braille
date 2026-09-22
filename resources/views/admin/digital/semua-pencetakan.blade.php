@@ -37,7 +37,9 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px 32px;
+            padding: 0 32px;
+            height: 70px;
+            min-height: 70px;
             width: 100%;
         }
 
@@ -48,9 +50,63 @@
             background: none; border: none; cursor: pointer; font-size: 20px; 
         }
         .topbar-title { font-size: 20px; font-weight: 900; font-family: 'Georgia', serif; color: var(--text-dark); }
-        .topbar-right { display: flex; align-items: center; gap: 24px; }
-        .profile-area { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 14px; }
-        .profile-icon { font-size: 24px; }
+        
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .notification-button {
+            position: relative;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #111111;
+            font-size: 19px;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .notification-button:hover { background: #f5f5f5; }
+        .notification-dot {
+            position: absolute;
+            top: 7px;
+            right: 7px;
+            width: 7px;
+            height: 7px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+
+        .topbar-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #111111;
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .topbar-user:hover { color: var(--primary); }
+        
+        /* Disamakan ukuran foto profil menjadi 36px */
+        .topbar-user img, .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .user-avatar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+        }
 
         .page-body { padding: 32px; }
         .page-header h2 { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
@@ -242,7 +298,7 @@
 </head>
 <body>
 
-    @include('partials.admin-digital-nav')
+    @include('partials.admin-digital-nav', ['activeMenu' => $activeMenu ?? 'pencetakan'])
 
     <!-- MAIN CONTENT -->
     <div class="main-wrapper">
@@ -251,12 +307,28 @@
                 <button type="button" class="menu-toggle"><i class="fas fa-bars"></i></button>
                 <span class="topbar-title">Permintaan Pencetakan</span>
             </div>
+            
             <div class="topbar-right">
-                <div class="profile-area">
-                    <i class="far fa-bell" style="font-size: 18px; cursor: pointer; margin-right: 4px;"></i>
-                    <span>{{ auth()->user()->nama ?? 'Admin Digital' }}</span>
-                    <i class="fas fa-user-circle profile-icon"></i>
+                <!-- Ikon Notifikasi dengan Titik Merah -->
+                <div class="notification-button">
+                    <i class="far fa-bell"></i>
+                    <span class="notification-dot"></span>
                 </div>
+
+                <!-- Profil Pengguna -->
+                <a href="{{ route('admin.profile') }}" class="topbar-user">
+                    <span style="font-weight: 700; font-size: 15px;">
+                        {{ auth()->user()->nama ?? 'Admin Digital' }}
+                    </span>
+                    
+                    <div class="user-avatar">
+                        @if(auth()->user()->foto_profil)
+                            <img src="{{ auth()->user()->foto_profil }}" alt="Foto Profile">
+                        @else
+                            <i class="fas fa-user" style="font-size: 16px;"></i>
+                        @endif
+                    </div>
+                </a>
             </div>
         </header>
 

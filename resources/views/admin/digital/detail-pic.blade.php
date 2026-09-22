@@ -16,7 +16,29 @@
                 <button type="button" class="menu-toggle"><i class="fas fa-bars"></i></button>
                 <span class="page-title">Detail PIC</span>
             </div>
-            <div class="topbar-right"><i class="far fa-bell"></i></div>
+            
+            <div class="topbar-right">
+                <!-- Ikon Notifikasi dengan Titik Merah -->
+                <div class="notification-button">
+                    <i class="far fa-bell"></i>
+                    <span class="notification-dot"></span>
+                </div>
+                
+                <!-- Profil Pengguna -->
+                <a href="{{ route('admin.profile') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-dark); cursor: pointer;">
+                    <span style="font-weight: 700; font-size: 15px;">
+                        {{ auth()->user()->nama ?? 'Admin Digital' }}
+                    </span>
+                    
+                    <div style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: #111; display: flex; align-items: center; justify-content: center; color: white;">
+                        @if(auth()->user()->foto_profil)
+                            <img src="{{ auth()->user()->foto_profil }}" alt="Foto Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                        @else
+                            <i class="fas fa-user" style="font-size: 16px;"></i>
+                        @endif
+                    </div>
+                </a>
+            </div>
         </header>
 
         <main class="content">
@@ -186,10 +208,40 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { display: flex; width: 100%; min-height: 100vh; background-color: var(--bg-color); color: var(--text-main); }
         .main-wrapper { flex: 1; display: flex; flex-direction: column; background-color: #f4f6f9; overflow: hidden;}
+        
         .topbar { height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; background-color: #ffffff; border-bottom: 1px solid var(--border-color); }
         .topbar-left { display: flex; align-items: center; gap: 16px; }
         .menu-toggle { background: transparent; border: none; font-size: 20px; cursor: pointer; color: var(--text-main); }
         .page-title { font-size: 20px; font-weight: 900; font-family: 'Georgia', serif; }
+        
+        .topbar-right { 
+            display: flex; 
+            align-items: center; 
+            gap: 20px; 
+        }
+
+        .notification-button {
+            position: relative;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #111111;
+            font-size: 19px;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .notification-button:hover { background: #f5f5f5; }
+        .notification-dot {
+            position: absolute;
+            top: 7px;
+            right: 7px;
+            width: 7px;
+            height: 7px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
         
         .content { flex: 1; padding: 32px 40px; overflow-y: auto; }
         

@@ -20,6 +20,8 @@ class AdminController extends Controller
 
         if ($divisi === 'pengiriman' || str_contains($divisi, 'kirim') || str_contains(strtolower($user->email), 'pengiriman')) {
             return redirect()->route('admin.pengiriman.dashboard');
+        } elseif ($divisi === 'literasi manual' || str_contains($divisi, 'manual') || str_contains(strtolower($user->email), 'manual')) {
+            return redirect()->route('admin.manual.dashboard');
         }
 
         return redirect()->route('admin.digital.dashboard');
@@ -310,29 +312,29 @@ class AdminController extends Controller
     public function storePencetakan(Request $request)
     {
         $request->validate([
-            'pesanan_id'     => 'required|exists:pesanan,id',
-            'buku_id'        => 'required|exists:buku,id',
-            'jumlah'         => 'required|integer|min:1',
-            'divisi'         => 'required|string',
+            'pesanan_id'    => 'required|exists:pesanan,id',
+            'buku_id'       => 'required|exists:buku,id',
+            'jumlah'        => 'required|integer|min:1',
+            'divisi'        => 'required|string',
             'target_selesai' => 'required|date',
-            'pic'            => 'required|string',
-            'catatan'        => 'nullable|string',
+            'pic'           => 'required|string',
+            'catatan'       => 'nullable|string',
         ]);
 
         $kodeCetak = 'PRNT-' . date('Ymd') . '-' . rand(1000, 9999);
 
         Pencetakan::create([
-            'pesanan_id'     => $request->pesanan_id,
-            'buku_id'        => $request->buku_id,
-            'kode_cetak'     => $kodeCetak,
-            'jumlah'         => $request->jumlah,
-            'divisi'         => $request->divisi,
+            'pesanan_id'    => $request->pesanan_id,
+            'buku_id'       => $request->buku_id,
+            'kode_cetak'    => $kodeCetak,
+            'jumlah'        => $request->jumlah,
+            'divisi'        => $request->divisi,
             'jenis_literasi' => $request->divisi,
-            'target_buku'    => $request->jumlah,
-            'deadline'       => $request->target_selesai,
-            'pic'            => $request->pic,
-            'catatan'        => $request->catatan,
-            'status'         => 'Menunggu Diproses',
+            'target_buku'   => $request->jumlah,
+            'deadline'      => $request->target_selesai,
+            'pic'           => $request->pic,
+            'catatan'       => $request->catatan,
+            'status'        => 'Menunggu Diproses',
         ]);
 
         return redirect()
@@ -567,75 +569,86 @@ class AdminController extends Controller
 
     public function permintaanBahanDigital(Request $request)
     {
-    $statusFilter = $request->input('status', 'semua');
+        $statusFilter = $request->input('status', 'semua');
+        $search = $request->input('search');
+        $dateFilter = $request->input('date');
 
-    $query = PermintaanBahan::where('divisi', 'Literasi Digital')
-        ->orderBy('created_at', 'desc');
+        // MEMUAT RELASI PENCETAKAN DAN BUKU AGAR DATA MUNCUL
+        $query = PermintaanBahan::with(['pencetakan.buku'])
+            ->where('divisi', 'ilike', '%Literasi Digital%')
+            ->orderBy('created_at', 'desc');
 
-    if ($statusFilter !== 'semua') {
-
-        if ($statusFilter === 'menunggu') {
-
-            $query->where('status', 'like', '%Menunggu Tanda Tangan%');
-
-        } elseif ($statusFilter === 'diproses') {
-
-            $query->where(function ($q) {
-                $q->where('status', 'like', '%Menunggu diproses%')
-                    ->orWhere('status', 'like', '%Menunggu Diproses%')
-                    ->orWhere('status', 'like', '%Diproses%')
-                    ->orWhere('status', 'like', '%Surat Dibuat%');
+        // Pencarian (Search Bar)
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('id_permintaan', 'ilike', "%{$search}%")
+                  ->orWhere('nama_bahan', 'ilike', "%{$search}%")
+                  ->orWhere('pic', 'ilike', "%{$search}%")
+                  ->orWhere('bahan', 'ilike', "%{$search}%");
             });
-
-        } elseif ($statusFilter === 'selesai') {
-
-            $query->where('status', 'like', '%Selesai%');
-
-        } elseif ($statusFilter === 'kendala') {
-
-            $query->where('status', 'like', '%Kendala%');
         }
+
+        // Filter Tanggal
+        if ($dateFilter) {
+            $query->whereDate('created_at', $dateFilter);
+        }
+
+        // Filter Status
+        if ($statusFilter !== 'semua') {
+            $query->where('status', 'ilike', "%{$statusFilter}%");
+        }
+
+        $permintaanBahan = $query->get();
+        $activeMenu = 'permintaan-bahan';
+
+        return view('admin.digital.permintaan-bahan', compact(
+            'permintaanBahan',
+            'statusFilter',
+            'search',
+            'dateFilter',
+            'activeMenu'
+        ));
     }
 
-    $permintaanBahan = $query->get();
-
-    $activeMenu = 'permintaan-bahan';
-
-    return view('admin.digital.permintaan-bahan', compact(
-        'permintaanBahan',
-        'statusFilter',
-        'activeMenu'
-    ));
-}
+    public function detailPermintaanBahanDigital($id)
+    {
+        $permintaanBahan = PermintaanBahan::with(['pencetakan.buku'])
+            ->where('divisi', 'ilike', '%Literasi Digital%')
+            ->findOrFail($id);
+            
+        $activeMenu = 'permintaan-bahan';
+        
+        return view('admin.digital.detail-permintaan-bahan', compact(
+            'permintaanBahan', 
+            'activeMenu'
+        ));
+    }
 
     public function updateStatusBahanDigital(Request $request)
-{
-    $request->validate([
-        'id' => 'required',
-        'status' => 'required|string',
-        'kendala' => 'nullable|string'
-    ]);
+    {
+        $request->validate([
+            'id' => 'required',
+            'status' => 'required|string',
+            'kendala' => 'nullable|string'
+        ]);
 
-    $bahan = PermintaanBahan::where('id', $request->id)
-        ->where('divisi', 'Literasi Digital')
-        ->firstOrFail();
+        $bahan = PermintaanBahan::where('id', $request->id)
+            ->where('divisi', 'Literasi Digital')
+            ->firstOrFail();
 
-    if ($request->has('kendala') && !empty($request->kendala)) {
+        if ($request->has('kendala') && !empty($request->kendala)) {
+            $bahan->status = 'Kendala';
+            $bahan->catatan_kendala = $request->kendala;
+        } else {
+            $bahan->status = $request->status;
+        }
 
-        $bahan->status = 'Kendala';
-        $bahan->catatan_kendala = $request->kendala;
+        $bahan->save();
 
-    } else {
-
-        $bahan->status = $request->status;
+        return redirect()
+            ->back()
+            ->with('success', 'Status permintaan bahan berhasil diperbarui!');
     }
-
-    $bahan->save();
-
-    return redirect()
-        ->back()
-        ->with('success', 'Status permintaan bahan berhasil diperbarui!');
-}
 
     public function updateNotifikasi(Request $request)
     {
@@ -657,7 +670,7 @@ class AdminController extends Controller
     {
         $statusFilter = $request->input('status', 'semua');
 
-        $query = PermintaanBahan::orderBy('created_at', 'desc');
+        $query = PermintaanBahan::with(['pencetakan.buku'])->orderBy('created_at', 'desc');
 
         if ($statusFilter !== 'semua') {
 
@@ -804,10 +817,8 @@ class AdminController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        $bahans = PermintaanBahan::whereBetween(
-                'created_at',
-                [$queryStart, $queryEnd]
-            )
+        $bahans = PermintaanBahan::with(['pencetakan.buku'])
+            ->whereBetween('created_at', [$queryStart, $queryEnd])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -844,7 +855,7 @@ class AdminController extends Controller
 
 
     // =====================================================
-    // ===== FITUR PIC =====================================
+    // ===== FITUR PIC (DIGITAL) ===========================
     // =====================================================
 
     public function daftarPic()
@@ -855,14 +866,12 @@ class AdminController extends Controller
 
             $pic->pekerjaan_aktif = \App\Models\Pencetakan::where(function ($q) use ($pic) {
 
-                    // Hitung pekerjaan milik Aceng yang BELUM dialihkan ke siapa-siapa
                     $q->where('pic', $pic->nama)
                         ->whereNull('alihkan_kepada');
 
                 })
                 ->orWhere(function ($q) use ($pic) {
 
-                    // DITAMBAH: Hitung pekerjaan yang DIALIHKAN kepada Siti Aminah
                     $q->where('alihkan_kepada', $pic->nama);
 
                 })
@@ -894,14 +903,12 @@ class AdminController extends Controller
             'status' => 'Aktif'
         ];
 
-        // Tampilkan jika dia PIC utama ATAU jika dia adalah PIC penerima alihan
         $daftarKerjaan = \App\Models\Pencetakan::with('buku')
             ->where('pic', $pic->nama)
             ->orWhere('alihkan_kepada', $pic->nama)
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Ambil semua PIC kecuali PIC yang sedang dibuka untuk dropdown modal
         $semuaPic = \App\Models\Pic::where('id', '!=', $id)
             ->orderBy('nama')
             ->get();
@@ -930,8 +937,6 @@ class AdminController extends Controller
 
         $ids = explode(',', $request->pencetakan_ids);
 
-        // HANYA update kolom alihkan_kepada dan alasannya
-        // Kolom 'pic' awal biarkan tetap milik Aceng (tidak diubah)
         \App\Models\Pencetakan::whereIn('id', $ids)->update([
             'alihkan_kepada' => $request->pic_tujuan,
             'alasan_pengalihan' => $request->alasan_pengalihan,
@@ -961,5 +966,303 @@ class AdminController extends Controller
         return redirect()
             ->back()
             ->with('success', 'PIC baru berhasil ditambahkan!');
+    }
+    
+    // =====================================================
+    // ===== FUNGSI ADMIN LITERASI MANUAL ==================
+    // =====================================================
+
+    public function dashboardLiterasiManual()
+    {
+        $totalPencetakan = Pencetakan::where('divisi', 'Literasi Manual')->count();
+        $totalPermintaanBahan = PermintaanBahan::where('divisi', 'Literasi Manual')->count();
+
+        $daftarPencetakan = Pencetakan::with(['pesanan.user', 'buku'])
+            ->where('divisi', 'Literasi Manual')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        $semuaPencetakan = Pencetakan::with(['pesanan.user', 'buku'])
+            ->where('divisi', 'Literasi Manual')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $activeMenu = 'dashboard';
+
+        return view('admin.manual.dashboard', compact(
+            'totalPencetakan',
+            'totalPermintaanBahan',
+            'daftarPencetakan',
+            'semuaPencetakan',
+            'activeMenu'
+        ));
+    }
+
+    public function semuaPencetakanManual(Request $request)
+    {
+        $search = $request->input('search');
+
+        $query = Pencetakan::with([
+                'pesanan.user',
+                'buku'
+            ])
+            ->where('divisi', 'Literasi Manual');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('kode_cetak', 'ilike', "%{$search}%")
+                    ->orWhere('pic', 'ilike', "%{$search}%")
+                    ->orWhereHas('buku', function ($sub) use ($search) {
+                        $sub->where('judul', 'ilike', "%{$search}%");
+                    });
+            });
+        }
+
+        $daftarPencetakan = $query
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $activeMenu = 'pencetakan';
+
+        return view('admin.manual.semua-pencetakan', compact(
+            'daftarPencetakan',
+            'search',
+            'activeMenu'
+        ));
+    }
+
+    public function updateProgressManual(Request $request, $id)
+    {
+        try {
+            $pencetakan = Pencetakan::where('divisi', 'Literasi Manual')
+                ->findOrFail($id);
+
+            if ($request->has('buku_selesai')) {
+                $request->validate([
+                    'buku_selesai' => 'required|integer|min:0|max:' . ($pencetakan->target_buku ?? 999),
+                ]);
+
+                $pencetakan->buku_selesai = $request->buku_selesai;
+
+                if (
+                    $pencetakan->target_buku &&
+                    $pencetakan->buku_selesai >= $pencetakan->target_buku
+                ) {
+                    $pencetakan->status = 'Selesai';
+                } elseif (
+                    $pencetakan->buku_selesai > 0 &&
+                    strtolower($pencetakan->status) == 'menunggu diproses'
+                ) {
+                    $pencetakan->status = 'Diproses';
+                }
+            }
+
+            if ($request->has('status')) {
+                $request->validate([
+                    'status' => 'required|string',
+                ]);
+
+                $pencetakan->status = $request->status;
+            }
+
+            $pencetakan->save();
+
+            if ($request->wantsJson() || $request->isJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Data pencetakan berhasil diperbarui.'
+                ]);
+            }
+
+            return redirect()
+                ->back()
+                ->with('success', 'Progress pencetakan berhasil diperbarui!');
+
+        } catch (\Exception $e) {
+            Log::error('Error Update Pencetakan Manual: ' . $e->getMessage());
+
+            if ($request->wantsJson() || $request->isJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan sistem atau input tidak valid.'
+                ], 500);
+            }
+
+            return redirect()
+                ->back()
+                ->with('error', 'Terjadi kesalahan sistem.');
+        }
+    }
+
+    public function profileManual()
+    {
+        $user = auth()->user();
+        $activeMenu = 'profile';
+
+        return view('admin.manual.profile', compact(
+            'user',
+            'activeMenu'
+        ));
+    }
+
+    public function daftarPicManual()
+    {
+        $daftarPic = \App\Models\Pic::orderBy('nama', 'asc')->get();
+
+        foreach ($daftarPic as $pic) {
+            $pic->pekerjaan_aktif = \App\Models\Pencetakan::where(function ($q) use ($pic) {
+                    $q->where('pic', $pic->nama)
+                        ->whereNull('alihkan_kepada');
+                })
+                ->orWhere(function ($q) use ($pic) {
+                    $q->where('alihkan_kepada', $pic->nama);
+                })
+                ->whereNotIn('status', ['Selesai', 'Dibatalkan'])
+                ->count();
+        }
+
+        $activeMenu = 'pic';
+
+        return view('admin.manual.pic', compact('daftarPic', 'activeMenu'));
+    }
+
+    public function detailPicManual($id)
+    {
+        $pic = \App\Models\Pic::findOrFail($id);
+
+        $data = [
+            'nama' => $pic->nama,
+            'jabatan' => 'Staf Literasi Manual',
+            'nomor_telepon' => $pic->nomor_telepon,
+            'keterangan' => $pic->keterangan ?? '-',
+            'status' => 'Aktif'
+        ];
+
+        $daftarKerjaan = \App\Models\Pencetakan::with('buku')
+            ->where('pic', $pic->nama)
+            ->orWhere('alihkan_kepada', $pic->nama)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $semuaPic = \App\Models\Pic::where('id', '!=', $id)
+            ->orderBy('nama')
+            ->get();
+
+        $activeMenu = 'pic';
+
+        return view('admin.manual.detail-pic', compact('data', 'daftarKerjaan', 'semuaPic', 'activeMenu'));
+    }
+
+    public function alihkanPicManual(Request $request)
+    {
+        $request->validate([
+            'pencetakan_ids' => 'required|string',
+            'pic_tujuan' => 'required|string',
+            'alasan_pengalihan' => 'required|string',
+        ]);
+
+        $ids = explode(',', $request->pencetakan_ids);
+
+        \App\Models\Pencetakan::whereIn('id', $ids)->update([
+            'alihkan_kepada' => $request->pic_tujuan,
+            'alasan_pengalihan' => $request->alasan_pengalihan,
+        ]);
+
+        return redirect()->back()->with('success', 'Pekerjaan berhasil dialihkan ke ' . $request->pic_tujuan);
+    }
+
+    public function storePicManual(Request $request)
+    {
+        $request->validate([
+            'nama' => 'required|string|max:255',
+            'nomor_telepon' => 'required|string|max:20',
+        ]);
+
+        Pic::create([
+            'nama' => $request->nama,
+            'nomor_telepon' => $request->nomor_telepon,
+        ]);
+
+        return redirect()->back()->with('success', 'PIC baru berhasil ditambahkan!');
+    }
+
+    public function permintaanBahanManual(Request $request)
+    {
+        $statusFilter = $request->input('status', 'semua');
+        $search = $request->input('search');
+        $dateFilter = $request->input('date');
+
+        $query = PermintaanBahan::with(['pencetakan.buku'])
+            ->where('divisi', 'ilike', '%Literasi Manual%')
+            ->orderBy('created_at', 'desc');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('id_permintaan', 'ilike', "%{$search}%")
+                  ->orWhere('nama_bahan', 'ilike', "%{$search}%")
+                  ->orWhere('pic', 'ilike', "%{$search}%")
+                  ->orWhere('bahan', 'ilike', "%{$search}%");
+            });
+        }
+
+        if ($dateFilter) {
+            $query->whereDate('created_at', $dateFilter);
+        }
+
+        if ($statusFilter !== 'semua') {
+            $query->where('status', 'ilike', "%{$statusFilter}%");
+        }
+
+        $permintaanBahan = $query->get();
+        $activeMenu = 'permintaan-bahan';
+
+        return view('admin.manual.permintaan-bahan', compact(
+            'permintaanBahan',
+            'statusFilter',
+            'search',
+            'dateFilter',
+            'activeMenu'
+        ));
+    }
+
+    public function detailPermintaanBahanManual($id)
+    {
+        $permintaanBahan = PermintaanBahan::with(['pencetakan.buku'])
+            ->where('divisi', 'ilike', '%Literasi Manual%')
+            ->findOrFail($id);
+            
+        $activeMenu = 'permintaan-bahan';
+        
+        return view('admin.manual.detail-permintaan-bahan', compact(
+            'permintaanBahan', 
+            'activeMenu'
+        ));
+    }
+
+    public function updateStatusBahanManual(Request $request)
+    {
+        $request->validate([
+            'id' => 'required',
+            'status' => 'required|string',
+            'kendala' => 'nullable|string'
+        ]);
+
+        $bahan = PermintaanBahan::where('id', $request->id)
+            ->where('divisi', 'Literasi Manual')
+            ->firstOrFail();
+
+        if ($request->has('kendala') && !empty($request->kendala)) {
+            $bahan->status = 'Kendala';
+            $bahan->catatan_kendala = $request->kendala;
+        } else {
+            $bahan->status = $request->status;
+        }
+
+        $bahan->save();
+
+        return redirect()
+            ->back()
+            ->with('success', 'Status permintaan bahan berhasil diperbarui!');
     }
 }

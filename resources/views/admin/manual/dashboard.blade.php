@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Dashboard Literasi Digital - BrailleKita</title>
+    <title>Dashboard Literasi Manual - BrailleKita</title>
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -178,7 +178,7 @@
         .page-header h2 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
         .page-header p { color: var(--text-muted); font-size: 14px; }
 
-        /* Stats Grid (3 Kolom untuk Literasi Digital) */
+        /* Stats Grid (3 Kolom untuk Literasi Manual) */
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px; }
         .stat-card { background-color: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.02); color: var(--primary); }
         .stat-card i { font-size: 24px; margin-bottom: 12px; }
@@ -289,7 +289,8 @@
 </head>
 <body>
 
-    @include('partials.admin-digital-nav', ['activeMenu' => 'dashboard'])
+    <!-- Pastikan Anda sudah membuat atau menyesuaikan sidebar ini untuk Manual -->
+    @include('partials.admin-manual-nav', ['activeMenu' => 'dashboard'])
 
     <!-- MAIN CONTENT -->
     <div class="main-wrapper">
@@ -326,7 +327,7 @@
                 <!-- Profil Pengguna -->
                 <a href="{{ route('admin.profile') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-dark); cursor: pointer;">
                     <span style="font-weight: 700; font-size: 15px;">
-                        {{ auth()->user()->nama ?? 'Admin Digital' }}
+                        {{ auth()->user()->nama ?? 'Admin Manual' }}
                     </span>
                     
                     <div style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: #111; display: flex; align-items: center; justify-content: center; color: white;">
@@ -344,7 +345,7 @@
         <main class="content-area">
             
             <div class="page-header">
-                <h2>Dashboard Admin Literasi Digital</h2>
+                <h2>Dashboard Admin Literasi Manual</h2>
                 <p>Ringkasan seluruh aktivitas platform.</p>
             </div>
 
@@ -376,8 +377,8 @@
 
                 @forelse($daftarPencetakan ?? [] as $cetak)
                     @php
-                        $selesai = $cetak->buku_selesai ?? 0;
-                        $target = $cetak->target_buku ?? 1;
+                        $selesai =$cetak->buku_selesai ?? 0;
+                        $target =$cetak->target_buku ?? 1;
                         $persen = ($target > 0) ? round(($selesai / $target) * 100) : 0;
                         $isSelesai = strtolower($cetak->status) == 'selesai';
                     @endphp
@@ -406,7 +407,7 @@
                         </div>
 
                         <div class="progress-info">
-                            <span>{{ $selesai }} dari {{ $target }} buku selesai</span>
+                            <span>{{ $selesai }} dari {{$target }} buku selesai</span>
                             <span style="color: #111;">{{ $persen }}%</span>
                         </div>
                         <div class="progress-track">
@@ -415,7 +416,7 @@
                     </div>
                 @empty
                     <div style="padding: 32px; text-align: center; color: var(--text-muted); font-size: 14px;">
-                        Belum ada data permintaan pencetakan untuk divisi Literasi Digital.
+                        Belum ada data permintaan pencetakan untuk divisi Literasi Manual.
                     </div>
                 @endforelse
             </div>
@@ -430,7 +431,7 @@
         <div style="background: #fff; width: 85%; max-height: 85vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.15);">
             
             <div style="padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="font-size: 16px; font-weight: 800;">Semua Permintaan Pencetakan - Literasi Digital</h3>
+                <h3 style="font-size: 16px; font-weight: 800;">Semua Permintaan Pencetakan - Literasi Manual</h3>
                 <button type="button" onclick="tutupModalSemua()" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted);"><i class="fas fa-times"></i></button>
             </div>
 

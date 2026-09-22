@@ -120,7 +120,7 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::get('/admin/digital/pencetakan', [AdminController::class, 'semuaPencetakanDigital'])->name('admin.digital.pencetakan');
     Route::post('/admin/digital/pencetakan/update/{id}', [AdminController::class, 'updateProgressDigital'])->name('admin.digital.pencetakan.update');
     
-    // PROFILE ADMIN LITERASI DIGITAL (Pastikan method-nya profileDigital)
+    // PROFILE ADMIN LITERASI DIGITAL
     Route::get('/admin/digital/profile', [AdminController::class, 'profileDigital'])->name('admin.digital.profile');
     
     // PIC Routes
@@ -131,6 +131,7 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
 
     // PERMINTAAN BAHAN ADMIN LITERASI DIGITAL
     Route::get('/admin/digital/permintaan-bahan', [AdminController::class, 'permintaanBahanDigital'])->name('admin.digital.permintaan-bahan');
+    Route::get('/admin/digital/permintaan-bahan/{id}', [AdminController::class, 'detailPermintaanBahanDigital'])->name('admin.digital.permintaan-bahan.detail');
     Route::post('/admin/digital/permintaan-bahan/update-status', [AdminController::class, 'updateStatusBahanDigital'])->name('admin.digital.permintaan-bahan.update-status');
 
     // ADMIN PENGIRIMAN
@@ -157,7 +158,7 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::get('/admin/data-pelanggan', [AdminController::class, 'dataPelanggan'])->name('admin.data-pelanggan');
     Route::get('/admin/data-pelanggan/{id}', [AdminController::class, 'detailPelanggan'])->name('admin.detail-pelanggan');
 
-    // PERMINTAAN BAHAN
+    // PERMINTAAN BAHAN (PENGIRIMAN)
     Route::get('/admin/permintaan-bahan', [AdminController::class, 'permintaanBahan'])->name('admin.permintaan-bahan');
     Route::post('/admin/permintaan-bahan/update', [AdminController::class, 'updateStatusBahan'])->name('admin.permintaan-bahan.update-status');
 
@@ -179,6 +180,27 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
         return view('admin.pengiriman.cetak-resi', compact('daftarPesanan'));
     });
 });
+
+    // =====================================================
+    // ADMIN LITERASI MANUAL
+    // =====================================================
+    Route::get('/admin/manual/dashboard', [AdminController::class, 'dashboardLiterasiManual'])->name('admin.manual.dashboard');
+    Route::get('/admin/manual/pencetakan', [AdminController::class, 'semuaPencetakanManual'])->name('admin.manual.pencetakan');
+    Route::post('/admin/manual/pencetakan/update/{id}', [AdminController::class, 'updateProgressManual'])->name('admin.manual.pencetakan.update');
+    
+    // PROFILE ADMIN LITERASI MANUAL
+    Route::get('/admin/manual/profile', [AdminController::class, 'profileManual'])->name('admin.manual.profile');
+    
+    // PIC Routes MANUAL
+    Route::get('/admin/manual/pic', [AdminController::class, 'daftarPicManual'])->name('admin.manual.pic');
+    Route::post('/admin/manual/pic', [AdminController::class, 'storePicManual'])->name('admin.manual.pic.store');
+    Route::get('/admin/manual/pic/{id}', [AdminController::class, 'detailPicManual'])->name('admin.manual.pic.detail');
+    Route::post('/admin/manual/pic/alihkan', [AdminController::class, 'alihkanPicManual'])->name('admin.manual.pic.alihkan');
+
+    // PERMINTAAN BAHAN ADMIN LITERASI MANUAL
+    Route::get('/admin/manual/permintaan-bahan', [AdminController::class, 'permintaanBahanManual'])->name('admin.manual.permintaan-bahan');
+    Route::get('/admin/manual/permintaan-bahan/{id}', [AdminController::class, 'detailPermintaanBahanManual'])->name('admin.manual.permintaan-bahan.detail');
+    Route::post('/admin/manual/permintaan-bahan/update-status', [AdminController::class, 'updateStatusBahanManual'])->name('admin.manual.permintaan-bahan.update-status');
 
 Route::post('/logout', function (Request $request) {
     Auth::logout();

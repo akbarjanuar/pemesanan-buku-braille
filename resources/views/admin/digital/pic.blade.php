@@ -4,15 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PIC - Admin Literasi Digital</title>
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
 
-    @include('partials.admin-digital-nav')
+    @include('partials.admin-digital-nav', ['activeMenu' => $activeMenu ?? 'pic'])
 
     <div class="main-wrapper">
-        <!-- TOPBAR -->
+        <!-- TOPBAR DISAMAKAN -->
         <header class="topbar">
             <div class="topbar-left">
                 <button type="button" class="menu-toggle">
@@ -20,8 +21,28 @@
                 </button>
                 <span class="page-title">PIC</span>
             </div>
+
             <div class="topbar-right">
-                <i class="far fa-bell"></i>
+                <!-- Ikon Notifikasi dengan Titik Merah -->
+                <div class="notification-button">
+                    <i class="far fa-bell"></i>
+                    <span class="notification-dot"></span>
+                </div>
+                
+                <!-- Profil Pengguna -->
+                <a href="{{ route('admin.profile') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-dark); cursor: pointer;">
+                    <span style="font-weight: 700; font-size: 15px;">
+                        {{ auth()->user()->nama ?? 'Admin Digital' }}
+                    </span>
+                    
+                    <div style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: #111; display: flex; align-items: center; justify-content: center; color: white;">
+                        @if(auth()->user()->foto_profil)
+                            <img src="{{ auth()->user()->foto_profil }}" alt="Foto Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                        @else
+                            <i class="fas fa-user" style="font-size: 16px;"></i>
+                        @endif
+                    </div>
+                </a>
             </div>
         </header>
 
@@ -115,11 +136,41 @@
         body { display: flex; width: 100%; min-height: 100vh; background-color: var(--bg-color); color: var(--text-main); overflow: hidden; }
 
         .main-wrapper { flex: 1; width: calc(100% - 260px); display: flex; flex-direction: column; background-color: #f4f6f9; }
+        
+        /* TOPBAR STYLES */
         .topbar { width: 100%; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 32px; background-color: #ffffff; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
         .topbar-left { display: flex; align-items: center; gap: 16px; }
         .menu-toggle { background: transparent; border: none; font-size: 20px; cursor: pointer; color: var(--text-main); }
         .page-title { font-size: 20px; font-weight: 900; font-family: 'Georgia', serif; }
-        .topbar-right { font-size: 20px; color: var(--text-main); }
+        
+        .topbar-right { 
+            display: flex; 
+            align-items: center; 
+            gap: 20px; 
+        }
+        
+        .notification-button {
+            position: relative;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #111111;
+            font-size: 19px;
+            cursor: pointer;
+            border-radius: 6px;
+        }
+        .notification-button:hover { background: #f5f5f5; }
+        .notification-dot {
+            position: absolute;
+            top: 7px;
+            right: 7px;
+            width: 7px;
+            height: 7px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
 
         .content { flex: 1; padding: 32px 40px; overflow-y: auto; }
         .content-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; }

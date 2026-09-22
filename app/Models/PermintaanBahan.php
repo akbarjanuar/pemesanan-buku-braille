@@ -9,12 +9,12 @@ class PermintaanBahan extends Model
 {
     use HasFactory;
 
-    // Menentukan nama tabel (opsional tapi disarankan agar aman)
     protected $table = 'permintaan_bahans';
 
-    // Kolom-kolom yang diizinkan untuk diisi secara massal
+    // Tambahkan 'pencetakan_id' ke dalam fillable
     protected $fillable = [
         'id_permintaan',
+        'pencetakan_id',
         'divisi',
         'nama_bahan',
         'jumlah',
@@ -26,7 +26,13 @@ class PermintaanBahan extends Model
         'catatan_kendala'
     ];
 
-    // Logika untuk membuat custom ID (BHN-Tahun-Urutan) otomatis saat data dibuat
+    // Definisikan relasi ke model Pencetakan
+    public function pencetakan()
+    {
+        return $this->belongsTo(Pencetakan::class, 'pencetakan_id');
+    }
+
+    // Logika untuk membuat custom ID otomatis saat data dibuat
     protected static function boot()
     {
         parent::boot();
@@ -35,15 +41,12 @@ class PermintaanBahan extends Model
             if (empty($model->id_permintaan)) {
                 $tahun = date('Y');
                 
-                // Cari data terakhir di tahun yang sama
                 $lastRecord = self::whereYear('created_at', $tahun)
-                                  ->orderBy('id', 'desc')
-                                  ->first();
+                                    ->orderBy('id', 'desc')
+                                    ->first();
 
-                // Tentukan nomor urut berikutnya
                 $nextId = $lastRecord ? ($lastRecord->id + 1) : 1;
                 
-                // Format menjadi BHN-2026-0001
                 $model->id_permintaan = 'BHN-' . $tahun . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
             }
         });
