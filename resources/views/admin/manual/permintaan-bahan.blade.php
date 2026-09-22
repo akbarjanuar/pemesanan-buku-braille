@@ -40,7 +40,7 @@
             padding: 0;
             width: 100%;
             min-height: 100%;
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background: var(--background);
             color: var(--text-dark);
         }
@@ -59,8 +59,10 @@
             flex: 1;
             min-width: 0;
             height: 100vh;
+
             display: flex;
             flex-direction: column;
+
             overflow: hidden;
         }
 
@@ -71,6 +73,7 @@
         .topbar {
             height: 70px;
             min-height: 70px;
+
             background: var(--surface);
             border-bottom: 1px solid var(--border);
 
@@ -84,7 +87,8 @@
         .topbar-left {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
+
             min-width: 0;
         }
 
@@ -92,20 +96,20 @@
             width: 38px;
             height: 38px;
 
-            border: none;
-            background: transparent;
-            color: #333;
-
-            border-radius: 8px;
-
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
 
-            cursor: pointer;
-            font-size: 18px;
+            border: none;
+            background: transparent;
 
-            transition: 0.2s ease;
+            color: #757575;
+            font-size: 21px;
+
+            cursor: pointer;
+            border-radius: 6px;
+
+            flex-shrink: 0;
         }
 
         .menu-toggle:hover {
@@ -115,21 +119,28 @@
 
         .topbar-title {
             font-size: 20px;
-            font-weight: 600;
+            font-weight: 700;
+
+            color: #111111;
+
             white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .topbar-right {
             display: flex;
             align-items: center;
-            gap: 18px;
+            gap: 20px;
+
+            flex-shrink: 0;
         }
 
         /* =========================================
            NOTIFICATION
         ========================================= */
 
-        .notification-btn {
+        .notification-button {
             position: relative;
 
             width: 38px;
@@ -139,76 +150,71 @@
             align-items: center;
             justify-content: center;
 
-            color: #555;
-            text-decoration: none;
+            color: #111111;
+            font-size: 19px;
 
-            border-radius: 50%;
-
-            transition: 0.2s ease;
+            cursor: pointer;
+            border-radius: 6px;
         }
 
-        .notification-btn:hover {
+        .notification-button:hover {
             background: #f5f5f5;
-            color: var(--primary);
-        }
-
-        .notification-btn i {
-            font-size: 18px;
         }
 
         .notification-dot {
             position: absolute;
-            top: 6px;
+
+            top: 7px;
             right: 7px;
 
-            width: 8px;
-            height: 8px;
+            width: 7px;
+            height: 7px;
 
             background: var(--primary);
             border-radius: 50%;
-
-            border: 2px solid white;
         }
 
         /* =========================================
            PROFILE
         ========================================= */
 
-        .profile-link {
+        .topbar-user {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
 
-            color: var(--text-dark);
             text-decoration: none;
+            color: var(--text-dark);
 
-            font-size: 14px;
-            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
         }
 
-        .profile-link:hover {
+        .topbar-user:hover {
             color: var(--primary);
         }
 
-        .profile-avatar {
-            width: 38px;
-            height: 38px;
+        .topbar-user img,
+        .user-avatar {
+            width: 36px;
+            height: 36px;
 
             border-radius: 50%;
-
             object-fit: cover;
 
-            background: #eeeeee;
+            flex-shrink: 0;
+        }
 
+        .user-avatar {
             display: flex;
             align-items: center;
             justify-content: center;
 
-            color: #777;
-        }
+            background: #111111;
+            color: white;
 
-        .profile-avatar i {
-            font-size: 17px;
+            font-size: 16px;
+            overflow: hidden;
         }
 
         /* =========================================
@@ -217,12 +223,13 @@
 
         .content-area {
             flex: 1;
+
             overflow-y: auto;
             overflow-x: hidden;
 
             background: var(--background);
 
-            padding: 28px 40px 40px;
+            padding: 30px 40px 40px;
         }
 
         /* =========================================
@@ -244,8 +251,6 @@
 
             font-size: 26px;
             font-weight: 700;
-
-            color: var(--text-dark);
         }
 
         .page-header p {
@@ -298,6 +303,7 @@
 
         .search-box {
             position: relative;
+
             flex: 1;
             min-width: 220px;
         }
@@ -311,7 +317,6 @@
             transform: translateY(-50%);
 
             color: #999;
-
             font-size: 14px;
         }
 
@@ -329,13 +334,10 @@
             font-size: 14px;
 
             outline: none;
-
-            transition: 0.2s ease;
         }
 
         .search-box input:focus {
             border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(198, 40, 40, 0.08);
         }
 
         .filter-container select,
@@ -387,11 +389,6 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /*
-         * Sengaja menggunakan min-width.
-         * Di HP tabel tetap utuh dan dapat digeser
-         * ke kiri/kanan agar kolom Aksi tidak terpotong.
-         */
         .request-table {
             width: 100%;
             min-width: 1100px;
@@ -532,7 +529,7 @@
         }
 
         /* =========================================
-           SCROLLBAR TABLE
+           SCROLLBAR
         ========================================= */
 
         .table-wrapper::-webkit-scrollbar {
@@ -554,13 +551,13 @@
         }
 
         /* =========================================
-           RESPONSIVE TABLET
+           TABLET
         ========================================= */
 
         @media (max-width: 900px) {
 
             .content-area {
-                padding: 24px 22px 30px;
+                padding: 25px 22px 35px;
             }
 
             .page-header {
@@ -586,7 +583,7 @@
         }
 
         /* =========================================
-           RESPONSIVE MOBILE
+           MOBILE
         ========================================= */
 
         @media (max-width: 600px) {
@@ -606,24 +603,22 @@
                 font-size: 17px;
 
                 max-width: 170px;
-                overflow: hidden;
-                text-overflow: ellipsis;
             }
 
             .topbar-right {
                 gap: 5px;
             }
 
-            .profile-link > span {
+            .topbar-user > span {
                 display: none;
             }
 
-            .profile-avatar {
+            .notification-button {
                 width: 35px;
                 height: 35px;
             }
 
-            .notification-btn {
+            .user-avatar {
                 width: 35px;
                 height: 35px;
             }
@@ -633,8 +628,8 @@
             }
 
             .page-header {
-                margin-bottom: 18px;
                 gap: 14px;
+                margin-bottom: 18px;
             }
 
             .page-header h1 {
@@ -647,17 +642,13 @@
 
             .btn-add {
                 width: 100%;
-                padding: 11px 15px;
             }
 
             .filter-container {
-                display: flex;
                 flex-direction: column;
                 align-items: stretch;
 
                 gap: 10px;
-
-                margin-bottom: 16px;
             }
 
             .search-box {
@@ -672,10 +663,11 @@
                 flex: none;
             }
 
-            .table-wrapper {
-                border-radius: 7px;
-            }
-
+            /*
+             * Tabel sengaja tidak dikecilkan.
+             * Geser horizontal di HP untuk melihat
+             * kolom Status dan Aksi.
+             */
             .request-table {
                 min-width: 1100px;
             }
@@ -695,11 +687,10 @@
         'activeMenu' => $activeMenu ?? 'permintaan-bahan'
     ])
 
+
     <div class="main-wrapper">
 
-        {{-- =========================================
-             TOPBAR
-        ========================================= --}}
+        {{-- TOPBAR --}}
         <div class="topbar">
 
             <div class="topbar-left">
@@ -718,56 +709,65 @@
 
             </div>
 
+
             <div class="topbar-right">
 
-                {{-- NOTIFICATION --}}
-                <a href="#" class="notification-btn" aria-label="Notifikasi">
-                    <i class="fas fa-bell"></i>
+                <div class="notification-button">
+                    <i class="far fa-bell"></i>
                     <span class="notification-dot"></span>
-                </a>
+                </div>
 
-                {{-- PROFILE ADMIN MANUAL --}}
+
                 <a
                     href="{{ route('admin.manual.profile') }}"
-                    class="profile-link"
+                    class="topbar-user"
                 >
-                    <span>
+
+                    <span style="font-weight: 700; font-size: 15px;">
                         {{ auth()->user()->nama ?? 'Admin Manual' }}
                     </span>
 
-                    @if(auth()->user()->foto_profil ?? false)
-                        <img
-                            src="{{ asset('storage/' . auth()->user()->foto_profil) }}"
-                            alt="Foto Profil"
-                            class="profile-avatar"
-                        >
-                    @else
-                        <div class="profile-avatar">
+                    <div class="user-avatar">
+
+                        @if(auth()->user()->foto_profil)
+
+                            <img
+                                src="{{ auth()->user()->foto_profil }}"
+                                alt="Profile"
+                                style="width: 100%; height: 100%; object-fit: cover;"
+                            >
+
+                        @else
+
                             <i class="fas fa-user"></i>
-                        </div>
-                    @endif
+
+                        @endif
+
+                    </div>
+
                 </a>
 
             </div>
+
         </div>
 
 
-        {{-- =========================================
-             CONTENT
-        ========================================= --}}
+        {{-- CONTENT --}}
         <main class="content-area">
 
-            {{-- PAGE HEADER --}}
             <div class="page-header">
 
                 <div>
-                    <h1>Permintaan Bahan</h1>
+                    <h1>
+                        Permintaan Bahan
+                    </h1>
 
                     <p>
                         Ajukan dan pantau status pengajuan bahan
                         untuk mendukung proses pencetakan.
                     </p>
                 </div>
+
 
                 <button
                     type="button"
@@ -780,16 +780,13 @@
             </div>
 
 
-            {{-- =========================================
-                 FILTER
-            ========================================= --}}
+            {{-- FILTER --}}
             <form
                 method="GET"
                 action="{{ route('admin.manual.permintaan-bahan') }}"
                 class="filter-container"
             >
 
-                {{-- SEARCH --}}
                 <div class="search-box">
 
                     <i class="fas fa-search"></i>
@@ -804,11 +801,11 @@
                 </div>
 
 
-                {{-- STATUS --}}
                 <select
                     name="status"
                     onchange="this.form.submit()"
                 >
+
                     <option value="">
                         Semua Status
                     </option>
@@ -847,10 +844,10 @@
                     >
                         Selesai
                     </option>
+
                 </select>
 
 
-                {{-- DATE --}}
                 <input
                     type="date"
                     name="date"
@@ -861,53 +858,27 @@
             </form>
 
 
-            {{-- =========================================
-                 TABLE
-            ========================================= --}}
+            {{-- TABLE --}}
             <div class="table-wrapper">
 
                 <table class="request-table">
 
                     <thead>
+
                         <tr>
 
-                            <th>
-                                ID Permintaan
-                            </th>
-
-                            <th>
-                                ID Pencetakan
-                            </th>
-
-                            <th>
-                                Nama Buku
-                            </th>
-
-                            <th>
-                                Bahan
-                            </th>
-
-                            <th>
-                                Jumlah
-                            </th>
-
-                            <th>
-                                Tanggal
-                            </th>
-
-                            <th>
-                                PIC
-                            </th>
-
-                            <th>
-                                Status
-                            </th>
-
-                            <th>
-                                Aksi
-                            </th>
+                            <th>ID Permintaan</th>
+                            <th>ID Pencetakan</th>
+                            <th>Nama Buku</th>
+                            <th>Bahan</th>
+                            <th>Jumlah</th>
+                            <th>Tanggal</th>
+                            <th>PIC</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
 
                         </tr>
+
                     </thead>
 
 
@@ -924,10 +895,7 @@
                                 $statusClass = 'status-default';
 
                                 if (
-                                    str_contains(
-                                        $status,
-                                        'menunggu pemeriksaan'
-                                    )
+                                    str_contains($status, 'menunggu pemeriksaan')
                                     ||
                                     (
                                         str_contains($status, 'menunggu')
@@ -973,13 +941,11 @@
 
 
                                 $idPencetakan =
-                                    $item->pencetakan->kode_cetak
-                                    ?? '-';
+                                    $item->pencetakan->kode_cetak ?? '-';
 
 
                                 $namaBuku =
-                                    $item->pencetakan->buku->judul
-                                    ?? '-';
+                                    $item->pencetakan->buku->judul ?? '-';
 
 
                                 $namaBahan =
@@ -989,7 +955,8 @@
 
 
                                 $picTampil =
-                                    $item->pencetakan->pic
+                                    $item->pic
+                                    ?? $item->pencetakan->pic
                                     ?? '-';
 
 
@@ -1003,49 +970,34 @@
 
                             <tr>
 
-                                {{-- ID PERMINTAAN --}}
                                 <td>
                                     {{ $item->id_permintaan ?? $item->id }}
                                 </td>
 
-
-                                {{-- ID PENCETAKAN --}}
                                 <td>
                                     {{ $idPencetakan }}
                                 </td>
 
-
-                                {{-- NAMA BUKU --}}
                                 <td>
                                     {{ $namaBuku }}
                                 </td>
 
-
-                                {{-- BAHAN --}}
                                 <td>
                                     {{ $namaBahan }}
                                 </td>
 
-
-                                {{-- JUMLAH --}}
                                 <td>
                                     {{ trim($jumlahTampil) }}
                                 </td>
 
-
-                                {{-- TANGGAL --}}
                                 <td>
                                     {{ optional($item->created_at)->format('d F Y') }}
                                 </td>
 
-
-                                {{-- PIC --}}
                                 <td>
                                     {{ $picTampil }}
                                 </td>
 
-
-                                {{-- STATUS --}}
                                 <td>
 
                                     <span class="status-badge {{ $statusClass }}">
@@ -1067,8 +1019,6 @@
 
                                 </td>
 
-
-                                {{-- AKSI --}}
                                 <td>
 
                                     <a
@@ -1091,6 +1041,7 @@
                                     colspan="9"
                                     class="empty-row"
                                 >
+
                                     <i
                                         class="fas fa-inbox"
                                         style="font-size: 28px; margin-bottom: 10px;"
@@ -1099,6 +1050,7 @@
                                     <br>
 
                                     Belum ada data permintaan bahan.
+
                                 </td>
 
                             </tr>
