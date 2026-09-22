@@ -1049,7 +1049,7 @@
 
                                     <br>
 
-                                    Belum ada data permintaan bahan.
+                                    Belum ada data permintaan bahan
 
                                 </td>
 
