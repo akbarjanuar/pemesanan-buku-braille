@@ -168,6 +168,7 @@
             <i class="fas fa-users"></i> PIC
         </a>
 
+        <!-- Rute Permintaan Bahan khusus Admin Manual yang terisolasi dari admin pengiriman -->
         <a href="{{ route('admin.manual.permintaan-bahan') }}"
            class="nav-item {{ request()->routeIs('admin.manual.permintaan-bahan*') ? 'active' : '' }}">
             <i class="fas fa-layer-group"></i> Permintaan Bahan

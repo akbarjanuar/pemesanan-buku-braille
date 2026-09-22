@@ -1,4 +1,3 @@
-```blade
 <!DOCTYPE html>
 <html lang="id">
 
@@ -510,7 +509,9 @@
 <body>
 
     {{-- SIDEBAR ADMIN MANUAL --}}
-    @include('partials.admin-nav', ['activeMenu' => 'profile'])
+    @include('partials.admin-manual-nav', [
+        'activeMenu' => $activeMenu ?? 'profile'
+    ])
 
     <div class="main-wrapper">
 
@@ -1051,4 +1052,3 @@
 </body>
 
 </html>
-```

@@ -1,4 +1,3 @@
-```blade
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -52,7 +51,7 @@
         }
 
         /* =========================================
-           MAIN WRAPPER
+            MAIN WRAPPER
         ========================================= */
 
         .main-wrapper {
@@ -67,7 +66,7 @@
         }
 
         /* =========================================
-           TOPBAR
+            TOPBAR
         ========================================= */
 
         .topbar {
@@ -137,7 +136,7 @@
         }
 
         /* =========================================
-           NOTIFICATION
+            NOTIFICATION
         ========================================= */
 
         .notification-button {
@@ -175,7 +174,7 @@
         }
 
         /* =========================================
-           PROFILE
+            PROFILE
         ========================================= */
 
         .topbar-user {
@@ -218,7 +217,7 @@
         }
 
         /* =========================================
-           CONTENT
+            CONTENT
         ========================================= */
 
         .content-area {
@@ -233,7 +232,7 @@
         }
 
         /* =========================================
-           PAGE HEADER
+            PAGE HEADER
         ========================================= */
 
         .page-header {
@@ -287,7 +286,7 @@
         }
 
         /* =========================================
-           FILTER
+            FILTER
         ========================================= */
 
         .filter-container {
@@ -372,7 +371,7 @@
         }
 
         /* =========================================
-           TABLE
+            TABLE
         ========================================= */
 
         .table-wrapper {
@@ -442,7 +441,7 @@
         }
 
         /* =========================================
-           STATUS
+            STATUS
         ========================================= */
 
         .status-badge {
@@ -450,9 +449,8 @@
             align-items: center;
             justify-content: center;
 
-            min-width: 145px;
-
-            padding: 7px 11px;
+            min-width: 90px; /* Diubah dari 145px agar lebih ringkas */
+            padding: 5px 10px; /* Dikurangi padding-nya */
 
             border-radius: 20px;
 
@@ -495,7 +493,7 @@
         }
 
         /* =========================================
-           DETAIL BUTTON
+            DETAIL BUTTON
         ========================================= */
 
         .btn-detail {
@@ -529,7 +527,7 @@
         }
 
         /* =========================================
-           SCROLLBAR
+            SCROLLBAR
         ========================================= */
 
         .table-wrapper::-webkit-scrollbar {
@@ -551,7 +549,7 @@
         }
 
         /* =========================================
-           TABLET
+            TABLET
         ========================================= */
 
         @media (max-width: 900px) {
@@ -583,7 +581,7 @@
         }
 
         /* =========================================
-           MOBILE
+            MOBILE
         ========================================= */
 
         @media (max-width: 600px) {
@@ -663,11 +661,6 @@
                 flex: none;
             }
 
-            /*
-             * Tabel sengaja tidak dikecilkan.
-             * Geser horizontal di HP untuk melihat
-             * kolom Status dan Aksi.
-             */
             .request-table {
                 min-width: 1100px;
             }
@@ -682,8 +675,8 @@
 
 <body>
 
-    {{-- SIDEBAR ADMIN LITERASI MANUAL --}}
-    @include('partials.admin-nav', [
+    {{-- DIPERBAIKI: Menggunakan navigasi khusus admin literasi manual --}}
+    @include('partials.admin-manual-nav', [
         'activeMenu' => $activeMenu ?? 'permintaan-bahan'
     ])
 
@@ -1069,4 +1062,3 @@
 
 </body>
 </html>
-```

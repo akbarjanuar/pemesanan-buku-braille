@@ -17,10 +17,11 @@ class AdminController extends Controller
     {
         $user = auth()->user();
         $divisi = strtolower($user->divisi ?? '');
+        $email = strtolower($user->email ?? '');
 
-        if ($divisi === 'pengiriman' || str_contains($divisi, 'kirim') || str_contains(strtolower($user->email), 'pengiriman')) {
+        if ($divisi === 'pengiriman' || str_contains($divisi, 'kirim') || str_contains($email, 'pengiriman')) {
             return redirect()->route('admin.pengiriman.dashboard');
-        } elseif ($divisi === 'literasi manual' || str_contains($divisi, 'manual') || str_contains(strtolower($user->email), 'manual')) {
+        } elseif ($divisi === 'literasi manual' || str_contains($divisi, 'manual') || str_contains($email, 'manual')) {
             return redirect()->route('admin.manual.dashboard');
         }
 
@@ -71,17 +72,19 @@ class AdminController extends Controller
 
     public function dashboardLiterasiDigital()
     {
-        $totalPencetakan = Pencetakan::where('divisi', 'Literasi Digital')->count();
-        $totalPermintaanBahan = PermintaanBahan::where('divisi', 'Literasi Digital')->count();
+        $totalPencetakan = Pencetakan::where('jenis_literasi', 'Literasi Digital')->count();
+        $totalPermintaanBahan = PermintaanBahan::whereHas('pencetakan', function($q) {
+            $q->where('jenis_literasi', 'Literasi Digital');
+        })->orWhere('divisi', 'ilike', '%Literasi Digital%')->count();
 
         $daftarPencetakan = Pencetakan::with(['pesanan.user', 'buku'])
-            ->where('divisi', 'Literasi Digital')
+            ->where('jenis_literasi', 'Literasi Digital')
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
 
         $semuaPencetakan = Pencetakan::with(['pesanan.user', 'buku'])
-            ->where('divisi', 'Literasi Digital')
+            ->where('jenis_literasi', 'Literasi Digital')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -351,7 +354,7 @@ class AdminController extends Controller
                 'pesanan.user',
                 'buku'
             ])
-            ->where('divisi', 'Literasi Digital');
+            ->where('jenis_literasi', 'Literasi Digital');
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -380,7 +383,7 @@ class AdminController extends Controller
     public function updateProgressDigital(Request $request, $id)
     {
         try {
-            $pencetakan = Pencetakan::where('divisi', 'Literasi Digital')
+            $pencetakan = Pencetakan::where('jenis_literasi', 'Literasi Digital')
                 ->findOrFail($id);
 
             if ($request->has('buku_selesai')) {
@@ -481,10 +484,6 @@ class AdminController extends Controller
     }
 
 
-    // =====================================================
-    // PROFILE ADMIN PENGIRIMAN
-    // =====================================================
-
     public function profile()
     {
         $activeMenu = 'profile';
@@ -505,10 +504,6 @@ class AdminController extends Controller
         ]);
     }
 
-
-    // =====================================================
-    // ===== PROFILE ADMIN LITERASI DIGITAL =================
-    // =====================================================
 
     public function profileDigital()
     {
@@ -573,27 +568,26 @@ class AdminController extends Controller
         $search = $request->input('search');
         $dateFilter = $request->input('date');
 
-        // MEMUAT RELASI PENCETAKAN DAN BUKU AGAR DATA MUNCUL
         $query = PermintaanBahan::with(['pencetakan.buku'])
-            ->where('divisi', 'ilike', '%Literasi Digital%')
+            ->whereHas('pencetakan', function($q) {
+                $q->where('jenis_literasi', 'Literasi Digital');
+            })
+            ->orWhere('divisi', 'ilike', '%Literasi Digital%')
             ->orderBy('created_at', 'desc');
 
-        // Pencarian (Search Bar)
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('id_permintaan', 'ilike', "%{$search}%")
-                  ->orWhere('nama_bahan', 'ilike', "%{$search}%")
-                  ->orWhere('pic', 'ilike', "%{$search}%")
-                  ->orWhere('bahan', 'ilike', "%{$search}%");
+                    ->orWhere('nama_bahan', 'ilike', "%{$search}%")
+                    ->orWhere('pic', 'ilike', "%{$search}%")
+                    ->orWhere('bahan', 'ilike', "%{$search}%");
             });
         }
 
-        // Filter Tanggal
         if ($dateFilter) {
             $query->whereDate('created_at', $dateFilter);
         }
 
-        // Filter Status
         if ($statusFilter !== 'semua') {
             $query->where('status', 'ilike', "%{$statusFilter}%");
         }
@@ -613,7 +607,12 @@ class AdminController extends Controller
     public function detailPermintaanBahanDigital($id)
     {
         $permintaanBahan = PermintaanBahan::with(['pencetakan.buku'])
-            ->where('divisi', 'ilike', '%Literasi Digital%')
+            ->where(function($q) {
+                $q->whereHas('pencetakan', function($sub) {
+                    $sub->where('jenis_literasi', 'Literasi Digital');
+                })
+                ->orWhere('divisi', 'ilike', '%Literasi Digital%');
+            })
             ->findOrFail($id);
             
         $activeMenu = 'permintaan-bahan';
@@ -633,7 +632,12 @@ class AdminController extends Controller
         ]);
 
         $bahan = PermintaanBahan::where('id', $request->id)
-            ->where('divisi', 'Literasi Digital')
+            ->where(function($q) {
+                $q->whereHas('pencetakan', function($sub) {
+                    $sub->where('jenis_literasi', 'Literasi Digital');
+                })
+                ->orWhere('divisi', 'Literasi Digital');
+            })
             ->firstOrFail();
 
         if ($request->has('kendala') && !empty($request->kendala)) {
@@ -854,27 +858,25 @@ class AdminController extends Controller
     }
 
 
-    // =====================================================
-    // ===== FITUR PIC (DIGITAL) ===========================
-    // =====================================================
-
     public function daftarPic()
     {
-        $daftarPic = \App\Models\Pic::orderBy('nama', 'asc')->get();
+        $daftarPic = \App\Models\Pic::whereHas('pencetakan', function($q) {
+            $q->where('jenis_literasi', 'Literasi Digital');
+        })
+        ->orDoesntHave('pencetakan')
+        ->orderBy('nama', 'asc')
+        ->get();
 
         foreach ($daftarPic as $pic) {
 
             $pic->pekerjaan_aktif = \App\Models\Pencetakan::where(function ($q) use ($pic) {
-
                     $q->where('pic', $pic->nama)
                         ->whereNull('alihkan_kepada');
-
                 })
                 ->orWhere(function ($q) use ($pic) {
-
                     $q->where('alihkan_kepada', $pic->nama);
-
                 })
+                ->where('jenis_literasi', 'Literasi Digital')
                 ->whereNotIn('status', ['Selesai', 'Dibatalkan'])
                 ->count();
         }
@@ -904,12 +906,19 @@ class AdminController extends Controller
         ];
 
         $daftarKerjaan = \App\Models\Pencetakan::with('buku')
-            ->where('pic', $pic->nama)
-            ->orWhere('alihkan_kepada', $pic->nama)
+            ->where('jenis_literasi', 'Literasi Digital')
+            ->where(function($q) use ($pic) {
+                $q->where('pic', $pic->nama)
+                  ->orWhere('alihkan_kepada', $pic->nama);
+            })
             ->orderBy('created_at', 'desc')
             ->get();
 
         $semuaPic = \App\Models\Pic::where('id', '!=', $id)
+            ->whereHas('pencetakan', function($q) {
+                $q->where('jenis_literasi', 'Literasi Digital');
+            })
+            ->orDoesntHave('pencetakan')
             ->orderBy('nama')
             ->get();
 
@@ -974,17 +983,19 @@ class AdminController extends Controller
 
     public function dashboardLiterasiManual()
     {
-        $totalPencetakan = Pencetakan::where('divisi', 'Literasi Manual')->count();
-        $totalPermintaanBahan = PermintaanBahan::where('divisi', 'Literasi Manual')->count();
+        $totalPencetakan = Pencetakan::where('jenis_literasi', 'Literasi Manual')->count();
+        $totalPermintaanBahan = PermintaanBahan::whereHas('pencetakan', function($q) {
+            $q->where('jenis_literasi', 'Literasi Manual');
+        })->orWhere('divisi', 'ilike', '%Literasi Manual%')->count();
 
         $daftarPencetakan = Pencetakan::with(['pesanan.user', 'buku'])
-            ->where('divisi', 'Literasi Manual')
+            ->where('jenis_literasi', 'Literasi Manual')
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
 
         $semuaPencetakan = Pencetakan::with(['pesanan.user', 'buku'])
-            ->where('divisi', 'Literasi Manual')
+            ->where('jenis_literasi', 'Literasi Manual')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -1007,7 +1018,7 @@ class AdminController extends Controller
                 'pesanan.user',
                 'buku'
             ])
-            ->where('divisi', 'Literasi Manual');
+            ->where('jenis_literasi', 'Literasi Manual');
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -1035,7 +1046,7 @@ class AdminController extends Controller
     public function updateProgressManual(Request $request, $id)
     {
         try {
-            $pencetakan = Pencetakan::where('divisi', 'Literasi Manual')
+            $pencetakan = Pencetakan::where('jenis_literasi', 'Literasi Manual')
                 ->findOrFail($id);
 
             if ($request->has('buku_selesai')) {
@@ -1108,7 +1119,12 @@ class AdminController extends Controller
 
     public function daftarPicManual()
     {
-        $daftarPic = \App\Models\Pic::orderBy('nama', 'asc')->get();
+        $daftarPic = \App\Models\Pic::whereHas('pencetakan', function($q) {
+            $q->where('jenis_literasi', 'Literasi Manual');
+        })
+        ->orDoesntHave('pencetakan')
+        ->orderBy('nama', 'asc')
+        ->get();
 
         foreach ($daftarPic as $pic) {
             $pic->pekerjaan_aktif = \App\Models\Pencetakan::where(function ($q) use ($pic) {
@@ -1118,6 +1134,7 @@ class AdminController extends Controller
                 ->orWhere(function ($q) use ($pic) {
                     $q->where('alihkan_kepada', $pic->nama);
                 })
+                ->where('jenis_literasi', 'Literasi Manual')
                 ->whereNotIn('status', ['Selesai', 'Dibatalkan'])
                 ->count();
         }
@@ -1140,12 +1157,19 @@ class AdminController extends Controller
         ];
 
         $daftarKerjaan = \App\Models\Pencetakan::with('buku')
-            ->where('pic', $pic->nama)
-            ->orWhere('alihkan_kepada', $pic->nama)
+            ->where('jenis_literasi', 'Literasi Manual')
+            ->where(function($q) use ($pic) {
+                $q->where('pic', $pic->nama)
+                  ->orWhere('alihkan_kepada', $pic->nama);
+            })
             ->orderBy('created_at', 'desc')
             ->get();
 
         $semuaPic = \App\Models\Pic::where('id', '!=', $id)
+            ->whereHas('pencetakan', function($q) {
+                $q->where('jenis_literasi', 'Literasi Manual');
+            })
+            ->orDoesntHave('pencetakan')
             ->orderBy('nama')
             ->get();
 
@@ -1194,15 +1218,21 @@ class AdminController extends Controller
         $dateFilter = $request->input('date');
 
         $query = PermintaanBahan::with(['pencetakan.buku'])
-            ->where('divisi', 'ilike', '%Literasi Manual%')
+            ->where(function($q) {
+                $q->whereHas('pencetakan', function($sub) {
+                    $sub->where('jenis_literasi', 'Literasi Manual');
+                })
+                ->orWhere('divisi', 'ilike', '%Literasi Manual%')
+                ->orWhereNull('pencetakan_id');
+            })
             ->orderBy('created_at', 'desc');
 
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('id_permintaan', 'ilike', "%{$search}%")
-                  ->orWhere('nama_bahan', 'ilike', "%{$search}%")
-                  ->orWhere('pic', 'ilike', "%{$search}%")
-                  ->orWhere('bahan', 'ilike', "%{$search}%");
+                    ->orWhere('nama_bahan', 'ilike', "%{$search}%")
+                    ->orWhere('pic', 'ilike', "%{$search}%")
+                    ->orWhere('bahan', 'ilike', "%{$search}%");
             });
         }
 
@@ -1229,7 +1259,13 @@ class AdminController extends Controller
     public function detailPermintaanBahanManual($id)
     {
         $permintaanBahan = PermintaanBahan::with(['pencetakan.buku'])
-            ->where('divisi', 'ilike', '%Literasi Manual%')
+            ->where(function($q) {
+                $q->whereHas('pencetakan', function($sub) {
+                    $sub->where('jenis_literasi', 'Literasi Manual');
+                })
+                ->orWhere('divisi', 'ilike', '%Literasi Manual%')
+                ->orWhereNull('pencetakan_id');
+            })
             ->findOrFail($id);
             
         $activeMenu = 'permintaan-bahan';
@@ -1249,7 +1285,13 @@ class AdminController extends Controller
         ]);
 
         $bahan = PermintaanBahan::where('id', $request->id)
-            ->where('divisi', 'Literasi Manual')
+            ->where(function($q) {
+                $q->whereHas('pencetakan', function($sub) {
+                    $sub->where('jenis_literasi', 'Literasi Manual');
+                })
+                ->orWhere('divisi', 'Literasi Manual')
+                ->orWhereNull('pencetakan_id');
+            })
             ->firstOrFail();
 
         if ($request->has('kendala') && !empty($request->kendala)) {

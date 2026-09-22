@@ -1,4 +1,3 @@
-```blade
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -819,8 +818,8 @@
 <body>
 
     {{-- SIDEBAR ADMIN LITERASI MANUAL --}}
-    @include('partials.admin-nav', [
-        'activeMenu' => $activeMenu ?? 'permintaan-bahan'
+    @include('partials.admin-manual-nav', [
+        'activeMenu' => $activeMenu ?? 'profile'
     ])
 
 
@@ -1357,4 +1356,3 @@
 
 </body>
 </html>
-```

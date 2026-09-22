@@ -289,7 +289,6 @@
 </head>
 <body>
 
-    <!-- Pastikan Anda sudah membuat atau menyesuaikan sidebar ini untuk Manual -->
     @include('partials.admin-manual-nav', ['activeMenu' => 'dashboard'])
 
     <!-- MAIN CONTENT -->
@@ -301,7 +300,7 @@
                 <button type="button" class="menu-toggle">
                     <i class="fas fa-bars"></i>
                 </button>
-                <span class="topbar-title">Dashboard</span>
+                <span class="topbar-title">Dashboard Literasi Manual</span>
             </div>
             
             <div class="topbar-right">
@@ -325,7 +324,7 @@
                 </div>
                 
                 <!-- Profil Pengguna -->
-                <a href="{{ route('admin.profile') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-dark); cursor: pointer;">
+                <a href="{{ route('admin.manual.profile') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-dark); cursor: pointer;">
                     <span style="font-weight: 700; font-size: 15px;">
                         {{ auth()->user()->nama ?? 'Admin Manual' }}
                     </span>

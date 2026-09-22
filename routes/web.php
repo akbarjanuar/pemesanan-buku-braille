@@ -179,10 +179,9 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
         $daftarPesanan = Pesanan::with('details.buku')->whereIn('id', $ids)->get();
         return view('admin.pengiriman.cetak-resi', compact('daftarPesanan'));
     });
-});
 
     // =====================================================
-    // ADMIN LITERASI MANUAL
+    // ===== ROUTE KHUSUS ADMIN LITERASI MANUAL ============
     // =====================================================
     Route::get('/admin/manual/dashboard', [AdminController::class, 'dashboardLiterasiManual'])->name('admin.manual.dashboard');
     Route::get('/admin/manual/pencetakan', [AdminController::class, 'semuaPencetakanManual'])->name('admin.manual.pencetakan');
@@ -191,7 +190,7 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     // PROFILE ADMIN LITERASI MANUAL
     Route::get('/admin/manual/profile', [AdminController::class, 'profileManual'])->name('admin.manual.profile');
     
-    // PIC Routes MANUAL
+    // PIC ROUTES MANUAL
     Route::get('/admin/manual/pic', [AdminController::class, 'daftarPicManual'])->name('admin.manual.pic');
     Route::post('/admin/manual/pic', [AdminController::class, 'storePicManual'])->name('admin.manual.pic.store');
     Route::get('/admin/manual/pic/{id}', [AdminController::class, 'detailPicManual'])->name('admin.manual.pic.detail');
@@ -201,6 +200,7 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::get('/admin/manual/permintaan-bahan', [AdminController::class, 'permintaanBahanManual'])->name('admin.manual.permintaan-bahan');
     Route::get('/admin/manual/permintaan-bahan/{id}', [AdminController::class, 'detailPermintaanBahanManual'])->name('admin.manual.permintaan-bahan.detail');
     Route::post('/admin/manual/permintaan-bahan/update-status', [AdminController::class, 'updateStatusBahanManual'])->name('admin.manual.permintaan-bahan.update-status');
+});
 
 Route::post('/logout', function (Request $request) {
     Auth::logout();

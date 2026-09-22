@@ -92,11 +92,20 @@ class AuthController extends Controller
                 $request->session()->regenerate();
 
                 $divisi = strtolower($user->divisi ?? '');
+                
+                // 1. Cek Admin Pengiriman
                 if ($divisi === 'pengiriman' || str_contains($divisi, 'kirim') || str_contains(strtolower($user->email), 'pengiriman')) {
                     return redirect()->route('admin.pengiriman.dashboard')
                         ->with('success', 'Selamat datang, Admin Pengiriman!');
                 }
+                
+                // 2. Cek Admin Literasi Manual (Ini yang sebelumnya terlewat)
+                elseif ($divisi === 'literasi manual' || str_contains($divisi, 'manual') || str_contains(strtolower($user->email), 'manual')) {
+                    return redirect()->route('admin.manual.dashboard')
+                        ->with('success', 'Selamat datang, Admin Literasi Manual!');
+                }
 
+                // 3. Default ke Admin Literasi Digital
                 return redirect()->route('admin.digital.dashboard')
                     ->with('success', 'Selamat datang, Admin Literasi Digital!');
             }
