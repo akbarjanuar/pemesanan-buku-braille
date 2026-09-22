@@ -153,7 +153,10 @@
 </head>
 <body>
 
-    @include('partials.admin-nav', ['activeMenu' => $activeMenu ?? 'permintaan-bahan'])
+    {{-- SIDEBAR ADMIN LITERASI MANUAL --}}
+    @include('partials.admin-manual-nav', [
+        'activeMenu' => $activeMenu ?? 'profile'
+    ])
 
     <div class="main-wrapper">
         <div class="topbar">
