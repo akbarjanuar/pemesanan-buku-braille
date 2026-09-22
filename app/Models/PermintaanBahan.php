@@ -11,7 +11,6 @@ class PermintaanBahan extends Model
 
     protected $table = 'permintaan_bahans';
 
-    // Tambahkan 'pencetakan_id' ke dalam fillable
     protected $fillable = [
         'id_permintaan',
         'pencetakan_id',
@@ -26,13 +25,18 @@ class PermintaanBahan extends Model
         'catatan_kendala'
     ];
 
-    // Definisikan relasi ke model Pencetakan
+    // Relasi ke model Pencetakan
     public function pencetakan()
     {
         return $this->belongsTo(Pencetakan::class, 'pencetakan_id');
     }
 
-    // Logika untuk membuat custom ID otomatis saat data dibuat
+    // Relasi langsung ke model Buku (jika ada)
+    public function buku()
+    {
+        return $this->belongsTo(Buku::class, 'buku_id');
+    }
+
     protected static function boot()
     {
         parent::boot();

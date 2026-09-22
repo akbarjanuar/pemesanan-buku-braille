@@ -79,7 +79,7 @@
         .request-table td { padding: 16px 14px; border-bottom: 1px solid #eeeeee; font-size: 13px; font-weight: 600; vertical-align: middle; }
         .request-table tbody tr:hover { background: #fafafa; }
         
-        /* Status text colors matching Figma */
+        /* Status text colors */
         .status-menunggu-pemeriksaan { color: var(--warning-text); font-weight: 700; }
         .status-perlu-perbaikan { color: var(--danger-text); font-weight: 700; }
         .status-default { color: #333; font-weight: 700; }
@@ -105,7 +105,7 @@
                 </div>
 
                 <!-- Profil Pengguna -->
-                <a href="{{ route('admin.profile') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-dark); cursor: pointer;">
+                <a href="{{ route('admin.digital.profile') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-dark); cursor: pointer;">
                     <span style="font-weight: 700; font-size: 15px;">
                         {{ auth()->user()->nama ?? 'Admin Digital' }}
                     </span>
@@ -163,23 +163,41 @@
                     </thead>
                     <tbody>
                         @forelse($permintaanBahan as $item)
-                            @php
-                                $status = strtolower(trim($item->status ?? ''));
-                                $statusClass = 'status-default';
-                                if(str_contains($status, 'menunggu')) $statusClass = 'status-menunggu-pemeriksaan';
-                                if(str_contains($status, 'perbaikan') || str_contains($status, 'kendala')) $statusClass = 'status-perlu-perbaikan';
+                        @php
+                            $status = strtolower(trim($item->status ?? ''));
+                            $statusClass = 'status-default';
+                            if(str_contains($status, 'menunggu')) $statusClass = 'status-menunggu-pemeriksaan';
+                            if(str_contains($status, 'perbaikan') || str_contains($status, 'kendala')) $statusClass = 'status-perlu-perbaikan';
 
-                                // Mengambil Id Pencetakan dan Nama Buku dari relasi
-                                $idPencetakan = $item->pencetakan->kode_cetak ?? '-';
-                                $namaBuku = $item->pencetakan->buku->judul ?? '-';
-                                $namaBahan = $item->nama_bahan ?? $item->bahan ?? '-';
-                                
-                                // Mengambil nama PIC yang benar dari tabel relasi Pencetakan
-                                $picTampil = $item->pencetakan->pic ?? '-'; 
-                                
-                                // Menggabungkan jumlah dan satuan
-                                $jumlahTampil = ($item->jumlah ?? '-') . ' ' . ($item->satuan ?? '');
-                            @endphp
+                            // Mengambil Id Pencetakan (prioritaskan kode_cetak, jika kosong tampilkan ID angka atau Pencetakan #ID)
+                            $idPencetakan = '-';
+                            if ($item->pencetakan) {
+                                $idPencetakan = $item->pencetakan->kode_cetak ?? ('PRNT-' . $item->pencetakan->id);
+                            } elseif ($item->pencetakan_id) {
+                                $idPencetakan = 'PRNT-' . $item->pencetakan_id;
+                            }
+                            
+                            // Cek nama buku dari relasi pencetakan -> buku, atau langsung ke relasi buku
+                            $namaBuku = '-';
+                            if ($item->pencetakan && $item->pencetakan->buku) {
+                                $namaBuku = $item->pencetakan->buku->judul;
+                            } elseif ($item->buku) {
+                                $namaBuku = $item->buku->judul;
+                            }
+
+                            $namaBahan = $item->nama_bahan ?? '-';
+                            
+                            // Mengambil PIC dari relasi pencetakan->pic atau fallback ke kolom pengaju
+                            $picTampil = '-';
+                            if ($item->pencetakan && !empty($item->pencetakan->pic)) {
+                                $picTampil = $item->pencetakan->pic;
+                            } elseif (!empty($item->pengaju)) {
+                                $picTampil = $item->pengaju;
+                            }
+                            
+                            // Format jumlah dan satuan
+                            $jumlahTampil = ($item->jumlah ?? '0') . ' ' . ($item->satuan ?? '');
+                        @endphp
                             <tr>
                                 <td>{{ $item->id_permintaan ?? $item->id }}</td>
                                 <td>{{ $idPencetakan }}</td>
@@ -190,7 +208,7 @@
                                 <td>{{ $picTampil }}</td>
                                 <td>
                                     <div class="{{ $statusClass }}">
-                                        {!! nl2br(e(str_replace(' ', "\n", ucwords($item->status ?? 'Menunggu Pemeriksaan')))) !!}
+                                        {{ ucwords($item->status ?? 'Menunggu Diproses') }}
                                     </div>
                                 </td>
                                 <td>

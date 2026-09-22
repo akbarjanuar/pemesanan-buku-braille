@@ -243,6 +243,14 @@
             @php
                 $status = strtolower(trim($permintaanBahan->status ?? ''));
                 $isPerbaikan = str_contains($status, 'perbaikan') || str_contains($status, 'kendala');
+                
+                // Menentukan nama PIC dari relasi pencetakan, atau fallback ke kolom pengaju
+                $picTampil = '-';
+                if ($permintaanBahan->pencetakan && !empty($permintaanBahan->pencetakan->pic)) {
+                    $picTampil = $permintaanBahan->pencetakan->pic;
+                } elseif (!empty($permintaanBahan->pengaju)) {
+                    $picTampil = $permintaanBahan->pengaju;
+                }
             @endphp
 
             @if($isPerbaikan)
@@ -270,7 +278,7 @@
                         <div class="info-row" style="margin-top:10px;"><span class="info-label">Nama Buku</span><span class="info-colon">:</span><span class="info-value">{{ $permintaanBahan->pencetakan->buku->judul ?? '-' }}</span></div>
                         <div class="info-row" style="margin-top:10px;"><span class="info-label">Nama Bahan</span><span class="info-colon">:</span><span class="info-value">{{ $permintaanBahan->nama_bahan ?? $permintaanBahan->bahan ?? '-' }}</span></div>
                         <div class="info-row" style="margin-top:10px;"><span class="info-label">Satuan</span><span class="info-colon">:</span><span class="info-value">{{ $permintaanBahan->satuan ?? '-' }}</span></div>
-                        <div class="info-row" style="margin-top:10px;"><span class="info-label">PIC</span><span class="info-colon">:</span><span class="info-value">{{ $permintaanBahan->pic ?? '-' }}</span></div>
+                        <div class="info-row" style="margin-top:10px;"><span class="info-label">PIC</span><span class="info-colon">:</span><span class="info-value">{{ $picTampil }}</span></div>
                     </div>
                     <div>
                         <div class="info-row"><span class="info-label">Id Pencetakan</span><span class="info-colon">:</span><span class="info-value">{{ $permintaanBahan->pencetakan->kode_cetak ?? '-' }}</span></div>
