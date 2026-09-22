@@ -31,30 +31,35 @@
         body {
             background: var(--background);
             color: var(--text-dark);
-
-            min-height: 100vh;
-
-            overflow-y: auto !important;
+            height: 100vh;
+            overflow: hidden; /* Mencegah body utama ikut scroll */
         }
 
         body {
             display: flex;
+            flex-direction: row;
         }
 
-        /* =========================================
-           MAIN WRAPPER
-        ========================================= */
+        /* Pastikan sidebar Anda memiliki tinggi penuh dan posisi sticky/fixed */
+        /* (Atau sesuaikan class sidebar bawaan Anda agar tingginya 100vh dan overflow-y-auto) */
 
         .main-wrapper {
             flex: 1;
-
             display: flex;
             flex-direction: column;
-
             background: #ffffff;
-
             min-width: 0;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden; /* Membatasi area luar agar tidak scroll ganda */
+        }
+
+        /* Buat area konten bisa di-scroll secara mandiri */
+        .content-area {
+            padding: 30px 40px 60px;
+            max-width: 1000px;
+            width: 100%;
+            overflow-y: auto; /* Hanya area konten ini yang akan bisa di-scroll */
+            flex: 1;
         }
 
         /* =========================================

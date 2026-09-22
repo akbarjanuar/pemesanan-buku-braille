@@ -17,10 +17,39 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-        html, body { background: var(--background); color: var(--text-dark); min-height: 100vh; overflow-y: auto !important; }
-        body { display: flex; }
+        
+        html,
+        body {
+            background: var(--background);
+            color: var(--text-dark);
+            height: 100vh;
+            overflow: hidden; /* Mencegah body utama ikut scroll */
+        }
 
-        .main-wrapper { flex: 1; display: flex; flex-direction: column; background: #ffffff; min-width: 0; min-height: 100vh; }
+        body {
+            display: flex;
+            flex-direction: row;
+        }
+
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            min-width: 0;
+            height: 100vh;
+            overflow: hidden; /* Membatasi area luar agar tidak terjadi double scroll */
+        }
+
+        /* PERBAIKAN UTAMA DI SINI: Lebar dibuat penuh / proporsional ke tengah */
+        .content-area {
+            padding: 30px 40px 60px;
+            width: 100%;
+            max-width: 900px; /* Lebar maksimal diperbesar agar nyaman dilihat */
+            margin: 0 auto; /* Membuat posisi form otomatis berada di tengah tanpa ada ruang kosong sebelah kanan */
+            overflow-y: auto; /* Agar area ini tetap bisa di-scroll secara mandiri */
+            flex: 1;
+        }
 
         .topbar {
             height: 70px; min-height: 70px; background: #ffffff;
@@ -58,8 +87,6 @@
             background: #111; color: white; font-size: 16px; overflow: hidden;
         }
         .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
-        .content-area { padding: 30px 40px 60px; max-width: 720px; width: 100%; }
 
         .back-link {
             display: inline-block; color: var(--primary); text-decoration: none;
