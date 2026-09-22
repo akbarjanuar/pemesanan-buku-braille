@@ -159,7 +159,7 @@
         </a>
 
         <a href="{{ route('admin.digital.pencetakan') }}"
-           class="nav-item {{ request()->routeIs('admin.digital.pencetakan') ? 'active' : '' }}">
+           class="nav-item {{ request()->routeIs('admin.digital.pencetakan*') ? 'active' : '' }}">
             <i class="fas fa-print"></i> Permintaan Pencetakan
         </a>
 
@@ -168,10 +168,11 @@
             <i class="fas fa-users"></i> PIC
         </a>
 
+        {{-- PERUBAHAN: wildcard supaya tetap active di halaman detail --}}
         <a href="{{ route('admin.digital.permintaan-bahan') }}"
-           class="nav-item {{ request()->routeIs('admin.digital.permintaan-bahan') ? 'active' : '' }}">
+           class="nav-item {{ request()->routeIs('admin.digital.permintaan-bahan*') ? 'active' : '' }}">
             <i class="fas fa-layer-group"></i> Permintaan Bahan
-    </a>
+        </a>
 
         <a href="{{ route('admin.digital.profile') }}"
            class="nav-item {{ request()->routeIs('admin.digital.profile') ? 'active' : '' }}">

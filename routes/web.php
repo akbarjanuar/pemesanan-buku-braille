@@ -115,26 +115,52 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
 
     Route::get('/admin/dashboard', [AdminController::class, 'redirectDashboardAdmin'])->name('admin.dashboard');
 
-    // ADMIN LITERASI DIGITAL
+    // =====================================================
+    // ===== ADMIN LITERASI DIGITAL ========================
+    // =====================================================
     Route::get('/admin/digital/dashboard', [AdminController::class, 'dashboardLiterasiDigital'])->name('admin.digital.dashboard');
     Route::get('/admin/digital/pencetakan', [AdminController::class, 'semuaPencetakanDigital'])->name('admin.digital.pencetakan');
     Route::post('/admin/digital/pencetakan/update/{id}', [AdminController::class, 'updateProgressDigital'])->name('admin.digital.pencetakan.update');
-    
+
     // PROFILE ADMIN LITERASI DIGITAL
     Route::get('/admin/digital/profile', [AdminController::class, 'profileDigital'])->name('admin.digital.profile');
-    
+
     // PIC Routes
     Route::get('/admin/digital/pic', [AdminController::class, 'daftarPic'])->name('admin.digital.pic');
     Route::post('/admin/digital/pic', [AdminController::class, 'storePic'])->name('admin.digital.pic.store');
     Route::get('/admin/digital/pic/{id}', [AdminController::class, 'detailPic'])->name('admin.digital.pic.detail');
     Route::post('/admin/digital/pic/alihkan', [AdminController::class, 'alihkanPic'])->name('admin.digital.pic.alihkan');
 
-    // PERMINTAAN BAHAN ADMIN LITERASI DIGITAL
-    Route::get('/admin/digital/permintaan-bahan', [AdminController::class, 'permintaanBahanDigital'])->name('admin.digital.permintaan-bahan');
-    Route::get('/admin/digital/permintaan-bahan/{id}', [AdminController::class, 'detailPermintaanBahanDigital'])->name('admin.digital.permintaan-bahan.detail');
-    Route::post('/admin/digital/permintaan-bahan/update-status', [AdminController::class, 'updateStatusBahanDigital'])->name('admin.digital.permintaan-bahan.update-status');
+    // =====================================================
+    // PERMINTAAN BAHAN ADMIN LITERASI DIGITAL (URUTAN PENTING)
+    // =====================================================
 
-    // ADMIN PENGIRIMAN
+    // 1. Daftar
+    Route::get('/admin/digital/permintaan-bahan', [AdminController::class, 'permintaanBahanDigital'])
+        ->name('admin.digital.permintaan-bahan');
+
+    // 2. Ajukan (HARUS sebelum {id})
+    Route::get('/admin/digital/permintaan-bahan/ajukan', [AdminController::class, 'ajukanPermintaanBahanDigital'])
+        ->name('admin.digital.permintaan-bahan.ajukan');
+
+    Route::post('/admin/digital/permintaan-bahan/ajukan', [AdminController::class, 'storePermintaanBahanDigital'])
+        ->name('admin.digital.permintaan-bahan.store');
+
+    // 3. Update status
+    Route::post('/admin/digital/permintaan-bahan/update-status', [AdminController::class, 'updateStatusBahanDigital'])
+        ->name('admin.digital.permintaan-bahan.update-status');
+
+    // 4. Detail
+    Route::get('/admin/digital/permintaan-bahan/{id}', [AdminController::class, 'detailPermintaanBahanDigital'])
+        ->name('admin.digital.permintaan-bahan.detail');
+
+    // 5. Upload revisi
+    Route::post('/admin/digital/permintaan-bahan/{id}/revisi', [AdminController::class, 'uploadRevisiBahanDigital'])
+        ->name('admin.digital.permintaan-bahan.revisi');
+
+    // =====================================================
+    // ===== ADMIN PENGIRIMAN ==============================
+    // =====================================================
     Route::get('/admin/pengiriman/dashboard', [AdminController::class, 'dashboardPengiriman'])->name('admin.pengiriman.dashboard');
 
     // MENU PENDUKUNG ADMIN
@@ -186,20 +212,35 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::get('/admin/manual/dashboard', [AdminController::class, 'dashboardLiterasiManual'])->name('admin.manual.dashboard');
     Route::get('/admin/manual/pencetakan', [AdminController::class, 'semuaPencetakanManual'])->name('admin.manual.pencetakan');
     Route::post('/admin/manual/pencetakan/update/{id}', [AdminController::class, 'updateProgressManual'])->name('admin.manual.pencetakan.update');
-    
+
     // PROFILE ADMIN LITERASI MANUAL
     Route::get('/admin/manual/profile', [AdminController::class, 'profileManual'])->name('admin.manual.profile');
-    
+
     // PIC ROUTES MANUAL
     Route::get('/admin/manual/pic', [AdminController::class, 'daftarPicManual'])->name('admin.manual.pic');
     Route::post('/admin/manual/pic', [AdminController::class, 'storePicManual'])->name('admin.manual.pic.store');
     Route::get('/admin/manual/pic/{id}', [AdminController::class, 'detailPicManual'])->name('admin.manual.pic.detail');
     Route::post('/admin/manual/pic/alihkan', [AdminController::class, 'alihkanPicManual'])->name('admin.manual.pic.alihkan');
 
-    // PERMINTAAN BAHAN ADMIN LITERASI MANUAL
-    Route::get('/admin/manual/permintaan-bahan', [AdminController::class, 'permintaanBahanManual'])->name('admin.manual.permintaan-bahan');
-    Route::get('/admin/manual/permintaan-bahan/{id}', [AdminController::class, 'detailPermintaanBahanManual'])->name('admin.manual.permintaan-bahan.detail');
-    Route::post('/admin/manual/permintaan-bahan/update-status', [AdminController::class, 'updateStatusBahanManual'])->name('admin.manual.permintaan-bahan.update-status');
+// PERMINTAAN BAHAN ADMIN LITERASI MANUAL (URUTAN PENTING)
+
+Route::get('/admin/manual/permintaan-bahan', [AdminController::class, 'permintaanBahanManual'])
+    ->name('admin.manual.permintaan-bahan');
+
+Route::get('/admin/manual/permintaan-bahan/ajukan', [AdminController::class, 'ajukanPermintaanBahanManual'])
+    ->name('admin.manual.permintaan-bahan.ajukan');
+
+Route::post('/admin/manual/permintaan-bahan/ajukan', [AdminController::class, 'storePermintaanBahanManual'])
+    ->name('admin.manual.permintaan-bahan.store');
+
+Route::post('/admin/manual/permintaan-bahan/update-status', [AdminController::class, 'updateStatusBahanManual'])
+    ->name('admin.manual.permintaan-bahan.update-status');
+
+Route::get('/admin/manual/permintaan-bahan/{id}', [AdminController::class, 'detailPermintaanBahanManual'])
+    ->name('admin.manual.permintaan-bahan.detail');
+
+Route::post('/admin/manual/permintaan-bahan/{id}/revisi', [AdminController::class, 'uploadRevisiBahanManual'])
+    ->name('admin.manual.permintaan-bahan.revisi');
 });
 
 Route::post('/logout', function (Request $request) {

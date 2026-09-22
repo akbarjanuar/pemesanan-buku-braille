@@ -127,7 +127,7 @@
                     <h1>Permintaan Bahan</h1>
                     <p>Ajukan dan pantau status pengajuan bahan untuk mendukung proses pencetakan.</p>
                 </div>
-                <button class="btn-add">+ Ajukan Permintaan Bahan</button>
+                <a href="{{ route('admin.digital.permintaan-bahan.ajukan') }}" class="btn-add">+ Ajukan Permintaan Bahan</a>
             </div>
 
             <form method="GET" action="{{ route('admin.digital.permintaan-bahan') }}" class="filter-container">
