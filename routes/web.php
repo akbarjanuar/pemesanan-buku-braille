@@ -131,30 +131,17 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::get('/admin/digital/pic/{id}', [AdminController::class, 'detailPic'])->name('admin.digital.pic.detail');
     Route::post('/admin/digital/pic/alihkan', [AdminController::class, 'alihkanPic'])->name('admin.digital.pic.alihkan');
 
-    // =====================================================
-    // PERMINTAAN BAHAN ADMIN LITERASI DIGITAL (URUTAN PENTING)
-    // =====================================================
-
-    // 1. Daftar
+    // PERMINTAAN BAHAN ADMIN LITERASI DIGITAL
     Route::get('/admin/digital/permintaan-bahan', [AdminController::class, 'permintaanBahanDigital'])
         ->name('admin.digital.permintaan-bahan');
-
-    // 2. Ajukan (HARUS sebelum {id})
     Route::get('/admin/digital/permintaan-bahan/ajukan', [AdminController::class, 'ajukanPermintaanBahanDigital'])
         ->name('admin.digital.permintaan-bahan.ajukan');
-
     Route::post('/admin/digital/permintaan-bahan/ajukan', [AdminController::class, 'storePermintaanBahanDigital'])
         ->name('admin.digital.permintaan-bahan.store');
-
-    // 3. Update status
     Route::post('/admin/digital/permintaan-bahan/update-status', [AdminController::class, 'updateStatusBahanDigital'])
         ->name('admin.digital.permintaan-bahan.update-status');
-
-    // 4. Detail
     Route::get('/admin/digital/permintaan-bahan/{id}', [AdminController::class, 'detailPermintaanBahanDigital'])
         ->name('admin.digital.permintaan-bahan.detail');
-
-    // 5. Upload revisi
     Route::post('/admin/digital/permintaan-bahan/{id}/revisi', [AdminController::class, 'uploadRevisiBahanDigital'])
         ->name('admin.digital.permintaan-bahan.revisi');
 
@@ -187,6 +174,9 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     // PERMINTAAN BAHAN (PENGIRIMAN)
     Route::get('/admin/permintaan-bahan', [AdminController::class, 'permintaanBahan'])->name('admin.permintaan-bahan');
     Route::post('/admin/permintaan-bahan/update', [AdminController::class, 'updateStatusBahan'])->name('admin.permintaan-bahan.update-status');
+    
+    // ROUTE BARU: Mengarahkan Upload TTD langsung ke method Controller
+    Route::post('/admin/permintaan-bahan/upload-ttd', [AdminController::class, 'uploadSuratTtd'])->name('admin.permintaan-bahan.upload-ttd');
 
     // LAPORAN
     Route::get('/admin/laporan', [AdminController::class, 'laporan'])->name('admin.laporan');
@@ -222,25 +212,19 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::get('/admin/manual/pic/{id}', [AdminController::class, 'detailPicManual'])->name('admin.manual.pic.detail');
     Route::post('/admin/manual/pic/alihkan', [AdminController::class, 'alihkanPicManual'])->name('admin.manual.pic.alihkan');
 
-// PERMINTAAN BAHAN ADMIN LITERASI MANUAL (URUTAN PENTING)
-
-Route::get('/admin/manual/permintaan-bahan', [AdminController::class, 'permintaanBahanManual'])
-    ->name('admin.manual.permintaan-bahan');
-
-Route::get('/admin/manual/permintaan-bahan/ajukan', [AdminController::class, 'ajukanPermintaanBahanManual'])
-    ->name('admin.manual.permintaan-bahan.ajukan');
-
-Route::post('/admin/manual/permintaan-bahan/ajukan', [AdminController::class, 'storePermintaanBahanManual'])
-    ->name('admin.manual.permintaan-bahan.store');
-
-Route::post('/admin/manual/permintaan-bahan/update-status', [AdminController::class, 'updateStatusBahanManual'])
-    ->name('admin.manual.permintaan-bahan.update-status');
-
-Route::get('/admin/manual/permintaan-bahan/{id}', [AdminController::class, 'detailPermintaanBahanManual'])
-    ->name('admin.manual.permintaan-bahan.detail');
-
-Route::post('/admin/manual/permintaan-bahan/{id}/revisi', [AdminController::class, 'uploadRevisiBahanManual'])
-    ->name('admin.manual.permintaan-bahan.revisi');
+    // PERMINTAAN BAHAN ADMIN LITERASI MANUAL
+    Route::get('/admin/manual/permintaan-bahan', [AdminController::class, 'permintaanBahanManual'])
+        ->name('admin.manual.permintaan-bahan');
+    Route::get('/admin/manual/permintaan-bahan/ajukan', [AdminController::class, 'ajukanPermintaanBahanManual'])
+        ->name('admin.manual.permintaan-bahan.ajukan');
+    Route::post('/admin/manual/permintaan-bahan/ajukan', [AdminController::class, 'storePermintaanBahanManual'])
+        ->name('admin.manual.permintaan-bahan.store');
+    Route::post('/admin/manual/permintaan-bahan/update-status', [AdminController::class, 'updateStatusBahanManual'])
+        ->name('admin.manual.permintaan-bahan.update-status');
+    Route::get('/admin/manual/permintaan-bahan/{id}', [AdminController::class, 'detailPermintaanBahanManual'])
+        ->name('admin.manual.permintaan-bahan.detail');
+    Route::post('/admin/manual/permintaan-bahan/{id}/revisi', [AdminController::class, 'uploadRevisiBahanManual'])
+        ->name('admin.manual.permintaan-bahan.revisi');
 });
 
 Route::post('/logout', function (Request $request) {

@@ -41,7 +41,7 @@ class AdminController extends Controller
             'menunggu_pencetakan' => Pesanan::whereIn('status', ['Menunggu Pencetakan', 'Menunggu pencetakan'])->count(),
             'dicetak'             => Pesanan::whereIn('status', ['Dicetak', 'Sedang Dicetak', 'Sedang dicetak'])->count(),
             'siap_dikirim'        => Pesanan::whereIn('status', ['Siap Dikirim', 'Siap dikirim'])->count(),
-            'dikirim'             => Pesanan::whereIn('status', ['Dikirim', 'Sedang Dikirim', 'Sedang dikirim'])->count(),
+            'dikirim'             => Pesanan::whereIn('status', ['Dikirim', 'Sedang Dikirim', 'Sedang dicetak'])->count(),
             'selesai'             => Pesanan::whereIn('status', ['Selesai', 'selesai'])->count(),
             'dibatalkan'          => Pesanan::whereIn('status', ['Dibatalkan', 'Pesanan Dibatalkan', 'Batal'])->count(),
             'kendala'             => Pesanan::whereIn('status', ['Kendala', 'kendala'])->count(),
@@ -362,17 +362,25 @@ class AdminController extends Controller
         $query = PermintaanBahan::with(['pencetakan.buku'])->orderBy('created_at', 'desc');
 
         if ($statusFilter !== 'semua') {
-            if ($statusFilter == 'menunggu') {
-                $query->where('status', 'like', '%Menunggu Tanda Tangan%');
-            } elseif ($statusFilter == 'diproses') {
-                $query->where(function ($q) {
-                    $q->where('status', 'like', '%Menunggu diproses%')
-                        ->orWhere('status', 'like', '%Menunggu Diproses%')
-                        ->orWhere('status', 'like', '%Diproses%')
-                        ->orWhere('status', 'like', '%Surat Dibuat%');
-                });
-            } elseif ($statusFilter == 'selesai') {
-                $query->where('status', 'like', '%Selesai%');
+            switch ($statusFilter) {
+                case 'menunggu':
+                    $query->where('status', 'ilike', '%Menunggu diproses%');
+                    break;
+                case 'diperbaiki':
+                    $query->where('status', 'ilike', '%Kendala%');
+                    break;
+                case 'disetujui':
+                    $query->where('status', 'ilike', '%Diproses%');
+                    break;
+                case 'tanda tangan':
+                    $query->where('status', 'ilike', '%Menunggu Tanda Tangan%');
+                    break;
+                case 'sudah ttd':
+                    $query->where('status', 'ilike', '%Sudah Ditandatangani%');
+                    break;
+                case 'selesai':
+                    $query->where('status', 'ilike', '%Selesai%');
+                    break;
             }
         }
 
@@ -412,6 +420,42 @@ class AdminController extends Controller
         $bahan->save();
 
         return redirect()->back()->with('success', 'Status permintaan bahan berhasil diperbarui!');
+    }
+
+    // METHOD BARU: Menangani Upload Surat Tanda Tangan Digital ke Supabase
+    public function uploadSuratTtd(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:permintaan_bahans,id',
+            'surat_ttd' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+        ]);
+
+        $bahan = PermintaanBahan::findOrFail($request->id);
+        $file = $request->file('surat_ttd');
+
+        $tahun = date('Y');
+        $bulan = date('m');
+        $fileName = 'surat_ttd_' . time() . '_' . rand(100, 999) . '.' . $file->getClientOriginalExtension();
+        $pathFolder = "surat_ttd/{$tahun}/{$bulan}/" . $bahan->pencetakan_id;
+
+        // Simpan ke bucket dokumen-surat menggunakan disk supabase_surat
+        $path = $file->storePubliclyAs($pathFolder, $fileName, 'supabase_surat');
+
+        $endpoint = rtrim(env('AWS_ENDPOINT'), '/');
+        $endpoint = str_replace('/storage/v1/s3', '', $endpoint);
+        $bucket = env('AWS_BUCKET_SURAT', 'dokumen-surat');
+        $fullUrl = "{$endpoint}/storage/v1/object/public/{$bucket}/{$path}";
+
+        if (Schema::hasColumn('permintaan_bahans', 'file_surat')) {
+            $bahan->file_surat = $fullUrl;
+        } elseif (Schema::hasColumn('permintaan_bahans', 'dokumen_surat')) {
+            $bahan->dokumen_surat = $fullUrl;
+        }
+
+        $bahan->status = 'Selesai';
+        $bahan->save();
+
+        return redirect()->back()->with('success', 'Surat bertanda tangan berhasil di-upload ke Supabase.');
     }
 
     public function laporan(Request $request)
@@ -774,6 +818,14 @@ class AdminController extends Controller
 
         $bahan->save();
 
+        // TAMBAHAN: Jika request dikirim melalui AJAX, kembalikan respons JSON agar halaman tidak ter-refresh
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Status berhasil diperbarui!'
+            ]);
+        }
+
         return redirect()->back()->with('success', 'Status permintaan bahan berhasil diperbarui!');
     }
 
@@ -801,8 +853,18 @@ class AdminController extends Controller
         ]);
 
         $file = $request->file('surat_dokumen');
-        $fileName = 'surat_' . time() . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs('surat_pengajuan', $fileName, 'public');
+        
+        $tahun = date('Y');
+        $bulan = date('m');
+        $fileName = 'surat_' . time() . '_' . rand(100, 999) . '.' . $file->getClientOriginalExtension();
+        $pathFolder = "surat_pengajuan/{$tahun}/{$bulan}/" . $request->pencetakan_id;
+
+        $path = $file->storePubliclyAs($pathFolder, $fileName, 'supabase_surat');
+
+        $endpoint = rtrim(env('AWS_ENDPOINT'), '/');
+        $endpoint = str_replace('/storage/v1/s3', '', $endpoint);
+        $bucket = env('AWS_BUCKET_SURAT', 'dokumen-surat');
+        $fullUrl = "{$endpoint}/storage/v1/object/public/{$bucket}/{$path}";
 
         $permintaan = new PermintaanBahan();
         $permintaan->pencetakan_id = $request->pencetakan_id;
@@ -814,11 +876,11 @@ class AdminController extends Controller
         $permintaan->divisi        = 'Literasi Digital';
 
         if (Schema::hasColumn('permintaan_bahans', 'file_surat')) {
-            $permintaan->file_surat = $path;
+            $permintaan->file_surat = $fullUrl;
         } elseif (Schema::hasColumn('permintaan_bahans', 'dokumen_surat')) {
-            $permintaan->dokumen_surat = $path;
+            $permintaan->dokumen_surat = $fullUrl;
         } elseif (Schema::hasColumn('permintaan_bahans', 'surat_path')) {
-            $permintaan->surat_path = $path;
+            $permintaan->surat_path = $fullUrl;
         }
 
         if (Schema::hasColumn('permintaan_bahans', 'id_permintaan')) {
@@ -829,7 +891,7 @@ class AdminController extends Controller
 
         return redirect()
             ->route('admin.digital.permintaan-bahan')
-            ->with('success', 'Permintaan bahan berhasil diajukan.');
+            ->with('success', 'Permintaan bahan berhasil diajukan dan disimpan ke Supabase.');
     }
 
     public function uploadRevisiBahanDigital(Request $request, $id)
@@ -1059,7 +1121,6 @@ class AdminController extends Controller
         $search = $request->input('search');
         $dateFilter = $request->input('date');
 
-        // DIPERKETAT: Hanya mengambil data yang benar-benar milik Literasi Manual saja
         $query = PermintaanBahan::with(['pencetakan.buku'])
             ->where(function ($q) {
                 $q->whereHas('pencetakan', function ($sub) {
@@ -1167,8 +1228,18 @@ class AdminController extends Controller
         ]);
 
         $file = $request->file('surat_dokumen');
-        $fileName = 'surat_' . time() . '.' . $file->getClientOriginalExtension();
-        $path = $file->storeAs('surat_pengajuan', $fileName, 'public');
+        
+        $tahun = date('Y');
+        $bulan = date('m');
+        $fileName = 'surat_' . time() . '_' . rand(100, 999) . '.' . $file->getClientOriginalExtension();
+        $pathFolder = "surat_pengajuan/{$tahun}/{$bulan}/" . $request->pencetakan_id;
+
+        $path = $file->storePubliclyAs($pathFolder, $fileName, 'supabase_surat');
+
+        $endpoint = rtrim(env('AWS_ENDPOINT'), '/');
+        $endpoint = str_replace('/storage/v1/s3', '', $endpoint);
+        $bucket = env('AWS_BUCKET_SURAT', 'dokumen-surat');
+        $fullUrl = "{$endpoint}/storage/v1/object/public/{$bucket}/{$path}";
 
         $permintaan = new PermintaanBahan();
         $permintaan->pencetakan_id = $request->pencetakan_id;
@@ -1177,14 +1248,12 @@ class AdminController extends Controller
         $permintaan->satuan        = $request->satuan;
         $permintaan->keperluan     = $request->keperluan;
         $permintaan->status        = 'Menunggu Pemeriksaan';
-        
-        // DIKUNCI: Memastikan kolom divisi selalu tersimpan persis "Literasi Manual"
         $permintaan->divisi        = 'Literasi Manual';
 
         if (Schema::hasColumn('permintaan_bahans', 'file_surat')) {
-            $permintaan->file_surat = $path;
+            $permintaan->file_surat = $fullUrl;
         } elseif (Schema::hasColumn('permintaan_bahans', 'dokumen_surat')) {
-            $permintaan->dokumen_surat = $path;
+            $permintaan->dokumen_surat = $fullUrl;
         }
 
         if (Schema::hasColumn('permintaan_bahans', 'id_permintaan')) {
@@ -1195,7 +1264,7 @@ class AdminController extends Controller
 
         return redirect()
             ->route('admin.manual.permintaan-bahan')
-            ->with('success', 'Permintaan bahan berhasil diajukan.');
+            ->with('success', 'Permintaan bahan berhasil diajukan dan disimpan ke Supabase.');
     }
 
     public function uploadRevisiBahanManual(Request $request, $id)

@@ -23,6 +23,7 @@ class PermintaanBahan extends Model
         'status',
         'pengaju',
         'prioritas',
+        'file_surat',
         'catatan_kendala'
     ];
 
