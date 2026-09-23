@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Permintaan Bahan - Admin Literasi Digital</title>
+    <title>Permintaan Bahan - Admin Literasi Manual</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -170,7 +170,7 @@
 <body>
 
      @include('partials.admin-manual-nav', [
-        'activeMenu' => $activeMenu ?? 'profile'
+        'activeMenu' => $activeMenu ?? 'permintaan-bahan'
     ])
 
     <div class="main-wrapper">
@@ -185,9 +185,9 @@
                     <span class="notification-dot"></span>
                 </div>
 
-                <a href="{{ route('admin.digital.profile') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-dark); cursor: pointer;">
+                <a href="{{ route('admin.manual.profile') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-dark); cursor: pointer;">
                     <span style="font-weight: 700; font-size: 15px;">
-                        {{ auth()->user()->nama ?? 'Admin Digital' }}
+                        {{ auth()->user()->nama ?? 'Admin Manual' }}
                     </span>
                     <div style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: #111; display: flex; align-items: center; justify-content: center; color: white;">
                         @if(auth()->user()->foto_profil)
@@ -206,12 +206,12 @@
                     <h1>Permintaan Bahan</h1>
                     <p>Ajukan dan pantau status pengajuan bahan untuk mendukung proses pencetakan.</p>
                 </div>
-                <a href="{{ route('admin.digital.permintaan-bahan.ajukan') }}" class="btn-add">
+                <a href="{{ route('admin.manual.permintaan-bahan.ajukan') }}" class="btn-add">
                     + Ajukan Permintaan Bahan
                 </a>
             </div>
 
-            <form method="GET" action="{{ route('admin.digital.permintaan-bahan') }}" class="filter-container">
+            <form method="GET" action="{{ route('admin.manual.permintaan-bahan') }}" class="filter-container">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
                     <input type="text" name="search" placeholder="Cari Id Permintaan, Id Pencetakan atau Nama Buku...." value="{{ $search ?? '' }}">
@@ -289,7 +289,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <a href="{{ route('admin.digital.permintaan-bahan.detail', $item->id) }}" class="btn-detail">Detail</a>
+                                    <a href="{{ route('admin.manual.permintaan-bahan.detail', $item->id) }}" class="btn-detail">Detail</a>
                                 </td>
                             </tr>
                         @empty

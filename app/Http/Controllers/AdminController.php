@@ -695,10 +695,12 @@ class AdminController extends Controller
         $dateFilter = $request->input('date');
 
         $query = PermintaanBahan::with(['pencetakan.buku'])
-            ->whereHas('pencetakan', function ($q) {
-                $q->where('jenis_literasi', 'Literasi Digital');
+            ->where(function ($q) {
+                $q->whereHas('pencetakan', function ($sub) {
+                    $sub->where('jenis_literasi', 'Literasi Digital');
+                })
+                ->orWhere('divisi', 'ilike', '%Literasi Digital%');
             })
-            ->orWhere('divisi', 'ilike', '%Literasi Digital%')
             ->orderBy('created_at', 'desc');
 
         if ($search) {
@@ -1057,13 +1059,13 @@ class AdminController extends Controller
         $search = $request->input('search');
         $dateFilter = $request->input('date');
 
+        // DIPERKETAT: Hanya mengambil data yang benar-benar milik Literasi Manual saja
         $query = PermintaanBahan::with(['pencetakan.buku'])
             ->where(function ($q) {
                 $q->whereHas('pencetakan', function ($sub) {
                     $sub->where('jenis_literasi', 'Literasi Manual');
                 })
-                ->orWhere('divisi', 'ilike', '%Literasi Manual%')
-                ->orWhereNull('pencetakan_id');
+                ->orWhere('divisi', 'Literasi Manual');
             })
             ->orderBy('created_at', 'desc');
 
@@ -1103,8 +1105,7 @@ class AdminController extends Controller
                 $q->whereHas('pencetakan', function ($sub) {
                     $sub->where('jenis_literasi', 'Literasi Manual');
                 })
-                ->orWhere('divisi', 'ilike', '%Literasi Manual%')
-                ->orWhereNull('pencetakan_id');
+                ->orWhere('divisi', 'Literasi Manual');
             })
             ->findOrFail($id);
 
@@ -1126,8 +1127,7 @@ class AdminController extends Controller
                 $q->whereHas('pencetakan', function ($sub) {
                     $sub->where('jenis_literasi', 'Literasi Manual');
                 })
-                ->orWhere('divisi', 'Literasi Manual')
-                ->orWhereNull('pencetakan_id');
+                ->orWhere('divisi', 'Literasi Manual');
             })
             ->firstOrFail();
 
@@ -1144,78 +1144,80 @@ class AdminController extends Controller
     }
 
     public function ajukanPermintaanBahanManual()
-{
-    $daftarPencetakan = Pencetakan::with('buku')
-        ->where('jenis_literasi', 'Literasi Manual')
-        ->orderBy('created_at', 'desc')
-        ->get();
+    {
+        $daftarPencetakan = Pencetakan::with('buku')
+            ->where('jenis_literasi', 'Literasi Manual')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-    $activeMenu = 'permintaan-bahan';
+        $activeMenu = 'permintaan-bahan';
 
-    return view('admin.manual.ajukan-permintaan-bahan', compact('daftarPencetakan', 'activeMenu'));
-}
-
-public function storePermintaanBahanManual(Request $request)
-{
-    $request->validate([
-        'pencetakan_id' => 'required',
-        'nama_bahan'    => 'required|string|max:255',
-        'jumlah'        => 'required|numeric|min:1',
-        'satuan'        => 'required|string|max:50',
-        'keperluan'     => 'required|string|max:500',
-        'surat_dokumen' => 'required|file|mimes:pdf,doc,docx|max:5120',
-    ]);
-
-    $file = $request->file('surat_dokumen');
-    $fileName = 'surat_' . time() . '.' . $file->getClientOriginalExtension();
-    $path = $file->storeAs('surat_pengajuan', $fileName, 'public');
-
-    $permintaan = new PermintaanBahan();
-    $permintaan->pencetakan_id = $request->pencetakan_id;
-    $permintaan->nama_bahan    = $request->nama_bahan;
-    $permintaan->jumlah        = $request->jumlah;
-    $permintaan->satuan        = $request->satuan;
-    $permintaan->keperluan     = $request->keperluan;
-    $permintaan->status        = 'Menunggu Pemeriksaan';
-    $permintaan->divisi        = 'Literasi Manual';
-
-    if (Schema::hasColumn('permintaan_bahans', 'file_surat')) {
-        $permintaan->file_surat = $path;
-    } elseif (Schema::hasColumn('permintaan_bahans', 'dokumen_surat')) {
-        $permintaan->dokumen_surat = $path;
+        return view('admin.manual.ajukan-permintaan-bahan', compact('daftarPencetakan', 'activeMenu'));
     }
 
-    if (Schema::hasColumn('permintaan_bahans', 'id_permintaan')) {
-        $permintaan->id_permintaan = 'BHN-' . date('Y') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+    public function storePermintaanBahanManual(Request $request)
+    {
+        $request->validate([
+            'pencetakan_id' => 'required',
+            'nama_bahan'    => 'required|string|max:255',
+            'jumlah'        => 'required|numeric|min:1',
+            'satuan'        => 'required|string|max:50',
+            'keperluan'     => 'required|string|max:500',
+            'surat_dokumen' => 'required|file|mimes:pdf,doc,docx|max:5120',
+        ]);
+
+        $file = $request->file('surat_dokumen');
+        $fileName = 'surat_' . time() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('surat_pengajuan', $fileName, 'public');
+
+        $permintaan = new PermintaanBahan();
+        $permintaan->pencetakan_id = $request->pencetakan_id;
+        $permintaan->nama_bahan    = $request->nama_bahan;
+        $permintaan->jumlah        = $request->jumlah;
+        $permintaan->satuan        = $request->satuan;
+        $permintaan->keperluan     = $request->keperluan;
+        $permintaan->status        = 'Menunggu Pemeriksaan';
+        
+        // DIKUNCI: Memastikan kolom divisi selalu tersimpan persis "Literasi Manual"
+        $permintaan->divisi        = 'Literasi Manual';
+
+        if (Schema::hasColumn('permintaan_bahans', 'file_surat')) {
+            $permintaan->file_surat = $path;
+        } elseif (Schema::hasColumn('permintaan_bahans', 'dokumen_surat')) {
+            $permintaan->dokumen_surat = $path;
+        }
+
+        if (Schema::hasColumn('permintaan_bahans', 'id_permintaan')) {
+            $permintaan->id_permintaan = 'BHN-' . date('Y') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+        }
+
+        $permintaan->save();
+
+        return redirect()
+            ->route('admin.manual.permintaan-bahan')
+            ->with('success', 'Permintaan bahan berhasil diajukan.');
     }
 
-    $permintaan->save();
+    public function uploadRevisiBahanManual(Request $request, $id)
+    {
+        $request->validate([
+            'surat_revisi' => 'required|file|mimes:pdf,doc,docx|max:5120',
+        ]);
 
-    return redirect()
-        ->route('admin.manual.permintaan-bahan')
-        ->with('success', 'Permintaan bahan berhasil diajukan.');
-}
+        $bahan = PermintaanBahan::findOrFail($id);
+        $bahan->status = 'Menunggu Pemeriksaan';
 
-public function uploadRevisiBahanManual(Request $request, $id)
-{
-    $request->validate([
-        'surat_revisi' => 'required|file|mimes:pdf,doc,docx|max:5120',
-    ]);
+        if (Schema::hasColumn('permintaan_bahans', 'catatan_kendala')) {
+            $bahan->catatan_kendala = null;
+        }
+        if (Schema::hasColumn('permintaan_bahans', 'alasan_kendala')) {
+            $bahan->alasan_kendala = null;
+        }
 
-    $bahan = PermintaanBahan::findOrFail($id);
-    $bahan->status = 'Menunggu Pemeriksaan';
+        $bahan->save();
 
-    if (Schema::hasColumn('permintaan_bahans', 'catatan_kendala')) {
-        $bahan->catatan_kendala = null;
+        return redirect()
+            ->route('admin.manual.permintaan-bahan.detail', $bahan->id)
+            ->with('success', 'Surat revisi berhasil dikirim. Status kembali ke Menunggu Pemeriksaan');
     }
-    if (Schema::hasColumn('permintaan_bahans', 'alasan_kendala')) {
-        $bahan->alasan_kendala = null;
-    }
-
-    $bahan->save();
-
-    return redirect()
-        ->route('admin.manual.permintaan-bahan.detail', $bahan->id)
-        ->with('success', 'Surat revisi berhasil dikirim. Status kembali ke Menunggu Pemeriksaan');
-}
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ajukan Permintaan Bahan - Admin Literasi Digital</title>
+    <title>Ajukan Permintaan Bahan - Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -176,7 +176,6 @@
         }
         .btn-submit:hover, .btn-ringkasan:hover { background: var(--primary-hover); }
 
-        /* RINGKASAN */
         .ringkasan-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -210,9 +209,19 @@
 </head>
 <body>
 
-    @include('partials.admin-manual-nav', [
-        'activeMenu' => $activeMenu ?? 'profile'
-    ])
+    @php
+        $isManual = str_contains(request()->path(), 'manual');
+        $routeStore = $isManual ? route('admin.manual.permintaan-bahan.store') : route('admin.digital.permintaan-bahan.store');
+        $routeIndex = $isManual ? route('admin.manual.permintaan-bahan') : route('admin.digital.permintaan-bahan');
+        $divisiNama = $isManual ? 'Literasi Manual' : 'Literasi Digital';
+        $profileRoute = $isManual ? route('admin.manual.profile') : route('admin.digital.profile');
+    @endphp
+
+    @if($isManual)
+        @include('partials.admin-manual-nav', ['activeMenu' => $activeMenu ?? 'profile'])
+    @else
+        {{-- Jika pakai partial digital, sesuaikan atau biarkan navigasi Anda --}}
+    @endif
 
     <div class="main-wrapper">
         <div class="topbar">
@@ -227,9 +236,9 @@
                     <i class="far fa-bell"></i>
                     <span class="notification-dot"></span>
                 </div>
-                <a href="{{ route('admin.digital.profile') }}" class="topbar-user">
+                <a href="{{ $profileRoute }}" class="topbar-user">
                     <span style="font-weight: 700; font-size: 15px;">
-                        {{ auth()->user()->nama ?? 'Admin Digital' }}
+                        {{ auth()->user()->nama ?? 'Admin' }}
                     </span>
                     <div class="user-avatar">
                         @if(auth()->user()->foto_profil)
@@ -243,14 +252,14 @@
         </div>
 
         <main class="content-area">
-            <a href="{{ route('admin.digital.permintaan-bahan') }}" class="back-link" id="linkKembaliList">&larr; Kembali</a>
+            <a href="{{ $routeIndex }}" class="back-link" id="linkKembaliList">&larr; Kembali</a>
 
             <div class="page-header">
                 <h1>Ajukan Permintaan Bahan</h1>
                 <p>Ajukan kebutuhan bahan yang diperlukan untuk mendukung proses pencetakan buku braille.</p>
             </div>
 
-            <form method="POST" action="{{ route('admin.digital.permintaan-bahan.store') }}" enctype="multipart/form-data" id="formAjukan">
+            <form method="POST" action="{{ $routeStore }}" enctype="multipart/form-data" id="formAjukan">
                 @csrf
 
                 {{-- ========== STEP 1: FORM ========== --}}
@@ -330,7 +339,7 @@
                     </div>
 
                     <div class="form-actions">
-                        <a href="{{ route('admin.digital.permintaan-bahan') }}" class="btn-batal">Batal</a>
+                        <a href="{{ $routeIndex }}" class="btn-batal">Batal</a>
                         <button type="button" class="btn-ringkasan" id="btnLihatRingkasan">Lihat Ringkasan</button>
                     </div>
                 </div>
@@ -352,7 +361,7 @@
                         <div class="ringkasan-grid">
                             <div class="ringkasan-item">
                                 <label>Divisi Pengaju</label>
-                                <div class="value">Literasi Digital</div>
+                                <div class="value">{{ $divisiNama }}</div>
                             </div>
                             <div class="ringkasan-item">
                                 <label>PIC</label>
@@ -421,7 +430,6 @@
             var fileDropArea = document.getElementById('fileDropArea');
             var fileNameDisplay = document.getElementById('fileNameDisplay');
 
-            // File picker
             if (fileDropArea && inputSurat) {
                 fileDropArea.addEventListener('click', function () { inputSurat.click(); });
                 inputSurat.addEventListener('change', function () {
@@ -435,17 +443,14 @@
                 });
             }
 
-            // Lihat Ringkasan
             if (btnLihat) {
                 btnLihat.addEventListener('click', function () {
-                    // Validasi HTML5
                     var form = document.getElementById('formAjukan');
                     if (!form.checkValidity()) {
                         form.reportValidity();
                         return;
                     }
 
-                    // Ambil data pencetakan
                     var opt = inputPencetakan.options[inputPencetakan.selectedIndex];
                     var kode = opt.getAttribute('data-kode') || '-';
                     var buku = opt.getAttribute('data-buku') || '-';
@@ -467,7 +472,6 @@
                 });
             }
 
-            // Kembali ke Form
             if (btnKembali) {
                 btnKembali.addEventListener('click', function () {
                     stepRingkasan.style.display = 'none';
