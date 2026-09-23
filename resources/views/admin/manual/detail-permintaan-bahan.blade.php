@@ -55,11 +55,12 @@
 
         /* Buat area konten bisa di-scroll secara mandiri */
         .content-area {
-            padding: 30px 40px 60px;
-            max-width: 1000px;
-            width: 100%;
-            overflow-y: auto; /* Hanya area konten ini yang akan bisa di-scroll */
             flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 30px 40px 60px;
+            width: 100%;
+            max-width: none;
         }
 
         /* =========================================

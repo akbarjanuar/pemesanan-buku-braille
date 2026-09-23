@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Permintaan Bahan - Admin Literasi Digital</title>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -24,67 +23,148 @@
         body { background: var(--background); color: var(--text-dark); display: flex; min-height: 100vh; }
         .main-wrapper { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        /* TOPBAR */
-        .topbar { height: 70px; min-height: 70px; background: #ffffff; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; z-index: 100; }
+        .topbar {
+            height: 70px; min-height: 70px; background: #ffffff;
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 28px; z-index: 100;
+        }
         .topbar-left { display: flex; align-items: center; gap: 14px; }
-        .menu-toggle { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border: none; background: transparent; color: #757575; font-size: 21px; cursor: pointer; border-radius: 6px; }
+        .menu-toggle {
+            width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center;
+            border: none; background: transparent; color: #757575; font-size: 21px; cursor: pointer; border-radius: 6px;
+        }
         .topbar-title { font-size: 20px; font-weight: 700; color: #111111; }
-        
         .topbar-right { display: flex; align-items: center; gap: 20px; }
-        
-        /* Styling Ikon Notifikasi dengan Titik Merah */
+
         .notification-button {
-            position: relative;
-            width: 38px;
-            height: 38px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #111111;
-            font-size: 19px;
-            cursor: pointer;
-            border-radius: 6px;
+            position: relative; width: 38px; height: 38px;
+            display: flex; align-items: center; justify-content: center;
+            color: #111111; font-size: 19px; cursor: pointer; border-radius: 6px;
         }
         .notification-button:hover { background: #f5f5f5; }
         .notification-dot {
-            position: absolute;
-            top: 7px;
-            right: 7px;
-            width: 7px;
-            height: 7px;
-            background: var(--primary);
-            border-radius: 50%;
+            position: absolute; top: 7px; right: 7px;
+            width: 7px; height: 7px; background: var(--primary); border-radius: 50%;
         }
-        
-        .content-area { flex: 1; overflow-y: auto; padding: 28px 40px 40px; background: #ffffff;}
 
-        /* Header Page */
-        .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .content-area {
+            flex: 1; overflow-y: auto; padding: 28px 40px 40px; background: #ffffff;
+        }
+
+        .page-header {
+            display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;
+        }
         .page-header h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
         .page-header p { color: var(--text-muted); font-size: 13px; }
-        .btn-add { background: var(--primary); color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; border: none; cursor: pointer; }
-        
-        /* Filters */
-        .filter-container { display: flex; gap: 15px; margin-bottom: 25px; align-items: center; }
-        .search-box { flex: 1; position: relative; }
-        .search-box i { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #999; }
-        .search-box input { width: 100%; padding: 12px 14px 12px 38px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; }
-        .filter-select, .filter-date { padding: 12px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; background: white; min-width: 180px; }
 
-        /* Table */
-        .table-wrapper { width: 100%; overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+        .btn-add {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--primary); color: white; padding: 10px 16px;
+            border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;
+            border: none; cursor: pointer;
+        }
+        .btn-add:hover { background: var(--primary-hover); color: white; }
+
+        .filter-container {
+            display: flex; gap: 15px; margin-bottom: 25px; align-items: center;
+        }
+        .search-box { flex: 1; position: relative; }
+        .search-box i {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #999;
+        }
+        .search-box input {
+            width: 100%; padding: 12px 14px 12px 38px;
+            border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none;
+        }
+        .filter-select, .filter-date {
+            padding: 12px 14px; border: 1px solid var(--border); border-radius: 6px;
+            font-size: 13px; outline: none; background: white; min-width: 180px;
+        }
+
+        .table-wrapper {
+            width: 100%; overflow-x: auto; border: 1px solid var(--border); border-radius: 8px;
+        }
         .request-table { width: 100%; border-collapse: collapse; min-width: 1100px; }
         .request-table thead { background: #f5f5f5; border-bottom: 2px solid var(--border); }
-        .request-table th { padding: 14px; text-align: left; color: #555; font-size: 12px; font-weight: 700; }
-        .request-table td { padding: 16px 14px; border-bottom: 1px solid #eeeeee; font-size: 13px; font-weight: 600; vertical-align: middle; }
+        .request-table th {
+            padding: 14px; text-align: left; color: #555; font-size: 12px; font-weight: 700;
+        }
+        .request-table td {
+            padding: 16px 14px; border-bottom: 1px solid #eeeeee;
+            font-size: 13px; font-weight: 600; vertical-align: middle;
+        }
         .request-table tbody tr:hover { background: #fafafa; }
-        
-        /* Status text colors */
+
         .status-menunggu-pemeriksaan { color: var(--warning-text); font-weight: 700; }
         .status-perlu-perbaikan { color: var(--danger-text); font-weight: 700; }
         .status-default { color: #333; font-weight: 700; }
 
-        .btn-detail { background: var(--primary); color: white; border: none; padding: 6px 16px; border-radius: 4px; font-size: 12px; font-weight: 700; cursor: pointer; text-decoration: none; }
+        .btn-detail {
+            background: var(--primary); color: white; border: none;
+            padding: 6px 16px; border-radius: 4px; font-size: 12px; font-weight: 700;
+            cursor: pointer; text-decoration: none;
+        }
+        .btn-detail:hover { background: var(--primary-hover); color: white; }
+
+        /* TOAST SUKSES */
+        .toast-success {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: #2e7d32;
+            color: #ffffff;
+            padding: 14px 22px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 8px 24px rgba(46, 125, 50, 0.35);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+            max-width: 90%;
+            min-width: 280px;
+        }
+        .toast-success.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast-success i { font-size: 18px; flex-shrink: 0; }
+        .toast-success .toast-text { flex: 1; line-height: 1.4; }
+        .toast-success .toast-close {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.85);
+            font-size: 16px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+        .toast-success .toast-close:hover {
+            background: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+
+        @media (max-width: 600px) {
+            .toast-success {
+                bottom: 16px;
+                left: 14px;
+                right: 14px;
+                transform: translateY(20px);
+                max-width: none;
+                min-width: 0;
+            }
+            .toast-success.show {
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -98,18 +178,15 @@
                 <div class="topbar-title">Permintaan Bahan</div>
             </div>
             <div class="topbar-right">
-                <!-- Ikon Notifikasi dengan Titik Merah -->
                 <div class="notification-button">
                     <i class="far fa-bell"></i>
                     <span class="notification-dot"></span>
                 </div>
 
-                <!-- Profil Pengguna -->
                 <a href="{{ route('admin.digital.profile') }}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-dark); cursor: pointer;">
                     <span style="font-weight: 700; font-size: 15px;">
                         {{ auth()->user()->nama ?? 'Admin Digital' }}
                     </span>
-                    
                     <div style="width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: #111; display: flex; align-items: center; justify-content: center; color: white;">
                         @if(auth()->user()->foto_profil)
                             <img src="{{ auth()->user()->foto_profil }}" alt="Foto Profile" style="width: 100%; height: 100%; object-fit: cover;">
@@ -127,7 +204,9 @@
                     <h1>Permintaan Bahan</h1>
                     <p>Ajukan dan pantau status pengajuan bahan untuk mendukung proses pencetakan.</p>
                 </div>
-                <a href="{{ route('admin.digital.permintaan-bahan.ajukan') }}" class="btn-add">+ Ajukan Permintaan Bahan</a>
+                <a href="{{ route('admin.digital.permintaan-bahan.ajukan') }}" class="btn-add">
+                    + Ajukan Permintaan Bahan
+                </a>
             </div>
 
             <form method="GET" action="{{ route('admin.digital.permintaan-bahan') }}" class="filter-container">
@@ -166,18 +245,16 @@
                         @php
                             $status = strtolower(trim($item->status ?? ''));
                             $statusClass = 'status-default';
-                            if(str_contains($status, 'menunggu')) $statusClass = 'status-menunggu-pemeriksaan';
-                            if(str_contains($status, 'perbaikan') || str_contains($status, 'kendala')) $statusClass = 'status-perlu-perbaikan';
+                            if (str_contains($status, 'menunggu')) $statusClass = 'status-menunggu-pemeriksaan';
+                            if (str_contains($status, 'perbaikan') || str_contains($status, 'kendala')) $statusClass = 'status-perlu-perbaikan';
 
-                            // Mengambil Id Pencetakan (prioritaskan kode_cetak, jika kosong tampilkan ID angka atau Pencetakan #ID)
                             $idPencetakan = '-';
                             if ($item->pencetakan) {
                                 $idPencetakan = $item->pencetakan->kode_cetak ?? ('PRNT-' . $item->pencetakan->id);
                             } elseif ($item->pencetakan_id) {
                                 $idPencetakan = 'PRNT-' . $item->pencetakan_id;
                             }
-                            
-                            // Cek nama buku dari relasi pencetakan -> buku, atau langsung ke relasi buku
+
                             $namaBuku = '-';
                             if ($item->pencetakan && $item->pencetakan->buku) {
                                 $namaBuku = $item->pencetakan->buku->judul;
@@ -186,16 +263,14 @@
                             }
 
                             $namaBahan = $item->nama_bahan ?? '-';
-                            
-                            // Mengambil PIC dari relasi pencetakan->pic atau fallback ke kolom pengaju
+
                             $picTampil = '-';
                             if ($item->pencetakan && !empty($item->pencetakan->pic)) {
                                 $picTampil = $item->pencetakan->pic;
                             } elseif (!empty($item->pengaju)) {
                                 $picTampil = $item->pengaju;
                             }
-                            
-                            // Format jumlah dan satuan
+
                             $jumlahTampil = ($item->jumlah ?? '0') . ' ' . ($item->satuan ?? '');
                         @endphp
                             <tr>
@@ -217,7 +292,9 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" style="text-align: center; color: #999; padding: 40px;">Belum ada data permintaan bahan.</td>
+                                <td colspan="9" style="text-align: center; color: #999; padding: 40px;">
+                                    Belum ada data permintaan bahan.
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -225,5 +302,40 @@
             </div>
         </main>
     </div>
+
+    {{-- TOAST SUKSES --}}
+    @if(session('success'))
+    <div class="toast-success" id="toastSuccess">
+        <i class="fas fa-check-circle"></i>
+        <span class="toast-text">{{ session('success') }}</span>
+        <button type="button" class="toast-close" id="btnCloseToast">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    @endif
+
+    <script>
+        (function () {
+            var toast = document.getElementById('toastSuccess');
+            var btnClose = document.getElementById('btnCloseToast');
+
+            if (toast) {
+                setTimeout(function () {
+                    toast.classList.add('show');
+                }, 100);
+
+                var hideTimer = setTimeout(function () {
+                    toast.classList.remove('show');
+                }, 4000);
+
+                if (btnClose) {
+                    btnClose.addEventListener('click', function () {
+                        clearTimeout(hideTimer);
+                        toast.classList.remove('show');
+                    });
+                }
+            }
+        })();
+    </script>
 </body>
 </html>
